@@ -853,9 +853,9 @@
                 div.innerHTML = `<input type="checkbox" value="${cls}" /> ${label}`;
                 container.appendChild(div);
             }
-            // 預設全選
-            container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
-            updateSelectedClasses();
+            // 預設全不選（取消勾選所有 checkbox）
+    container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    updateSelectedClasses(); // 更新 STATE.selectedClasses
         }
 
         function updateSelectedClasses() {
