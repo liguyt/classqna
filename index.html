@@ -514,8 +514,6 @@
             </div>
             <div class="row" style="margin-top:16px;">
                 <button class="btn btn-primary" id="enterRoomBtn">🚪 進入 / 建立教室</button>
-                <button class="btn btn-outline" id="uploadCsvBtn">📤 上傳名單 (CSV)</button>
-                <input type="file" id="csvFileInput" accept=".csv" style="display:none;" />
             </div>
             <div id="roomInfo" class="hidden" style="background:#e1edfb; border-radius:40px; padding:10px 20px; margin-top:12px; display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center;">
                 <span>🏷️ 教室代碼：<strong id="roomIdDisplay">----</strong></span>
@@ -678,7 +676,7 @@
             role: 'teacher',
             roomId: null,
             teacherName: '陳老師',
-            selectedClasses: [], // 教師勾選的班級代碼 (如 ['1-1', '1-2'])
+            selectedClasses: [],
             customClassEnabled: false,
             customStudentCount: 20,
             studentClass: '',
@@ -721,8 +719,6 @@
         const studentSelect = $('#studentSelect');
         const studentPreview = $('#studentPreview');
         const enterRoomBtn = $('#enterRoomBtn');
-        const uploadCsvBtn = $('#uploadCsvBtn');
-        const csvFileInput = $('#csvFileInput');
         const roomInfo = $('#roomInfo');
         const roomIdDisplay = $('#roomIdDisplay');
         const onlineCount = $('#onlineCount');
@@ -787,64 +783,56 @@
             return `${getChineseGrade(grade)}年${getChineseClass(cls)}班`;
         }
 
-        // ----- 5. 載入學生名單（從 Google Sheets 或 CSV） -----
+        // ----- 5. 載入學生名單（從 Google Apps Script API） -----
         async function loadRosterFromSheet() {
-            const url =
-                'https://docs.google.com/spreadsheets/d/e/2PACX-1vRMf1DxsTsY92Ym6fokVIn46zBYLRVLBjMB7m-3NKeSvpULvTk4G4Y11I4H6P-FUQ_Awf6d3F-5xwK_/pub?output=csv';
+            // 使用你提供的 Apps Script 網址
+            const url = 'https://script.google.com/macros/s/AKfycbyTN6NbWdLc-OfKoa_3iyX5uHCwpDuEeIYSRSVgFcE4aM3RHHfgJthaAMXoiul2YTkH6A/exec';
             try {
                 const resp = await fetch(url);
                 if (!resp.ok) throw new Error('網路請求失敗');
-                const text = await resp.text();
-                parseRosterCSV(text);
+                const jsonData = await resp.json();
+                parseRosterData(jsonData);
                 return true;
             } catch (e) {
-                console.warn('Google Sheets 載入失敗，請改用上傳 CSV', e);
+                console.warn('載入名單失敗', e);
+                alert('⚠️ 無法載入學生名單，請檢查網路連線或 Apps Script 部署狀態。');
                 return false;
             }
         }
 
-        function parseRosterCSV(text) {
-            const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-            if (lines.length < 2) {
-                alert('CSV 資料不足，請確認格式：grade, class, number, name');
+        function parseRosterData(jsonData) {
+            const data = jsonData.data;
+            if (!data || data.length === 0) {
+                alert('沒有取得任何學生資料');
                 return;
             }
-            const header = lines[0].split(',').map(h => h.trim());
-            const idx = {};
-            header.forEach((h, i) => { idx[h] = i; });
-            const needed = ['grade', 'class', 'number', 'name'];
-            for (const key of needed) {
-                if (idx[key] === undefined) {
-                    alert(`CSV 缺少欄位：${key}`);
-                    return;
-                }
-            }
+
             const roster = {};
             const all = [];
-            for (let i = 1; i < lines.length; i++) {
-                const cols = lines[i].split(',').map(c => c.trim());
-                if (cols.length <= Math.max(...Object.values(idx))) continue;
-                const grade = cols[idx['grade']];
-                const cls = cols[idx['class']];
-                const number = cols[idx['number']];
-                const name = cols[idx['name']];
+            for (const row of data) {
+                const grade = row.grade?.toString().trim();
+                const cls = row.class?.toString().trim();
+                const number = row.number?.toString().trim();
+                const name = row.name?.trim();
                 if (!grade || !cls || !number || !name) continue;
+
                 const className = `${grade}-${cls}`;
                 const student = { grade, class: cls, number, name };
                 if (!roster[className]) roster[className] = [];
                 roster[className].push(student);
                 all.push({ ...student, className });
             }
+
             if (Object.keys(roster).length === 0) {
-                alert('無法解析任何學生資料，請檢查 CSV 格式');
+                alert('無法解析任何學生資料，請檢查試算表欄位名稱是否為 grade, class, number, name');
                 return;
             }
+
             for (const cls in roster) {
                 roster[cls].sort((a, b) => parseInt(a.number) - parseInt(b.number));
             }
             STATE.rosterData = roster;
             STATE.allStudents = all;
-            // 更新班級 checkbox
             renderClassCheckboxes();
             alert(`✅ 成功載入 ${all.length} 位學生，${Object.keys(roster).length} 個班級`);
         }
@@ -886,28 +874,10 @@
             }
         });
 
-        // 上傳 CSV
-        uploadCsvBtn.addEventListener('click', () => csvFileInput.click());
-        csvFileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const text = ev.target.result;
-                parseRosterCSV(text);
-                csvFileInput.value = '';
-            };
-            reader.readAsText(file, 'UTF-8');
-        });
-
         // ----- 6. 初始化 -----
         async function init() {
-            // 先嘗試載入 Google Sheets
-            const loaded = await loadRosterFromSheet();
-            if (!loaded) {
-                // 若失敗，顯示提示
-                console.log('請點擊「上傳名單 (CSV)」手動上傳');
-            }
+            // 載入名單
+            await loadRosterFromSheet();
 
             // 角色切換
             switchRoleBtn.addEventListener('click', () => {
@@ -1043,7 +1013,6 @@
                 studentPanel.classList.remove('hidden');
                 qrArea.classList.add('hidden');
                 loginArea.classList.remove('hidden');
-                // 更新學生下拉選單（根據選取的班級合併）
                 updateStudentSelects();
                 updateStudentPreview();
             }
@@ -1062,7 +1031,6 @@
                 const roster = STATE.rosterData[cls] || [];
                 allStudents = allStudents.concat(roster.map(s => ({ ...s, className: cls })));
             }
-            // 如果有自訂班級，則不顯示下拉，改為自動分配
             if (STATE.customClassEnabled) {
                 studentSelect.innerHTML = '<option value="">-- 無班級模式，自動分配 --</option>';
                 studentPreview.textContent = '將自動分配臨時座號';
@@ -1090,7 +1058,6 @@
                 studentPreview.textContent = '請選擇座號';
                 return;
             }
-            // 從所有勾選班級中找尋該座號的學生
             const selected = STATE.selectedClasses;
             for (const cls of selected) {
                 const roster = STATE.rosterData[cls] || [];
@@ -1218,7 +1185,6 @@
                         requestFullscreen();
                     } else {
                         // 有班級模式：讓學生從下拉選單選擇
-                        // 先取得所有勾選班級的學生
                         let allStudents = [];
                         for (const cls of selectedClasses) {
                             const roster = STATE.rosterData[cls] || [];
@@ -1694,20 +1660,13 @@
 
         // ----- 24. 渲染卡牌 -----
         function renderCards() {
-            // 取得所有勾選班級的學生
             let filtered = [];
             for (const cls of STATE.selectedClasses) {
                 const roster = STATE.rosterData[cls] || [];
                 filtered = filtered.concat(roster.map(s => ({ ...s, className: cls })));
             }
-            // 若有自訂班級，則只顯示已登入的臨時學生
             if (STATE.customClassEnabled) {
-                // 從 Firebase 讀取已登入的臨時學生（但此處我們不直接顯示，因為無名單）
-                // 我們只顯示目前已有作答或已登入的臨時學生
-                // 從 currentAnswers 中抓取 temp_ 開頭的
                 const tempIds = Object.keys(STATE.currentAnswers).filter(id => id.startsWith('temp_'));
-                // 沒有名單資訊，我們只顯示卡片
-                // 但為了簡單，我們只顯示已作答的臨時學生
                 let html = '';
                 for (const id of tempIds) {
                     const ans = STATE.currentAnswers[id];
@@ -1733,7 +1692,6 @@
                 return;
             }
 
-            // 如果是文字題且已停止作答，切換到清單模式
             if (STATE.questionType === 'text' && !STATE.isAnswering && Object.keys(STATE.currentAnswers).length > 0) {
                 cardContainer.classList.add('hidden');
                 textListContainer.classList.remove('hidden');
@@ -1975,7 +1933,6 @@
             const fileName =
                 `霧臺國小_課堂記錄_${STATE.roomId || 'class'}_${new Date().toISOString().slice(0,10)}.xlsx`;
             XLSX.writeFile(wb, fileName);
-            // 下載後刪除房間
             deleteRoom(STATE.roomId);
         }
 
