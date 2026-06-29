@@ -999,19 +999,21 @@
 
         // ----- 10. QR Code -----
         async function showQRCode(roomId) {
-            const url = window.location.href.split('?')[0].replace('index.html', 'student.html') + `?room=${roomId}`;
-            qrRoomCode.textContent = roomId;
-            try {
-                if (typeof QRCode === 'undefined') {
-                    await new Promise((resolve, reject) => {
-                        const script = document.createElement('script');
-                        script.src =
-                            'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-                        script.onload = resolve;
-                        script.onerror = reject;
-                        document.head.appendChild(script);
-                    });
-                }
+    const base = window.location.href.split('?')[0];
+    const basePath = base.substring(0, base.lastIndexOf('/') + 1);
+    const url = basePath + 'student.html?room=' + roomId;
+    qrRoomCode.textContent = roomId;
+    try {
+        if (typeof QRCode === 'undefined') {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src =
+                    'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
                 new QRCode(qrcodeContainer, {
                     text: url,
                     width: 180,
