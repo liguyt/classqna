@@ -1130,6 +1130,9 @@
                             <button class="btn btn-primary btn-lg" id="startStopBtn" style="min-width:160px;">
                                 ▶️ 開始作答
                             </button>
+                            <button class="btn btn-ghost" id="broadcastBtn3" style="display:inline-flex;">
+    📢 廣播
+</button>
                             <button class="btn btn-ghost" id="viewTextAnswersBtn" style="display:none;">
                                 📝 觀看所有學生回答
                             </button>
@@ -1655,6 +1658,8 @@
                 gotoPage2Btn.disabled = false;
                 // 顯示 QR Code
                 showQRCode(STATE.roomId);
+                qrModal.classList.add('show');
+}, 500);
                 alert(`✅ 教室已建立！代碼：${STATE.roomId}`);
             } catch (e) {
                 alert('❌ 建立教室失敗：' + e.message);
@@ -1709,67 +1714,69 @@
         }
 
         // ----- 11. 發布題目 -----
-        async function publishQuestion() {
-            if (!STATE.roomId) { alert('請先建立教室！'); return; }
-            const metaRef = doc(db, 'rooms', STATE.roomId, 'meta', 'info');
-            const metaSnap = await getDoc(metaRef);
-            let qNum = 1;
-            if (metaSnap.exists()) qNum = (metaSnap.data().questionCounter || 1);
-            STATE.currentQuestion = qNum;
-            currentQuestionDisplay.textContent = `第 ${qNum} 題`;
-            publishBtn.textContent = `📨 發布第 ${qNum + 1} 題`;
-            publishStatus.textContent = `✅ 已發布第 ${qNum} 題`;
+       async function publishQuestion() {
+    if (!STATE.roomId) { alert('請先建立教室！'); return; }
+    const metaRef = doc(db, 'rooms', STATE.roomId, 'meta', 'info');
+    const metaSnap = await getDoc(metaRef);
+    let qNum = 1;
+    if (metaSnap.exists()) qNum = (metaSnap.data().questionCounter || 1);
+    STATE.currentQuestion = qNum;
+    currentQuestionDisplay.textContent = `第 ${qNum} 題`;
+    publishBtn.textContent = `📨 發布第 ${qNum + 1} 題`;  // ← 預先更新為下一題
+    publishStatus.textContent = `✅ 已發布第 ${qNum} 題`;
 
-            const note = questionNoteInput.value.trim() || `第 ${qNum} 題`;
-            const qType = questionTypeSelect.value;
-            const sec = parseInt(customSeconds.value) || 20;
+    const note = questionNoteInput.value.trim() || `第 ${qNum} 題`;
+    const qType = questionTypeSelect.value;
+    const sec = parseInt(customSeconds.value) || 20;
 
-            await updateDoc(doc(db, 'rooms', STATE.roomId), {
-                currentQuestion: qNum,
-                questionNote: note,
-                questionType: qType,
-                isAnswering: false,
-                timerSeconds: sec,
-                revealedAnswer: null,
-                clearAll: true,
-                specifiedStudents: [],
-            });
-            await sleep(300);
-            await updateDoc(doc(db, 'rooms', STATE.roomId), { clearAll: false });
-            await setDoc(metaRef, { questionCounter: qNum + 1 });
+    // 重置正確答案狀態
+    STATE.correctAnswer = null;
+    STATE.isRevealed = false;
 
-            STATE.currentAnswers = {};
-            STATE.correctAnswer = null;
-            STATE.isRevealed = false;
-            STATE.specifiedStudents = [];
-            STATE.isPublished = true;
-            STATE.isStopped = false;
-            STATE.questionType = qType;
+    await updateDoc(doc(db, 'rooms', STATE.roomId), {
+        currentQuestion: qNum,
+        questionNote: note,
+        questionType: qType,
+        isAnswering: false,
+        timerSeconds: sec,
+        revealedAnswer: null,      // ← 清除舊的公布答案
+        clearAll: true,
+        specifiedStudents: [],
+    });
+    await sleep(300);
+    await updateDoc(doc(db, 'rooms', STATE.roomId), { clearAll: false });
+    await setDoc(metaRef, { questionCounter: qNum + 1 });
 
-            timerLargeDisplay.textContent = sec;
-            timerLabel.textContent = '⏱️ 等待開始作答';
-            timerLargeContainer.style.display = 'block';
+    STATE.currentAnswers = {};
+    STATE.specifiedStudents = [];
+    STATE.isPublished = true;
+    STATE.isStopped = false;
+    STATE.questionType = qType;
 
-            startStopBtn.textContent = '▶️ 開始作答';
-            startStopBtn.className = 'btn btn-primary btn-lg';
+    timerLargeDisplay.textContent = sec;
+    timerLabel.textContent = '⏱️ 等待開始作答';
+    timerLargeContainer.style.display = 'block';
 
-            updateCards();
-            updateCharts();
+    startStopBtn.textContent = '▶️ 開始作答';
+    startStopBtn.className = 'btn btn-primary btn-lg';
 
-            // 啟用下一步（頁面3）
-            gotoPage3Btn.disabled = false;
-            // 自動切換到頁面3
-            goToPage(3);
+    // 重置選擇題結果卡牌
+    choiceResultCards.innerHTML = '<div style="color:#8899aa; padding:10px; text-align:center; width:100%;">請公布答案</div>';
 
-            // 根據題型顯示/隱藏按鈕
-            if (qType === 'text') {
-                viewTextAnswersBtn.style.display = 'inline-flex';
-            } else {
-                viewTextAnswersBtn.style.display = 'none';
-            }
+    updateCards();
+    updateCharts();
 
-            alert(`📨 已發布第 ${qNum} 題，請點擊「開始作答」。`);
-        }
+    gotoPage3Btn.disabled = false;
+    goToPage(3);
+
+    if (qType === 'text') {
+        viewTextAnswersBtn.style.display = 'inline-flex';
+    } else {
+        viewTextAnswersBtn.style.display = 'none';
+    }
+
+    alert(`📨 已發布第 ${qNum} 題，請點擊「開始作答」。`);
+}
 
         // ----- 12. 開始 / 停止作答 -----
         async function toggleStartStop() {
@@ -2124,39 +2131,50 @@
 
         // ----- 21. 清除紀錄進入下一題 -----
         async function clearAllHistory() {
-            if (!confirm('確定要清除所有紀錄，進入下一題嗎？')) return;
-            STATE.currentAnswers = {};
-            STATE.correctAnswer = null;
-            STATE.isRevealed = false;
-            STATE.specifiedStudents = [];
-            STATE.isPublished = false;
-            STATE.isStopped = false;
-            STATE.currentQuestion = 0;
-            currentQuestionDisplay.textContent = '第 0 題';
-            publishBtn.textContent = '📨 發布第 1 題';
-            publishStatus.textContent = '尚未發布';
+    if (!confirm('確定要清除所有紀錄，進入下一題嗎？')) return;
 
-            updateCards();
-            updateCharts();
+    // 讀取目前應有的題號
+    // 讀取目前應有的題號
+const metaRef = doc(db, 'rooms', STATE.roomId, 'meta', 'info');
+const metaSnap = await getDoc(metaRef);
+let nextQNum = 1;
+if (metaSnap.exists()) nextQNum = (metaSnap.data().questionCounter || 1);
+publishBtn.textContent = `📨 發布第 ${nextQNum} 題`;
 
-            await updateDoc(doc(db, 'rooms', STATE.roomId), { clearAll: true });
-            await sleep(300);
-            await updateDoc(doc(db, 'rooms', STATE.roomId), { clearAll: false });
+    STATE.currentAnswers = {};
+    STATE.correctAnswer = null;
+    STATE.isRevealed = false;
+    STATE.specifiedStudents = [];
+    STATE.isPublished = false;
+    STATE.isStopped = false;
+    STATE.currentQuestion = 0;
+    currentQuestionDisplay.textContent = '第 0 題';
 
-            // 回到頁面2
-            goToPage(2);
-            gotoPage3Btn.disabled = true;
-            gotoPage4Btn.disabled = true;
-            gotoPage5Btn.disabled = true;
+    // 更新發布按鈕為下一題編號
+    publishBtn.textContent = `📨 發布第 ${nextQNum} 題`;
+    publishStatus.textContent = '尚未發布';
 
-            // 重置計時器
-            timerLargeDisplay.textContent = '--';
-            timerLabel.textContent = '⏱️ 等待開始';
-            timerLargeContainer.style.display = 'block';
+    updateCards();
+    updateCharts();
 
-            alert('✅ 已清除，請發布下一題。');
-        }
+    await updateDoc(doc(db, 'rooms', STATE.roomId), { clearAll: true });
+    await sleep(300);
+    await updateDoc(doc(db, 'rooms', STATE.roomId), { clearAll: false });
 
+    goToPage(2);
+    gotoPage3Btn.disabled = true;
+    gotoPage4Btn.disabled = true;
+    gotoPage5Btn.disabled = true;
+
+    timerLargeDisplay.textContent = '--';
+    timerLabel.textContent = '⏱️ 等待開始';
+    timerLargeContainer.style.display = 'block';
+
+    // 重置選擇題結果卡牌
+    choiceResultCards.innerHTML = '<div style="color:#8899aa; padding:10px; text-align:center; width:100%;">請公布答案</div>';
+
+    alert('✅ 已清除，請發布下一題。');
+}
         // ----- 22. 匯出 Excel -----
         function exportExcel() {
             if (STATE.history.length === 0) { alert('目前沒有任何記錄可匯出。'); return; }
@@ -2278,23 +2296,44 @@
         // 導航按鈕
         gotoPage2Btn.addEventListener('click', () => goToPage(2));
         gotoPage3Btn.addEventListener('click', () => goToPage(3));
-        gotoPage4Btn.addEventListener('click', () => {
-            // 如果進入頁面4，檢查題型
-            if (STATE.questionType === 'text') {
-                choiceRevealArea.classList.add('hidden');
-                textGradingArea.classList.remove('hidden');
-                page4Subtitle.textContent = '📝 勾選答對的學生，即時加分';
-                renderTextGrading();
-            } else {
-                choiceRevealArea.classList.remove('hidden');
-                textGradingArea.classList.add('hidden');
-                page4Subtitle.textContent = '✅ 公布正確答案，學生端會顯示對錯';
-                // 更新選擇題結果卡牌
-                updateChoiceResultCards();
-            }
-            goToPage(4);
-            gotoPage5Btn.disabled = false;
-        });
+        gotoPage4Btn.addEventListener('click', async () => {
+    // 讀取 Firebase 中的公布答案狀態
+    if (STATE.roomId) {
+        const roomRef = doc(db, 'rooms', STATE.roomId);
+        const snap = await getDoc(roomRef);
+        const data = snap.data();
+        if (data && data.revealedAnswer) {
+            STATE.correctAnswer = data.revealedAnswer;
+            STATE.isRevealed = true;
+        } else {
+            STATE.correctAnswer = null;
+            STATE.isRevealed = false;
+        }
+    }
+
+    if (STATE.questionType === 'text') {
+        choiceRevealArea.classList.add('hidden');
+        textGradingArea.classList.remove('hidden');
+        page4Subtitle.textContent = '📝 勾選答對的學生，即時加分';
+        renderTextGrading();
+    } else {
+        choiceRevealArea.classList.remove('hidden');
+        textGradingArea.classList.add('hidden');
+        page4Subtitle.textContent = '✅ 公布正確答案，學生端會顯示對錯';
+        updateChoiceResultCards();
+        // 如果已經公布答案，更新按鈕樣式
+        if (STATE.isRevealed && STATE.correctAnswer) {
+            document.querySelectorAll('[data-answer]').forEach(btn => {
+                if (btn.dataset.answer === STATE.correctAnswer) {
+                    btn.style.background = '#1f8b5c';
+                    btn.style.color = 'white';
+                }
+            });
+        }
+    }
+    goToPage(4);
+    gotoPage5Btn.disabled = false;
+});
         gotoPage5Btn.addEventListener('click', () => {
             updateRankList();
             goToPage(5);
