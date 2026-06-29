@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>霧臺國小 - 學生作答</title>
+
+    <!-- Firebase SDK -->
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js"
+            }
+        }
+    </script>
+
+    <style>
+        /* ===== 全域重置：全螢幕、無捲動 ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'PingFang TC', system-ui, -apple-system, sans-serif;
+            background: #f5f9ff;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* ===== 主容器：100% 視窗 ===== */
+        .exam-container {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            /* 支援 dynamic viewport */
+            display: flex;
+            flex-direction: column;
+            background: white;
+            padding: 12px 16px 16px 16px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        /* ===== 頂部：身分資訊 ===== */
+        .exam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0 8px 0;
+            border-bottom: 2px solid #e9eef3;
+            flex-shrink: 0;
+        }
+        .exam-header .identity {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0b2b4a;
+        }
+        .exam-header .round {
+            font-size: 15px;
+            font-weight: 600;
+            color: #4a6a8a;
+            background: #e3edf9;
+            padding: 4px 14px;
+            border-radius: 30px;
+        }
+
+        /* ===== 跑馬燈區（預留） ===== */
+        .exam-marquee {
+            flex-shrink: 0;
+            height: 28px;
+            line-height: 28px;
+            font-size: 15px;
+            color: #c73d3d;
+            font-weight: 600;
+            text-align: center;
+            background: #fff5f5;
+            border-radius: 8px;
+            margin: 6px 0 8px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            padding: 0 12px;
+        }
+        .exam-marquee:empty {
+            display: none;
+        }
+
+        /* ===== 題目區 ===== */
+        .exam-question {
+            flex-shrink: 0;
+            background: #f2f8ff;
+            border-radius: 16px;
+            padding: 12px 16px;
+            border-left: 6px solid #2b7be4;
+            margin-bottom: 10px;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+        }
+        .exam-question .q-label {
+            font-weight: 600;
+            color: #1a5c9e;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+        .exam-question .q-text {
+            font-size: 17px;
+            font-weight: 500;
+            color: #0b2b4a;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        /* ===== 計時器 ===== */
+        .exam-timer {
+            flex-shrink: 0;
+            text-align: center;
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a5c9e;
+            padding: 2px 0 6px 0;
+            letter-spacing: 2px;
+        }
+        .exam-timer.urgent {
+            color: #c73d3d;
+            animation: blink 0.5s ease infinite alternate;
+        }
+        @keyframes blink {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0.2;
+            }
+        }
+
+        /* ===== 作答區（佔最大空間） ===== */
+        .exam-answer-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 0;
+            /* flex 限制溢出 */;
+        }
+
+        /* 選擇題按鈕 */
+        .choice-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .choice-btn {
+            background: #f0f5fe;
+            border: 2.5px solid #d1dceb;
+            border-radius: 16px;
+            padding: 14px 4px;
+            font-size: 32px;
+            font-weight: 700;
+            color: #0e2a47;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.12s;
+            touch-action: manipulation;
+            min-height: 64px;
+        }
+        .choice-btn:active {
+            transform: scale(0.94);
+        }
+        .choice-btn.selected {
+            border-color: #1a5c9e;
+            background: #d1e3ff;
+        }
+        .choice-btn:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* 文字輸入區 */
+        .text-input-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-height: 0;
+        }
+        .text-input-wrapper textarea {
+            flex: 1;
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #d7e0e9;
+            border-radius: 16px;
+            font-size: 18px;
+            font-family: inherit;
+            resize: none;
+            background: white;
+            transition: 0.2s;
+            min-height: 80px;
+            line-height: 1.5;
+        }
+        .text-input-wrapper textarea:focus {
+            border-color: #2b7be4;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(43, 123, 228, 0.15);
+        }
+        .text-input-wrapper textarea:disabled {
+            background: #f0f2f5;
+            opacity: 0.6;
+        }
+        .text-input-wrapper .char-count {
+            text-align: right;
+            font-size: 13px;
+            color: #8899aa;
+            flex-shrink: 0;
+        }
+
+        /* ===== 送出按鈕 ===== */
+        .exam-submit {
+            flex-shrink: 0;
+            padding: 14px 0 4px 0;
+        }
+        .exam-submit button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 40px;
+            font-size: 20px;
+            font-weight: 700;
+            background: #1a5c9e;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            touch-action: manipulation;
+            box-shadow: 0 6px 14px rgba(26, 92, 158, 0.25);
+        }
+        .exam-submit button:active {
+            transform: scale(0.96);
+        }
+        .exam-submit button:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            transform: none;
+        }
+        .exam-submit button.submitted {
+            background: #1f8b5c;
+        }
+
+        /* ===== 狀態訊息 ===== */
+        .exam-status {
+            flex-shrink: 0;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+            color: #2d5f3a;
+            background: #e2f0e6;
+            border-radius: 30px;
+            padding: 6px 16px;
+            margin-top: 4px;
+        }
+        .exam-status.waiting {
+            color: #a06b2c;
+            background: #fef3e0;
+        }
+        .exam-status.locked {
+            color: #6e2b2b;
+            background: #f3dbdb;
+        }
+
+        /* ===== 無作答區（不可捲動） ===== */
+        .exam-no-access {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #8899aa;
+            font-size: 18px;
+            text-align: center;
+            padding: 20px;
+        }
+        .exam-no-access .big-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        /* ===== 隱藏 ===== */
+        .hidden {
+            display: none !important;
+        }
+
+        /* ===== RWD：各種螢幕適配 ===== */
+        @media (max-width: 480px) {
+            .exam-container {
+                padding: 8px 10px 12px 10px;
+            }
+            .exam-header .identity {
+                font-size: 15px;
+            }
+            .exam-header .round {
+                font-size: 13px;
+                padding: 2px 12px;
+            }
+            .exam-question .q-text {
+                font-size: 15px;
+            }
+            .exam-timer {
+                font-size: 28px;
+            }
+            .choice-btn {
+                font-size: 26px;
+                min-height: 52px;
+                padding: 10px 4px;
+            }
+            .text-input-wrapper textarea {
+                font-size: 16px;
+                min-height: 60px;
+            }
+            .exam-submit button {
+                font-size: 17px;
+                padding: 14px;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            .exam-container {
+                padding: 6px 16px 8px 16px;
+            }
+            .exam-header .identity {
+                font-size: 14px;
+            }
+            .exam-timer {
+                font-size: 22px;
+                padding: 0 0 2px 0;
+            }
+            .choice-btn {
+                font-size: 22px;
+                min-height: 40px;
+                padding: 6px 4px;
+            }
+            .text-input-wrapper textarea {
+                min-height: 40px;
+                font-size: 15px;
+            }
+            .exam-submit button {
+                font-size: 15px;
+                padding: 10px;
+            }
+            .exam-question {
+                padding: 6px 12px;
+                min-height: 36px;
+            }
+            .exam-question .q-text {
+                font-size: 14px;
+            }
+        }
+
+        /* 直立手機專用 */
+        @media (max-width: 420px) and (orientation: portrait) {
+            .choice-btn {
+                font-size: 28px;
+                min-height: 56px;
+            }
+            .exam-timer {
+                font-size: 30px;
+            }
+        }
+
+        /* 防止選取 */
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="exam-container" id="app">
+        <!-- ===== 頂部：身分 + 題號 ===== -->
+        <div class="exam-header">
+            <span class="identity" id="studentIdentity">--</span>
+            <span class="round" id="studentRound">題號：--</span>
+        </div>
+
+        <!-- ===== 跑馬燈區 ===== -->
+        <div class="exam-marquee" id="marqueeArea"></div>
+
+        <!-- ===== 題目區 ===== -->
+        <div class="exam-question" id="questionArea">
+            <span class="q-label">📖</span>
+            <span class="q-text" id="questionText">等待教師出題...</span>
+        </div>
+
+        <!-- ===== 計時器 ===== -->
+        <div class="exam-timer" id="timerDisplay">--</div>
+
+        <!-- ===== 作答區 ===== -->
+        <div class="exam-answer-area" id="answerArea">
+            <!-- 選擇題按鈕 -->
+            <div class="choice-grid" id="choiceGrid">
+                <button class="choice-btn" data-choice="A" disabled>A</button>
+                <button class="choice-btn" data-choice="B" disabled>B</button>
+                <button class="choice-btn" data-choice="C" disabled>C</button>
+                <button class="choice-btn" data-choice="D" disabled>D</button>
+            </div>
+
+            <!-- 文字輸入 -->
+            <div class="text-input-wrapper" id="textInputWrapper">
+                <textarea id="textInput" placeholder="請在此輸入你的答案..." disabled></textarea>
+                <div class="char-count" id="charCount">0 字</div>
+            </div>
+
+            <!-- 送出按鈕 -->
+            <div class="exam-submit">
+                <button id="submitBtn" disabled>📤 送出答案</button>
+            </div>
+
+            <!-- 狀態訊息 -->
+            <div class="exam-status waiting" id="statusMessage">⏳ 等待教師開始作答</div>
+        </div>
+
+        <!-- ===== 無權限畫面（預設隱藏） ===== -->
+        <div class="exam-no-access hidden" id="noAccessArea">
+            <div class="big-icon">🔒</div>
+            <div>請掃描教師提供的 QR Code<br />或輸入正確的教室代碼</div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <script type="module">
+        // ----- 1. 匯入 Firebase -----
+        import { initializeApp } from "firebase/app";
+        import {
+            getFirestore,
+            doc,
+            setDoc,
+            getDoc,
+            updateDoc,
+            deleteDoc,
+            collection,
+            query,
+            where,
+            onSnapshot,
+            getDocs,
+            writeBatch,
+            serverTimestamp,
+            increment,
+            addDoc,
+            runTransaction
+        } from "firebase/firestore";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVllhBuONIqLlPlvCgnozPEE2834HFTxA",
+            authDomain: "classqna-7898b.firebaseapp.com",
+            projectId: "classqna-7898b",
+            storageBucket: "classqna-7898b.firebasestorage.app",
+            messagingSenderId: "145272240036",
+            appId: "1:145272240036:web:3a286ec303c476066df331"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ----- 2. 全域狀態 -----
+        const STATE = {
+            roomId: null,
+            studentId: null,
+            studentName: null,
+            currentQuestion: 0,
+            isAnswering: false,
+            questionType: 'choice',
+            isLocked: false,
+            myAnswer: null,
+            timerInterval: null,
+            timerSeconds: 0,
+            rosterData: {},
+        };
+
+        // ----- 3. DOM 參照 -----
+        const $ = (s) => document.querySelector(s);
+        const $$ = (s) => document.querySelectorAll(s);
+
+        const studentIdentity = $('#studentIdentity');
+        const studentRound = $('#studentRound');
+        const marqueeArea = $('#marqueeArea');
+        const questionText = $('#questionText');
+        const timerDisplay = $('#timerDisplay');
+        const choiceGrid = $('#choiceGrid');
+        const choiceBtns = choiceGrid.querySelectorAll('.choice-btn');
+        const textInput = $('#textInput');
+        const charCount = $('#charCount');
+        const submitBtn = $('#submitBtn');
+        const statusMessage = $('#statusMessage');
+        const noAccessArea = $('#noAccessArea');
+        const answerArea = $('#answerArea');
+
+        // ----- 4. 輔助函式 -----
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        function getStudentId(student) {
+            return `${student.grade}-${student.class}-${String(student.number).padStart(2, '0')}`;
+        }
+
+        function getChineseGrade(num) {
+            const map = { '1': '一', '2': '二', '3': '三', '4': '四', '5': '五', '6': '六' };
+            return map[num] || num;
+        }
+
+        function getChineseClass(num) {
+            const map = { '1': '甲', '2': '乙' };
+            return map[num] || num;
+        }
+
+        function formatClassName(grade, cls) {
+            return `${getChineseGrade(grade)}年${getChineseClass(cls)}班`;
+        }
+
+        // ----- 5. 載入名單（只用來找姓名） -----
+        async function loadRoster() {
+            const url =
+                'https://script.google.com/macros/s/AKfycbyTN6NbWdLc-OfKoa_3iyX5uHCwpDuEeIYSRSVgFcE4aM3RHHfgJthaAMXoiul2YTkH6A/exec';
+            try {
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error('網路請求失敗');
+                const jsonData = await resp.json();
+                const data = jsonData.data;
+                if (!data) return;
+                const roster = {};
+                for (const row of data) {
+                    const grade = row.grade?.toString().trim();
+                    const cls = row.class?.toString().trim();
+                    const number = row.number?.toString().trim();
+                    const name = row.name?.trim();
+                    if (!grade || !cls || !number || !name) continue;
+                    const className = `${grade}-${cls}`;
+                    const student = { grade, class: cls, number, name };
+                    if (!roster[className]) roster[className] = [];
+                    roster[className].push(student);
+                }
+                STATE.rosterData = roster;
+            } catch (e) {
+                console.warn('載入名單失敗', e);
+            }
+        }
+
+        // ----- 6. 全螢幕鎖定 -----
+        function lockScreen() {
+            try {
+                const el = document.documentElement;
+                if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+            } catch (e) {}
+
+            // 阻止下拉刷新
+            document.addEventListener('touchmove', (e) => {
+                if (document.fullscreenElement || document.webkitFullscreenElement) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            // 阻止 F5 / Ctrl+R
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                    if (document.fullscreenElement || document.webkitFullscreenElement) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+
+            // 阻止離開頁面
+            window.addEventListener('beforeunload', (e) => {
+                if (document.fullscreenElement || document.webkitFullscreenElement) {
+                    e.preventDefault();
+                    e.returnValue = '確定要離開教室嗎？';
+                }
+            });
+        }
+
+        // ----- 7. 初始化學生端（從 URL 讀取 room） -----
+        async function initStudent() {
+            await loadRoster();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomFromUrl = urlParams.get('room');
+
+            if (!roomFromUrl || !/^\d{4}$/.test(roomFromUrl)) {
+                // 沒有房間代碼，顯示無權限畫面
+                noAccessArea.classList.remove('hidden');
+                answerArea.classList.add('hidden');
+                return;
+            }
+
+            STATE.roomId = roomFromUrl;
+
+            try {
+                const roomDoc = await getDoc(doc(db, 'rooms', STATE.roomId));
+                if (!roomDoc.exists()) {
+                    noAccessArea.classList.remove('hidden');
+                    answerArea.classList.add('hidden');
+                    return;
+                }
+
+                const data = roomDoc.data();
+                const custom = data.customClassEnabled || false;
+                const selectedClasses = data.selectedClasses || [];
+
+                if (custom) {
+                    // 無班級模式：自動分配臨時座號
+                    const studentsRef = collection(db, 'rooms', STATE.roomId, 'students');
+                    const snap = await getDocs(studentsRef);
+                    const used = [];
+                    snap.forEach(d => {
+                        const dta = d.data();
+                        if (dta.tempSeat) used.push(dta.tempSeat);
+                    });
+                    let seat = 1;
+                    while (used.includes(seat)) seat++;
+                    const maxSeat = data.customStudentCount || 20;
+                    if (seat > maxSeat) {
+                        alert('已達人數上限');
+                        return;
+                    }
+                    STATE.studentId = `temp_${seat}`;
+                    STATE.studentName = `臨時${seat}號`;
+                    studentIdentity.textContent = `臨時座號：${seat}`;
+
+                    const studentRef = doc(db, 'rooms', STATE.roomId, 'students', STATE.studentId);
+                    await setDoc(studentRef, {
+                        name: STATE.studentName,
+                        tempSeat: seat,
+                        joinedAt: serverTimestamp(),
+                        online: true,
+                    });
+
+                    noAccessArea.classList.add('hidden');
+                    answerArea.classList.remove('hidden');
+                    listenTeacherCommands();
+                    listenMyAnswer();
+                    lockScreen();
+                    return;
+                }
+
+                // 有班級模式
+                let allStudents = [];
+                for (const cls of selectedClasses) {
+                    const roster = STATE.rosterData[cls] || [];
+                    allStudents = allStudents.concat(roster.map(s => ({ ...s, className: cls })));
+                }
+
+                if (allStudents.length === 0) {
+                    noAccessArea.classList.remove('hidden');
+                    answerArea.classList.add('hidden');
+                    return;
+                }
+
+                allStudents.sort((a, b) => parseInt(a.number) - parseInt(b.number));
+                const choices = allStudents.map(s =>
+                    `${s.number} - ${s.name} (${formatClassName(s.grade, s.class)})`
+                ).join('\n');
+
+                const input = prompt(`請輸入你的座號（輸入數字）：\n${choices}`);
+                if (!input) {
+                    noAccessArea.classList.remove('hidden');
+                    answerArea.classList.add('hidden');
+                    return;
+                }
+
+                const found = allStudents.find(s => s.number === input.trim());
+                if (!found) {
+                    alert('座號無效，請重新整理頁面再試。');
+                    noAccessArea.classList.remove('hidden');
+                    answerArea.classList.add('hidden');
+                    return;
+                }
+
+                STATE.studentId = getStudentId(found);
+                STATE.studentName = found.name;
+                const clsDisplay = formatClassName(found.grade, found.class);
+                studentIdentity.textContent = `${clsDisplay} - ${found.number}號 ${found.name}`;
+
+                const studentRef = doc(db, 'rooms', STATE.roomId, 'students', STATE.studentId);
+                await setDoc(studentRef, {
+                    name: found.name,
+                    class: found.className,
+                    grade: found.grade,
+                    classNum: found.class,
+                    number: found.number,
+                    joinedAt: serverTimestamp(),
+                    online: true,
+                });
+
+                noAccessArea.classList.add('hidden');
+                answerArea.classList.remove('hidden');
+                listenTeacherCommands();
+                listenMyAnswer();
+                lockScreen();
+
+            } catch (e) {
+                console.error('加入教室失敗', e);
+                alert('加入教室失敗：' + e.message);
+                noAccessArea.classList.remove('hidden');
+                answerArea.classList.add('hidden');
+            }
+        }
+
+        // ----- 8. 監聽教師指令 -----
+        let teacherCommandUnsub = null;
+
+        function listenTeacherCommands() {
+            if (teacherCommandUnsub) teacherCommandUnsub();
+            const roomRef = doc(db, 'rooms', STATE.roomId);
+            teacherCommandUnsub = onSnapshot(roomRef, async (snapshot) => {
+                const data = snapshot.data();
+                if (!data) return;
+
+                const qNum = data.currentQuestion || 0;
+                STATE.currentQuestion = qNum;
+                studentRound.textContent = `題號：第 ${qNum} 題`;
+
+                const note = data.questionNote || '';
+                questionText.textContent = note || (qNum > 0 ? `第 ${qNum} 題` : '等待教師出題...');
+
+                const qType = data.questionType || 'choice';
+                STATE.questionType = qType;
+
+                // 跑馬燈
+                if (data.broadcastMsg && data.broadcastMsg.trim()) {
+                    marqueeArea.textContent = '📢 ' + data.broadcastMsg;
+                    setTimeout(() => { marqueeArea.textContent = ''; }, 8000);
+                }
+
+                // 作答狀態
+                if (data.isAnswering === true) {
+                    STATE.isAnswering = true;
+                    enableInput(true, qType);
+                    if (data.timerSeconds) {
+                        startTimer(data.timerSeconds);
+                    }
+                    if (STATE.myAnswer) {
+                        lockInput();
+                    }
+                } else {
+                    STATE.isAnswering = false;
+                    enableInput(false, qType);
+                    clearTimer();
+                    if (!STATE.isLocked) {
+                        statusMessage.textContent = '⏳ 等待教師開始作答';
+                        statusMessage.className = 'exam-status waiting';
+                    }
+                }
+
+                // 公布答案
+                if (data.revealedAnswer) {
+                    if (qType === 'choice') {
+                        statusMessage.textContent = `📢 正確答案：${data.revealedAnswer}`;
+                        statusMessage.className = 'exam-status';
+                        // 顯示正確答案在按鈕上
+                        choiceBtns.forEach(btn => {
+                            if (btn.dataset.choice === data.revealedAnswer) {
+                                btn.style.borderColor = '#1f8b5c';
+                                btn.style.background = '#b7e0c9';
+                            } else if (btn.dataset.choice === STATE.myAnswer?.choice) {
+                                btn.style.borderColor = '#c73d3d';
+                                btn.style.background = '#f3dbdb';
+                            }
+                        });
+                    } else {
+                        // 文字題：顯示提示
+                        statusMessage.textContent = `📢 教師已公布答案，請查看結果`;
+                        statusMessage.className = 'exam-status';
+                    }
+                } else {
+                    // 恢復按鈕顏色
+                    choiceBtns.forEach(btn => {
+                        btn.style.borderColor = '';
+                        btn.style.background = '';
+                    });
+                    if (!STATE.isLocked && !STATE.isAnswering) {
+                        statusMessage.textContent = '⏳ 等待教師開始作答';
+                        statusMessage.className = 'exam-status waiting';
+                    } else if (!STATE.isLocked && STATE.isAnswering) {
+                        statusMessage.textContent = '✏️ 請作答';
+                        statusMessage.className = 'exam-status';
+                    }
+                }
+
+                // 清除信號
+                if (data.clearAll === true) {
+                    STATE.myAnswer = null;
+                    STATE.isLocked = false;
+                    choiceBtns.forEach(b => b.classList.remove('selected'));
+                    textInput.value = '';
+                    charCount.textContent = '0 字';
+                    statusMessage.textContent = '✅ 已清除，請重新作答';
+                    statusMessage.className = 'exam-status';
+                    enableInput(true, qType);
+                    await updateDoc(doc(db, 'rooms', STATE.roomId), { clearAll: false });
+                }
+
+                // 指定學生
+                const specified = data.specifiedStudents || [];
+                if (specified.includes(STATE.studentId) && !STATE.isLocked && STATE.isAnswering) {
+                    statusMessage.textContent = '👆 老師點名你回答！';
+                    statusMessage.className = 'exam-status';
+                }
+
+            }, (err) => {
+                console.warn('監聽失敗', err);
+            });
+        }
+
+        // ----- 9. 監聽自己的答案（斷線重連） -----
+        let myAnswerUnsub = null;
+
+        function listenMyAnswer() {
+            if (myAnswerUnsub) myAnswerUnsub();
+            const ansRef = doc(db, 'rooms', STATE.roomId, 'answers', STATE.studentId);
+            myAnswerUnsub = onSnapshot(ansRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    if (data.question === STATE.currentQuestion) {
+                        STATE.myAnswer = { choice: data.choice || null, text: data.text || '' };
+                        STATE.isLocked = true;
+                        if (data.choice) {
+                            choiceBtns.forEach(b => {
+                                b.classList.toggle('selected', b.dataset.choice === data.choice);
+                            });
+                        }
+                        if (data.text) {
+                            textInput.value = data.text;
+                            charCount.textContent = data.text.length + ' 字';
+                        }
+                        statusMessage.textContent = '🔒 已送出答案（鎖定）';
+                        statusMessage.className = 'exam-status locked';
+                        enableInput(false, STATE.questionType);
+                        submitBtn.textContent = '✅ 已送出';
+                        submitBtn.className = 'submitted';
+                    }
+                }
+            }, (err) => { console.warn('監聽答案失敗', err); });
+        }
+
+        // ----- 10. 啟用輸入 -----
+        function enableInput(enabled, type) {
+            const isChoice = (type === 'choice');
+
+            choiceBtns.forEach(b => {
+                b.disabled = !enabled || !isChoice;
+            });
+
+            textInput.disabled = !enabled || isChoice;
+            if (enabled && !isChoice) {
+                textInput.placeholder = '請輸入你的文字答案...';
+                textInput.style.borderColor = '#2b7be4';
+            } else {
+                textInput.placeholder = isChoice ? '（請點選上方的 A/B/C/D）' : '輸入文字答案...';
+                textInput.style.borderColor = '#d7e0e9';
+            }
+
+            submitBtn.disabled = !enabled;
+            if (!enabled) {
+                submitBtn.textContent = '⛔ 已鎖定';
+                submitBtn.className = '';
+            } else {
+                submitBtn.textContent = '📤 送出答案';
+                submitBtn.className = '';
+            }
+
+            // 指定學生
+            // 這部分由監聽處理
+        }
+
+        function lockInput() {
+            enableInput(false, STATE.questionType);
+            submitBtn.textContent = '✅ 已送出';
+            submitBtn.className = 'submitted';
+            statusMessage.textContent = '🔒 已送出答案（鎖定）';
+            statusMessage.className = 'exam-status locked';
+            STATE.isLocked = true;
+        }
+
+        // ----- 11. 計時器 -----
+        let timerInterval = null;
+
+        function startTimer(seconds) {
+            clearTimer();
+            let remain = seconds;
+            STATE.timerSeconds = remain;
+            timerDisplay.textContent = remain + 's';
+            timerDisplay.className = 'exam-timer';
+
+            if (remain <= 5) {
+                timerDisplay.className = 'exam-timer urgent';
+            }
+
+            timerInterval = setInterval(() => {
+                remain--;
+                STATE.timerSeconds = remain;
+                timerDisplay.textContent = remain + 's';
+
+                if (remain <= 5) {
+                    timerDisplay.className = 'exam-timer urgent';
+                } else {
+                    timerDisplay.className = 'exam-timer';
+                }
+
+                if (remain <= 0) {
+                    clearTimer();
+                    timerDisplay.textContent = '⌛ 時間到！';
+                    timerDisplay.className = 'exam-timer urgent';
+                    // 自動送出（如果有答案）
+                    if (!STATE.isLocked && STATE.isAnswering) {
+                        statusMessage.textContent = '⏰ 時間到！自動送出...';
+                        // 觸發自動送出
+                        autoSubmit();
+                    }
+                }
+            }, 1000);
+        }
+
+        function clearTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            timerDisplay.textContent = '--';
+            timerDisplay.className = 'exam-timer';
+        }
+
+        // ----- 12. 自動送出 -----
+        async function autoSubmit() {
+            if (STATE.isLocked) return;
+            if (!STATE.isAnswering) return;
+
+            const isChoice = (STATE.questionType === 'choice');
+            let choice = null;
+            let text = '';
+
+            if (isChoice) {
+                const selected = choiceGrid.querySelector('.choice-btn.selected');
+                if (selected) choice = selected.dataset.choice;
+                // 如果沒選，自動選 A？
+                if (!choice) {
+                    // 不強制送出，讓學生自己按
+                    statusMessage.textContent = '⏰ 時間到！請按送出按鈕。';
+                    return;
+                }
+            } else {
+                text = textInput.value.trim();
+                if (!text) {
+                    statusMessage.textContent = '⏰ 時間到！請輸入答案後送出。';
+                    return;
+                }
+            }
+
+            await doSubmit(choice, text);
+        }
+
+        // ----- 13. 送出答案 -----
+        async function doSubmit(choice, text) {
+            try {
+                const ansRef = doc(db, 'rooms', STATE.roomId, 'answers', STATE.studentId);
+                await setDoc(ansRef, {
+                    studentId: STATE.studentId,
+                    name: STATE.studentName,
+                    question: STATE.currentQuestion,
+                    choice: choice || '',
+                    text: text || '',
+                    timestamp: serverTimestamp(),
+                });
+                STATE.myAnswer = { choice, text };
+                lockInput();
+                const studentRef = doc(db, 'rooms', STATE.roomId, 'students', STATE.studentId);
+                await updateDoc(studentRef, { online: true });
+                statusMessage.textContent = '✅ 已成功送出！';
+                statusMessage.className = 'exam-status';
+            } catch (e) {
+                alert('❌ 送出失敗：' + e.message);
+            }
+        }
+
+        // ----- 14. 事件綁定 -----
+        // 選擇題點擊
+        choiceBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (STATE.isLocked || !STATE.isAnswering) return;
+                if (STATE.questionType !== 'choice') return;
+                choiceBtns.forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                STATE.myAnswer = { choice: btn.dataset.choice, text: textInput.value.trim() || '' };
+            });
+        });
+
+        // 文字輸入
+        textInput.addEventListener('input', () => {
+            if (STATE.isLocked || !STATE.isAnswering) return;
+            charCount.textContent = textInput.value.length + ' 字';
+            if (STATE.myAnswer && STATE.myAnswer.choice) {
+                STATE.myAnswer.text = textInput.value.trim() || '';
+            }
+        });
+
+        // 送出按鈕
+        submitBtn.addEventListener('click', async () => {
+            if (STATE.isLocked) {
+                alert('你已經送出答案，不能再修改。');
+                return;
+            }
+            if (!STATE.isAnswering) {
+                alert('教師尚未開放作答，請稍候。');
+                return;
+            }
+
+            const isChoice = (STATE.questionType === 'choice');
+            let choice = null;
+            let text = '';
+
+            if (isChoice) {
+                const selected = choiceGrid.querySelector('.choice-btn.selected');
+                if (selected) choice = selected.dataset.choice;
+                if (!choice) { alert('請選擇 A/B/C/D'); return; }
+            } else {
+                text = textInput.value.trim();
+                if (!text) { alert('請輸入文字答案'); return; }
+            }
+
+            await doSubmit(choice, text);
+        });
+
+        // ----- 15. 啟動 -----
+        initStudent();
+        console.log('📝 學生端已啟動！');
+    </script>
+</body>
+</html>

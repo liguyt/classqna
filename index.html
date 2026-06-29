@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>霧臺國小教室Q&A</title>
+    <title>霧臺國小教室Q&A - 教師端</title>
 
     <!-- Firebase SDK -->
     <script type="importmap">
@@ -104,13 +104,12 @@
             outline: none;
             box-shadow: 0 0 0 3px rgba(43, 123, 228, 0.15);
         }
+
         /* ===== 按鈕風格 ===== */
         .btn {
             border: none;
-            padding: 12px 28px;
             border-radius: 40px;
             font-weight: 600;
-            font-size: 16px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
@@ -223,7 +222,7 @@
             min-height: 32px;
         }
 
-        /* 按鈕群組分隔 */
+        /* 按鈕群組 */
         .btn-group {
             display: flex;
             flex-wrap: wrap;
@@ -248,64 +247,34 @@
             display: none !important;
         }
 
-        /* 學生端 */
-        .answer-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-            margin: 16px 0 12px;
-        }
-        .answer-btn {
-            background: #f0f5fe;
-            border: 2.5px solid #d1dceb;
-            border-radius: 60px;
-            padding: 18px 6px;
-            font-size: 28px;
-            font-weight: 700;
-            color: #0e2a47;
-            cursor: pointer;
-            text-align: center;
-            user-select: none;
-            transition: 0.12s;
-        }
-        .answer-btn:active {
-            transform: scale(0.94);
-        }
-        .answer-btn.selected {
-            border-color: #1a5c9e;
-            background: #d1e3ff;
-        }
-        .answer-btn:disabled {
-            opacity: 0.35;
-            pointer-events: none;
+        /* ===== 教師端專用 ===== */
+        .teacher-panel {
+            background: #fafcff;
+            border-radius: 32px;
+            padding: 20px 22px;
+            border: 1px solid #e2ecf7;
+            margin-top: 18px;
         }
 
-        .text-input-area {
+        .flex-between {
             display: flex;
-            gap: 12px;
             flex-wrap: wrap;
-            margin: 12px 0 10px;
-        }
-        .text-input-area input {
-            flex: 2;
-            min-width: 180px;
-            padding: 14px 18px;
-            border: 2px solid #d7e0e9;
-            border-radius: 30px;
-            font-size: 18px;
-            transition: 0.2s;
-        }
-        .text-input-area input:focus {
-            border-color: #2b7be4;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(43, 123, 228, 0.15);
-        }
-        .text-input-area input:disabled {
-            background: #f0f2f5;
-            opacity: 0.6;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
         }
 
-        /* 卡牌 */
+        .stat-badge {
+            background: #e3edf9;
+            border-radius: 40px;
+            padding: 4px 18px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #16416b;
+            display: inline-block;
+        }
+
+        /* ===== 卡牌區 ===== */
         .card-pool {
             display: flex;
             flex-wrap: wrap;
@@ -362,6 +331,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
         }
 
+        /* ===== 文字題清單 ===== */
         .text-list {
             display: flex;
             flex-direction: column;
@@ -388,120 +358,26 @@
             word-break: break-word;
         }
 
-        .teacher-panel {
-            background: #fafcff;
-            border-radius: 32px;
-            padding: 20px 22px;
-            border: 1px solid #e2ecf7;
-            margin-top: 18px;
-        }
-
-        .flex-between {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .stat-badge {
-            background: #e3edf9;
-            border-radius: 40px;
-            padding: 4px 18px;
-            font-size: 15px;
-            font-weight: 600;
-            color: #16416b;
-            display: inline-block;
-        }
-
-        .chart-box {
-            background: white;
-            border-radius: 28px;
-            padding: 18px 16px;
-            border: 1px solid #dee9f3;
-            margin: 18px 0 8px;
-        }
-        .bar-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 14px 28px;
-            justify-content: center;
-            margin: 12px 0;
-        }
-        .bar-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-        }
-        .bar-track {
-            width: 160px;
-            height: 12px;
-            background: #e2e8f0;
-            border-radius: 20px;
-            overflow: hidden;
-        }
-        .bar-fill {
-            height: 100%;
-            background: #2b7be4;
-            border-radius: 20px;
-            transition: 0.3s;
-        }
-
-        .qrcode-box {
-            background: white;
-            padding: 22px;
-            border-radius: 32px;
-            text-align: center;
-            border: 2px dashed #b2cbe0;
-            margin-top: 20px;
-        }
-
-        .broadcast-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            animation: fadeIn 0.3s;
-            pointer-events: none;
-        }
-        .broadcast-overlay .msg {
-            background: white;
-            padding: 40px 60px;
-            border-radius: 60px;
-            font-size: 42px;
+        /* ===== 倒數計時顯示 ===== */
+        .timer-large {
+            font-size: 72px;
             font-weight: 700;
-            color: #0b2b4a;
-            max-width: 90vw;
+            color: #1a5c9e;
             text-align: center;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
-            animation: pulse 1s infinite alternate;
+            padding: 10px 0;
+            letter-spacing: 4px;
+            line-height: 1.2;
         }
-        @keyframes pulse {
-            from {
-                transform: scale(1);
-            }
-            to {
-                transform: scale(1.03);
-            }
+        .timer-large.urgent {
+            color: #c73d3d;
+            animation: blink 0.6s ease infinite alternate;
         }
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0.3; }
         }
 
+        /* ===== 其他 ===== */
         .checkbox-group {
             display: flex;
             flex-wrap: wrap;
@@ -530,7 +406,15 @@
             flex-wrap: wrap;
         }
 
-        /* 頁尾 */
+        .qrcode-box {
+            background: white;
+            padding: 22px;
+            border-radius: 32px;
+            text-align: center;
+            border: 2px dashed #b2cbe0;
+            margin-top: 20px;
+        }
+
         .footer {
             margin-top: 28px;
             padding-top: 16px;
@@ -548,17 +432,10 @@
             text-decoration: underline;
         }
 
-        /* 工具提示（簡潔） */
-        [title] {
-            position: relative;
-        }
-
+        /* ===== RWD ===== */
         @media (max-width:600px) {
             .container {
                 padding: 18px 14px;
-            }
-            .answer-grid {
-                grid-template-columns: repeat(2, 1fr);
             }
             .row {
                 flex-direction: column;
@@ -573,10 +450,6 @@
             .header-logo {
                 height: 40px;
             }
-            .broadcast-overlay .msg {
-                font-size: 28px;
-                padding: 28px 32px;
-            }
             .btn-primary,
             .btn-success,
             .btn-danger,
@@ -584,6 +457,9 @@
                 font-size: 15px;
                 padding: 12px 24px;
                 min-height: 44px;
+            }
+            .timer-large {
+                font-size: 48px;
             }
         }
     </style>
@@ -596,23 +472,18 @@
             <img src="logo.jpg" alt="校徽" class="header-logo" id="schoolLogo" onerror="this.style.display='none'" />
             <div class="header-title" id="headerTitle" title="點擊 5 次進入管理後台">📚 霧臺國小教室Q&A</div>
             <span class="mode-badge" id="roleBadge">👩‍🏫 教師端</span>
-            <button class="btn btn-outline btn-sm" id="switchRoleBtn" title="在教師與學生模式之間切換">🔄 切換</button>
+            <button class="btn btn-outline btn-sm" id="switchRoleBtn" title="切換到學生模式（僅供測試）">🔄 切換</button>
         </div>
 
         <!-- ===== 登入區 ===== -->
         <div id="loginArea">
-            <div class="row">
-                <label>👤 身份</label>
-                <select id="roleSelect" title="選擇要以教師或學生的身份進入">
-                    <option value="teacher">教師</option>
-                    <option value="student">學生</option>
-                </select>
-            </div>
+            <!-- 第 0 步：教師姓名（非必按） -->
             <div class="row" id="teacherNameRow">
                 <label>🧑‍🏫 教師姓名</label>
-                <input type="text" id="teacherNameInput" placeholder="請輸入您的姓名" value="陳老師" title="可選填，會顯示在教室中" />
+                <input type="text" id="teacherNameInput" placeholder="請輸入您的姓名（可跳過）" value="陳老師" style="flex:0 0 200px;" title="可選填，會顯示在教室中" />
             </div>
-            <!-- 教師選擇班級（多選） -->
+
+            <!-- 第 1 步：選擇上課班級（必按） -->
             <div class="row" id="teacherClassRow">
                 <label>🏫 上課班級（可複選）</label>
                 <div id="classCheckboxContainer" class="checkbox-group">
@@ -623,19 +494,10 @@
                     <input type="number" id="customStudentCount" min="1" max="50" value="20" style="width:80px;min-width:60px;" disabled title="設定臨時學生的數量上限" />
                 </div>
             </div>
-            <div id="studentLoginFields" class="hidden">
-                <div class="row">
-                    <label>🧑‍🎓 座號</label>
-                    <select id="studentSelect" title="選擇你的座號">
-                        <option value="">-- 請選擇 --</option>
-                    </select>
-                </div>
-                <div style="font-size:14px; color:#3d6a96; background:#e9f1fa; border-radius:40px; padding:8px 20px; margin-top:4px;">
-                    ⚡ 你將以：<span id="studentPreview">請選擇座號</span>
-                </div>
-            </div>
-            <div class="row" style="margin-top:16px;">
-                <button class="btn btn-primary" id="enterRoomBtn" title="建立新教室（教師）或加入教室（學生）">🚪 進入 / 建立教室</button>
+
+            <!-- 第 2 步：建立教室（必按） -->
+            <div class="row" style="margin-top:4px;">
+                <button class="btn btn-primary" id="enterRoomBtn" title="建立新教室">🏫 建立教室</button>
             </div>
             <div id="roomInfo" class="hidden" style="background:#e1edfb; border-radius:40px; padding:10px 20px; margin-top:12px; display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center;">
                 <span>🏷️ 教室代碼：<strong id="roomIdDisplay">----</strong></span>
@@ -648,24 +510,11 @@
 
         <!-- ===== 教師端面板 ===== -->
         <div id="teacherPanel" class="hidden">
-            <!-- 第一排：發布題目 + 開始/停止（必按） -->
-            <div class="flex-between">
-                <div class="btn-group">
-                    <button class="btn btn-success" id="publishBtn" title="發布新題目，學生端會收到提示">📨 發布第 1 題</button>
-                    <button class="btn btn-primary" id="startStopBtn" title="開始作答（學生端啟用）／停止作答（收集答案）">▶️ 開始作答</button>
-                    <span class="stat-badge">⏱️ <span id="timerDisplay" title="倒數計時">--</span></span>
-                </div>
-                <div class="btn-group divider">
-                    <button class="btn btn-ghost btn-sm" id="randomPickBtn" title="從未作答的學生中隨機抽點一位">🎲 抽點</button>
-                    <button class="btn btn-purple btn-sm" id="broadcastBtn" title="發送全螢幕訊息給所有學生">📢 廣播</button>
-                </div>
-            </div>
-
-            <div class="teacher-panel">
-                <!-- 題目批註 + 秒數（發布前設定） -->
+            <!-- 第 2.5 步：題目批註 + 題型 + 秒數（發布前設定） -->
+            <div class="teacher-panel" style="background:#f5f9ff; border-color:#c8d8ea;">
                 <div class="row">
                     <label title="輸入本題的題目內容，學生端會顯示">📝 題目批註</label>
-                    <input type="text" id="questionNoteInput" placeholder="請輸入本題題目" />
+                    <input type="text" id="questionNoteInput" placeholder="請輸入本題題目（例如：台灣最高峰是？）" />
                 </div>
                 <div class="row">
                     <label title="選擇題型：選擇題（ABCD）或文字題（自由輸入）">📋 題型</label>
@@ -679,31 +528,54 @@
                     <button class="btn btn-ghost btn-sm" data-seconds="30">30s</button>
                     <button class="btn btn-ghost btn-sm" data-seconds="60">60s</button>
                 </div>
+            </div>
 
-                <!-- 公布答案（必按） -->
-                <div class="row">
-                    <label title="公布正確答案，學生端會顯示對錯">✅ 公布答案</label>
-                    <button class="btn btn-warning" data-answer="A" title="公布 A 為正確答案">A</button>
-                    <button class="btn btn-warning" data-answer="B" title="公布 B 為正確答案">B</button>
-                    <button class="btn btn-warning" data-answer="C" title="公布 C 為正確答案">C</button>
-                    <button class="btn btn-warning" data-answer="D" title="公布 D 為正確答案">D</button>
-                    <button class="btn btn-ghost btn-sm" id="hideAnswerBtn" title="隱藏已公布的答案，恢復顯示作答狀態">隱藏結果</button>
-                    <span style="font-size:14px; color:#666; margin-left:4px;">排序：</span>
-                    <button class="btn btn-ghost btn-sm" id="sortToggleBtn" title="切換卡牌排序方式（依座號／依作答時間）">📋 依座號</button>
-                </div>
+            <!-- 第 3 步：發布題目（必按） -->
+            <div style="margin: 12px 0 16px 0;">
+                <button class="btn btn-success" id="publishBtn" title="發布新題目，學生端會收到提示" style="width:100%; justify-content:center;">📨 發布第 1 題</button>
+            </div>
 
-                <!-- 廣播列（功能按鈕，較小） -->
-                <div class="row" id="broadcastRow" style="display:none;">
-                    <label>📢 廣播內容</label>
-                    <input type="text" id="broadcastInput" placeholder="輸入要發送給學生的訊息..." />
-                    <button class="btn btn-primary btn-sm" id="sendBroadcastBtn">發送</button>
-                    <button class="btn btn-ghost btn-sm" id="closeBroadcastRow">✕</button>
+            <!-- 第 4 步：開始作答 / 停止作答（必按） -->
+            <div class="flex-between" style="margin-bottom:12px;">
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="startStopBtn" title="開始作答（學生端啟用）／停止作答（收集答案）" style="min-width:180px;">▶️ 開始作答</button>
+                    <span class="stat-badge">⏱️ <span id="timerDisplay" title="倒數計時">--</span></span>
                 </div>
+                <div class="btn-group divider">
+                    <button class="btn btn-ghost btn-sm" id="randomPickBtn" title="從未作答的學生中隨機抽點一位">🎲 抽點</button>
+                    <button class="btn btn-purple btn-sm" id="broadcastBtn" title="發送全螢幕訊息給所有學生">📢 廣播</button>
+                </div>
+            </div>
+
+            <!-- 倒數大型顯示區（與卡牌同區） -->
+            <div id="timerLargeContainer" class="hidden" style="background:#f0f7ff; border-radius:30px; padding:12px 20px; margin:6px 0 12px 0; text-align:center;">
+                <div class="timer-large" id="timerLargeDisplay">20</div>
+                <div style="font-size:14px; color:#4a6a8a;">⏱️ 倒數計時中...</div>
             </div>
 
             <!-- 卡牌區 -->
             <div id="cardContainer" class="card-pool"></div>
             <div id="textListContainer" class="text-list hidden"></div>
+
+            <!-- 第 5 步：公布答案（必按） -->
+            <div class="row" style="margin-top:8px;">
+                <label title="公布正確答案，學生端會顯示對錯">✅ 公布答案</label>
+                <button class="btn btn-warning" data-answer="A" title="公布 A 為正確答案">A</button>
+                <button class="btn btn-warning" data-answer="B" title="公布 B 為正確答案">B</button>
+                <button class="btn btn-warning" data-answer="C" title="公布 C 為正確答案">C</button>
+                <button class="btn btn-warning" data-answer="D" title="公布 D 為正確答案">D</button>
+                <button class="btn btn-ghost btn-sm" id="hideAnswerBtn" title="隱藏已公布的答案，恢復顯示作答狀態">隱藏結果</button>
+                <span style="font-size:14px; color:#666; margin-left:4px;">排序：</span>
+                <button class="btn btn-ghost btn-sm" id="sortToggleBtn" title="切換卡牌排序方式（依座號／依作答時間）">📋 依座號</button>
+            </div>
+
+            <!-- 廣播列（功能按鈕） -->
+            <div class="row" id="broadcastRow" style="display:none;">
+                <label>📢 廣播內容</label>
+                <input type="text" id="broadcastInput" placeholder="輸入要發送給學生的訊息..." />
+                <button class="btn btn-primary btn-sm" id="sendBroadcastBtn">發送</button>
+                <button class="btn btn-ghost btn-sm" id="closeBroadcastRow">✕</button>
+            </div>
 
             <!-- 統計圖表 -->
             <div class="chart-box" id="chartArea">
@@ -717,46 +589,15 @@
                 </div>
             </div>
 
-            <!-- 底部按鈕：清除紀錄（必按）+ 下載（最後一步） -->
+            <!-- 底部按鈕：第 6 步清除紀錄 + 第 7 步下載 -->
             <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:18px; justify-content:space-between;">
-                <button class="btn btn-danger" id="clearAllBtn" title="清除當前題目的所有紀錄，進入下一題（累計答對保留）">
-                    <span style="display:block; line-height:1.3;">清除所有紀錄</span>
+                <button class="btn btn-danger" id="clearAllBtn" title="清除當前題目的所有紀錄，進入下一題（累計答對保留）" style="flex:1; min-width:200px;">
+                    <span style="display:block; line-height:1.3;">第 6 步：清除所有紀錄</span>
                     <span style="display:block; line-height:1.3; font-size:13px; font-weight:400;">進入下一題</span>
                 </button>
-                <button class="btn btn-success" id="exportExcelBtn" title="下載本課所有題目的完整記錄（Excel 格式）">📥 下載 Excel (本課記錄)</button>
-            </div>
-        </div>
-
-        <!-- ===== 學生端面板 ===== -->
-        <div id="studentPanel" class="hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-                <span style="font-weight:700; font-size:22px;" id="studentIdentityDisplay">--</span>
-                <span class="stat-badge" id="studentRoundDisplay">題號：--</span>
-            </div>
-            <div style="margin: 16px 0 8px 0; background:#f2f8ff; border-radius:30px; padding:12px 18px; border-left:6px solid #2b7be4;">
-                <span style="font-weight:600;">📖 題目：</span>
-                <span id="studentQuestionNote">（教師尚未出題）</span>
-            </div>
-            <div style="margin:8px 0 4px 0; font-size:15px; color:#3a5a7a;">
-                ⏱️ 倒數：<span id="studentTimerDisplay">--</span>
-            </div>
-
-            <!-- 選擇題按鈕 -->
-            <div class="answer-grid" id="studentAnswerGrid">
-                <button class="answer-btn" data-choice="A" disabled>A</button>
-                <button class="answer-btn" data-choice="B" disabled>B</button>
-                <button class="answer-btn" data-choice="C" disabled>C</button>
-                <button class="answer-btn" data-choice="D" disabled>D</button>
-            </div>
-
-            <!-- 文字輸入 -->
-            <div class="text-input-area">
-                <input type="text" id="studentTextInput" placeholder="輸入文字答案（選填）" disabled />
-                <button class="btn btn-primary" id="studentSubmitBtn" disabled>📤 送出答案</button>
-            </div>
-
-            <div style="margin-top:12px; color:#2d5f3a; background:#e2f0e6; border-radius:40px; padding:8px 18px; display:inline-block;" id="studentStatusMessage">
-                ⏳ 等待教師開始作答
+                <button class="btn btn-success" id="exportExcelBtn" title="下載本課所有題目的完整記錄（Excel 格式）" style="flex:1; min-width:200px;">
+                    📥 第 7 步：下載 Excel (本課記錄)
+                </button>
             </div>
         </div>
 
@@ -766,6 +607,9 @@
             <div id="qrcodeContainer"></div>
             <div style="margin-top:8px; font-size:14px; color:#2d5a7a;">
                 或輸入教室代碼：<strong id="qrRoomCode">----</strong>
+            </div>
+            <div style="margin-top:12px; font-size:13px; color:#8899aa;">
+                ⚠️ 學生請使用 <strong>student.html</strong> 頁面掃碼加入
             </div>
         </div>
 
@@ -814,15 +658,12 @@
 
         // ----- 2. 全域狀態 -----
         const STATE = {
-            role: 'teacher',
+            role: 'teacher', // 目前只支援 teacher
             roomId: null,
             teacherName: '陳老師',
             selectedClasses: [],
             customClassEnabled: false,
             customStudentCount: 20,
-            studentClass: '',
-            studentId: '',
-            studentName: '',
             currentQuestion: 0,
             isAnswering: false,
             timerSeconds: 0,
@@ -836,12 +677,8 @@
             specifiedStudents: [],
             sortByTime: false,
             questionType: 'choice',
-            myAnswer: null,
-            isLocked: false,
             cumulativeScores: {},
             broadcastTimer: null,
-            usedTempSeats: [],
-            tempSeatMap: {},
         };
 
         // ----- 3. DOM 參照 -----
@@ -851,22 +688,19 @@
         const roleBadge = $('#roleBadge');
         const switchRoleBtn = $('#switchRoleBtn');
         const loginArea = $('#loginArea');
-        const roleSelect = $('#roleSelect');
         const teacherNameInput = $('#teacherNameInput');
         const classCheckboxContainer = $('#classCheckboxContainer');
         const customClassCheckbox = $('#customClassCheckbox');
         const customStudentCount = $('#customStudentCount');
-        const studentLoginFields = $('#studentLoginFields');
-        const studentSelect = $('#studentSelect');
-        const studentPreview = $('#studentPreview');
         const enterRoomBtn = $('#enterRoomBtn');
         const roomInfo = $('#roomInfo');
         const roomIdDisplay = $('#roomIdDisplay');
         const onlineCount = $('#onlineCount');
         const currentQuestionDisplay = $('#currentQuestionDisplay');
         const teacherPanel = $('#teacherPanel');
-        const studentPanel = $('#studentPanel');
         const timerDisplay = $('#timerDisplay');
+        const timerLargeContainer = $('#timerLargeContainer');
+        const timerLargeDisplay = $('#timerLargeDisplay');
         const publishBtn = $('#publishBtn');
         const startStopBtn = $('#startStopBtn');
         const questionNoteInput = $('#questionNoteInput');
@@ -887,22 +721,13 @@
         const broadcastInput = $('#broadcastInput');
         const sendBroadcastBtn = $('#sendBroadcastBtn');
         const closeBroadcastRow = $('#closeBroadcastRow');
-        const studentIdentityDisplay = $('#studentIdentityDisplay');
-        const studentRoundDisplay = $('#studentRoundDisplay');
-        const studentQuestionNote = $('#studentQuestionNote');
-        const studentTimerDisplay = $('#studentTimerDisplay');
-        const studentAnswerGrid = $('#studentAnswerGrid');
-        const studentTextInput = $('#studentTextInput');
-        const studentSubmitBtn = $('#studentSubmitBtn');
-        const studentStatusMessage = $('#studentStatusMessage');
         const qrArea = $('#qrArea');
         const qrcodeContainer = $('#qrcodeContainer');
         const qrRoomCode = $('#qrRoomCode');
         const footerMarkLink = $('#footerMarkLink');
 
-        // ----- 4. 信箱保護（mailto 混淆） -----
+        // ----- 4. 信箱保護 -----
         function initFooterEmail() {
-            // 信箱拆成多段，避免爬蟲直接抓取
             const user = 'u864001';
             const domain = 'wutps.ptc.edu.tw';
             const fullEmail = user + '@' + domain;
@@ -938,7 +763,7 @@
             return `${getChineseGrade(grade)}年${getChineseClass(cls)}班`;
         }
 
-        // ----- 6. 載入學生名單（從 Google Apps Script API） -----
+        // ----- 6. 載入學生名單 -----
         async function loadRosterFromSheet() {
             const url =
                 'https://script.google.com/macros/s/AKfycbyTN6NbWdLc-OfKoa_3iyX5uHCwpDuEeIYSRSVgFcE4aM3RHHfgJthaAMXoiul2YTkH6A/exec';
@@ -950,7 +775,7 @@
                 return true;
             } catch (e) {
                 console.warn('載入名單失敗', e);
-                alert('⚠️ 無法載入學生名單，請檢查網路連線或 Apps Script 部署狀態。');
+                alert('⚠️ 無法載入學生名單，請檢查網路連線。');
                 return false;
             }
         }
@@ -1022,52 +847,18 @@
             STATE.selectedClasses = checked;
         }
 
-        // 自訂班級（無班級模式）
         customClassCheckbox.addEventListener('change', function() {
             customStudentCount.disabled = !this.checked;
-            if (this.checked) {
-                customStudentCount.focus();
-            }
+            if (this.checked) customStudentCount.focus();
         });
 
         // ----- 7. 初始化 -----
         async function init() {
-            // 載入名單
             await loadRosterFromSheet();
-
-            // 頁尾信箱
             initFooterEmail();
 
-            // 檢查 URL 是否有 room 參數（學生掃 QR Code 直接進入）
-            const urlParams = new URLSearchParams(window.location.search);
-            const roomFromUrl = urlParams.get('room');
-            if (roomFromUrl && /^\d{4}$/.test(roomFromUrl)) {
-                // 自動切換到學生模式並嘗試加入
-                roleSelect.value = 'student';
-                applyRole();
-                // 延遲一下讓 DOM 更新，然後自動填入房間並進入
-                setTimeout(() => {
-                    STATE.roomId = roomFromUrl;
-                    roomIdDisplay.textContent = roomFromUrl;
-                    roomInfo.classList.remove('hidden');
-                    // 自動觸發學生加入流程
-                    autoJoinStudentRoom(roomFromUrl);
-                }, 500);
-            }
-
-            // 角色切換
-            switchRoleBtn.addEventListener('click', () => {
-                const cur = roleSelect.value;
-                roleSelect.value = (cur === 'teacher') ? 'student' : 'teacher';
-                applyRole();
-            });
-            roleSelect.addEventListener('change', applyRole);
-
-            // 監聽班級 checkbox 變動
+            // 監聽班級 checkbox
             classCheckboxContainer.addEventListener('change', updateSelectedClasses);
-
-            // 學生下拉選單
-            studentSelect.addEventListener('change', updateStudentPreview);
 
             // 教師端按鈕
             publishBtn.addEventListener('click', publishQuestion);
@@ -1092,27 +883,9 @@
             closeBroadcastRow.addEventListener('click', () => { broadcastRow.style.display = 'none'; });
             sendBroadcastBtn.addEventListener('click', sendBroadcast);
 
-            // 學生端
-            studentAnswerGrid.querySelectorAll('.answer-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (STATE.isLocked || !STATE.isAnswering) return;
-                    studentAnswerGrid.querySelectorAll('.answer-btn').forEach(b => b.classList.remove(
-                    'selected'));
-                    btn.classList.add('selected');
-                    STATE.myAnswer = { choice: btn.dataset.choice, text: studentTextInput.value.trim() || '' };
-                });
-            });
-            studentTextInput.addEventListener('input', () => {
-                if (STATE.isLocked || !STATE.isAnswering) return;
-                if (STATE.myAnswer && STATE.myAnswer.choice) {
-                    STATE.myAnswer.text = studentTextInput.value.trim() || '';
-                }
-            });
-            studentSubmitBtn.addEventListener('click', submitStudentAnswer);
-
             enterRoomBtn.addEventListener('click', enterRoom);
 
-            // 管理後台：點擊標題5次彈出密碼
+            // 管理後台
             let clickCount = 0;
             let clickTimer = null;
             headerTitle.addEventListener('click', () => {
@@ -1123,121 +896,24 @@
                     clickCount = 0;
                     const pwd = prompt('請輸入管理密碼：');
                     if (pwd === 'wt7902230') {
-                        if (confirm('確定要清除所有 Firebase 房間嗎？此操作無法復原！')) {
-                            adminCleanRooms();
-                        }
-                    } else if (pwd !== null) {
-                        alert('密碼錯誤');
-                    }
+                        if (confirm('確定要清除所有 Firebase 房間嗎？')) adminCleanRooms();
+                    } else if (pwd !== null) alert('密碼錯誤');
                 }
             });
 
-            // 自動套用角色
-            applyRole();
+            // 強制教師模式
+            roleBadge.textContent = '👩‍🏫 教師端';
+            loginArea.classList.remove('hidden');
+            teacherPanel.classList.add('hidden');
+            qrArea.classList.add('hidden');
+
+            // 切換按鈕：跳到學生頁面
+            switchRoleBtn.addEventListener('click', () => {
+                alert('學生端請使用獨立的 student.html 頁面掃碼加入。\n此按鈕僅供參考。');
+            });
         }
 
-        // ----- 8. 學生自動加入（QR Code 掃描後） -----
-        async function autoJoinStudentRoom(roomId) {
-            try {
-                const roomDoc = await getDoc(doc(db, 'rooms', roomId));
-                if (!roomDoc.exists()) {
-                    alert('❌ 教室不存在，請確認代碼是否正確。');
-                    return;
-                }
-                const data = roomDoc.data();
-                const custom = data.customClassEnabled || false;
-                const selectedClasses = data.selectedClasses || [];
-
-                if (custom) {
-                    // 無班級模式：自動分配臨時座號
-                    const studentsRef = collection(db, 'rooms', roomId, 'students');
-                    const snap = await getDocs(studentsRef);
-                    const used = [];
-                    snap.forEach(d => {
-                        const dta = d.data();
-                        if (dta.tempSeat) used.push(dta.tempSeat);
-                    });
-                    let seat = 1;
-                    while (used.includes(seat)) seat++;
-                    const maxSeat = data.customStudentCount || 20;
-                    if (seat > maxSeat) {
-                        alert('已達人數上限');
-                        return;
-                    }
-                    STATE.studentId = `temp_${seat}`;
-                    STATE.studentName = `臨時${seat}號`;
-                    studentIdentityDisplay.textContent = `臨時座號：${seat}`;
-                    const studentRef = doc(db, 'rooms', roomId, 'students', STATE.studentId);
-                    await setDoc(studentRef, {
-                        name: STATE.studentName,
-                        tempSeat: seat,
-                        joinedAt: serverTimestamp(),
-                        online: true,
-                    });
-                    STATE.roomId = roomId;
-                    roomIdDisplay.textContent = roomId;
-                    roomInfo.classList.remove('hidden');
-                    listenTeacherCommands();
-                    listenMyAnswer();
-                    listenOnlineCount();
-                    alert(`✅ 成功加入教室，你是臨時${seat}號`);
-                    studentPanel.classList.remove('hidden');
-                    loginArea.classList.add('hidden');
-                    requestFullscreen();
-                } else {
-                    // 有班級模式：讓學生從下拉選單選擇
-                    let allStudents = [];
-                    for (const cls of selectedClasses) {
-                        const roster = STATE.rosterData[cls] || [];
-                        allStudents = allStudents.concat(roster.map(s => ({ ...s, className: cls })));
-                    }
-                    if (allStudents.length === 0) {
-                        alert('該教室沒有學生資料');
-                        return;
-                    }
-                    allStudents.sort((a, b) => parseInt(a.number) - parseInt(b.number));
-                    const choices = allStudents.map(s =>
-                        `${s.number} - ${s.name} (${formatClassName(s.grade, s.class)})`
-                    ).join('\n');
-                    const input = prompt(`請輸入你的座號（輸入數字）：\n${choices}`);
-                    if (!input) return;
-                    const found = allStudents.find(s => s.number === input.trim());
-                    if (!found) {
-                        alert('座號無效');
-                        return;
-                    }
-                    STATE.studentId = getStudentId(found);
-                    STATE.studentName = found.name;
-                    STATE.roomId = roomId;
-                    roomIdDisplay.textContent = roomId;
-                    roomInfo.classList.remove('hidden');
-                    studentIdentityDisplay.textContent =
-                        `${formatClassName(found.grade, found.class)} - ${found.number}號 ${found.name}`;
-                    const studentRef = doc(db, 'rooms', roomId, 'students', STATE.studentId);
-                    await setDoc(studentRef, {
-                        name: found.name,
-                        class: found.className,
-                        grade: found.grade,
-                        classNum: found.class,
-                        number: found.number,
-                        joinedAt: serverTimestamp(),
-                        online: true,
-                    });
-                    listenTeacherCommands();
-                    listenMyAnswer();
-                    listenOnlineCount();
-                    alert(`✅ 成功加入教室`);
-                    studentPanel.classList.remove('hidden');
-                    loginArea.classList.add('hidden');
-                    requestFullscreen();
-                }
-            } catch (e) {
-                alert('❌ 加入失敗：' + e.message);
-                console.error(e);
-            }
-        }
-
-        // ----- 9. 管理後台清除所有房間 -----
+        // ----- 8. 管理後台 -----
         async function adminCleanRooms() {
             try {
                 const roomsRef = collection(db, 'rooms');
@@ -1264,191 +940,66 @@
             }
         }
 
-        // ----- 10. 角色套用 -----
-        function applyRole() {
-            const role = roleSelect.value;
-            STATE.role = role;
-            if (role === 'teacher') {
-                roleBadge.textContent = '👩‍🏫 教師端';
-                studentLoginFields.classList.add('hidden');
-                document.getElementById('teacherNameRow').classList.remove('hidden');
-                document.getElementById('teacherClassRow').classList.remove('hidden');
-                teacherPanel.classList.remove('hidden');
-                studentPanel.classList.add('hidden');
-                qrArea.classList.add('hidden');
-                loginArea.classList.remove('hidden');
-                if (STATE.roomId) {
-                    qrArea.classList.remove('hidden');
-                    showQRCode(STATE.roomId);
-                }
-            } else {
-                roleBadge.textContent = '🧑‍🎓 學生端';
-                studentLoginFields.classList.remove('hidden');
-                document.getElementById('teacherNameRow').classList.add('hidden');
-                document.getElementById('teacherClassRow').classList.add('hidden');
-                teacherPanel.classList.add('hidden');
-                studentPanel.classList.remove('hidden');
-                qrArea.classList.add('hidden');
-                loginArea.classList.remove('hidden');
-                updateStudentSelects();
-                updateStudentPreview();
-            }
-        }
-
-        // ----- 11. 更新學生下拉選單（合併所有勾選班級） -----
-        function updateStudentSelects() {
-            const selected = STATE.selectedClasses;
-            if (selected.length === 0 && !STATE.customClassEnabled) {
-                studentSelect.innerHTML = '<option value="">-- 請教師選擇班級 --</option>';
-                studentPreview.textContent = '尚未選擇班級';
-                return;
-            }
-            let allStudents = [];
-            for (const cls of selected) {
-                const roster = STATE.rosterData[cls] || [];
-                allStudents = allStudents.concat(roster.map(s => ({ ...s, className: cls })));
-            }
-            if (STATE.customClassEnabled) {
-                studentSelect.innerHTML = '<option value="">-- 無班級模式，自動分配 --</option>';
-                studentPreview.textContent = '將自動分配臨時座號';
-                return;
-            }
-            if (allStudents.length === 0) {
-                studentSelect.innerHTML = '<option value="">-- 無學生資料 --</option>';
-                studentPreview.textContent = '無學生';
-                return;
-            }
-            allStudents.sort((a, b) => parseInt(a.number) - parseInt(b.number));
-            studentSelect.innerHTML = '<option value="">-- 請選擇座號 --</option>';
-            for (const s of allStudents) {
-                const opt = document.createElement('option');
-                opt.value = s.number;
-                const clsDisplay = formatClassName(s.grade, s.class);
-                opt.textContent = `${clsDisplay} - ${s.number}號 ${s.name}`;
-                studentSelect.appendChild(opt);
-            }
-        }
-
-        function updateStudentPreview() {
-            const seat = studentSelect.value;
-            if (!seat) {
-                studentPreview.textContent = '請選擇座號';
-                return;
-            }
-            const selected = STATE.selectedClasses;
-            for (const cls of selected) {
-                const roster = STATE.rosterData[cls] || [];
-                const found = roster.find(s => s.number === seat);
-                if (found) {
-                    const clsDisplay = formatClassName(found.grade, found.class);
-                    studentPreview.textContent = `${clsDisplay} - ${seat}號 ${found.name}`;
-                    return;
-                }
-            }
-            studentPreview.textContent = `座號 ${seat}`;
-        }
-
-        // ----- 12. 進入 / 建立教室（教師端） -----
+        // ----- 9. 建立教室 -----
         async function enterRoom() {
-            const role = STATE.role;
-            if (role === 'teacher') {
-                const name = teacherNameInput.value.trim() || '教師';
-                STATE.teacherName = name;
-                const selected = STATE.selectedClasses;
-                const custom = customClassCheckbox.checked;
-                if (selected.length === 0 && !custom) {
-                    alert('請至少勾選一個班級，或啟用「無班級」模式');
-                    return;
-                }
-                STATE.customClassEnabled = custom;
-                if (custom) {
-                    const count = parseInt(customStudentCount.value) || 20;
-                    STATE.customStudentCount = Math.min(50, Math.max(1, count));
-                }
-                STATE.roomId = generateRoomId();
-                roomIdDisplay.textContent = STATE.roomId;
-                roomInfo.classList.remove('hidden');
-                try {
-                    await setDoc(doc(db, 'rooms', STATE.roomId), {
-                        teacherName: name,
-                        createdAt: serverTimestamp(),
-                        currentQuestion: 0,
-                        isAnswering: false,
-                        questionType: 'choice',
-                        questionNote: '',
-                        timerSeconds: 20,
-                        revealedAnswer: null,
-                        clearAll: false,
-                        broadcastMsg: '',
-                        specifiedStudents: [],
-                        selectedClasses: selected,
-                        customClassEnabled: custom,
-                        customStudentCount: custom ? STATE.customStudentCount : 0,
-                        expireAt: new Date(Date.now() + 6 * 3600 * 1000).toISOString(),
-                    });
-                    await setDoc(doc(db, 'rooms', STATE.roomId, 'meta', 'info'), { questionCounter: 1 });
-                    onlineCount.textContent = '0';
-                    qrArea.classList.remove('hidden');
-                    showQRCode(STATE.roomId);
-                    listenStudents();
-                    STATE.currentQuestion = 0;
-                    currentQuestionDisplay.textContent = '第 0 題';
-                    STATE.currentAnswers = {};
-                    STATE.history = [];
-                    STATE.cumulativeScores = {};
-                    STATE.specifiedStudents = [];
-                    renderCards();
-                    updateCharts();
-                    publishBtn.textContent = '📨 發布第 1 題';
-                    alert(`✅ 教室已建立！代碼：${STATE.roomId}`);
-                } catch (e) {
-                    alert('❌ 建立教室失敗：' + e.message);
-                }
-            } else {
-                // 學生端：由 autoJoinStudentRoom 或手動輸入處理
-                let room = prompt('請輸入教師提供的 4 位數教室代碼：');
-                if (!room) return;
-                room = room.trim();
-                if (!/^\d{4}$/.test(room)) {
-                    alert('請輸入 4 位數字代碼');
-                    return;
-                }
-                await autoJoinStudentRoom(room);
+            const name = teacherNameInput.value.trim() || '教師';
+            STATE.teacherName = name;
+            const selected = STATE.selectedClasses;
+            const custom = customClassCheckbox.checked;
+            if (selected.length === 0 && !custom) {
+                alert('請至少勾選一個班級，或啟用「無班級」模式');
+                return;
+            }
+            STATE.customClassEnabled = custom;
+            if (custom) {
+                const count = parseInt(customStudentCount.value) || 20;
+                STATE.customStudentCount = Math.min(50, Math.max(1, count));
+            }
+            STATE.roomId = generateRoomId();
+            roomIdDisplay.textContent = STATE.roomId;
+            roomInfo.classList.remove('hidden');
+            try {
+                await setDoc(doc(db, 'rooms', STATE.roomId), {
+                    teacherName: name,
+                    createdAt: serverTimestamp(),
+                    currentQuestion: 0,
+                    isAnswering: false,
+                    questionType: 'choice',
+                    questionNote: '',
+                    timerSeconds: 20,
+                    revealedAnswer: null,
+                    clearAll: false,
+                    broadcastMsg: '',
+                    specifiedStudents: [],
+                    selectedClasses: selected,
+                    customClassEnabled: custom,
+                    customStudentCount: custom ? STATE.customStudentCount : 0,
+                    expireAt: new Date(Date.now() + 6 * 3600 * 1000).toISOString(),
+                });
+                await setDoc(doc(db, 'rooms', STATE.roomId, 'meta', 'info'), { questionCounter: 1 });
+                onlineCount.textContent = '0';
+                qrArea.classList.remove('hidden');
+                showQRCode(STATE.roomId);
+                listenStudents();
+                STATE.currentQuestion = 0;
+                currentQuestionDisplay.textContent = '第 0 題';
+                STATE.currentAnswers = {};
+                STATE.history = [];
+                STATE.cumulativeScores = {};
+                STATE.specifiedStudents = [];
+                renderCards();
+                updateCharts();
+                publishBtn.textContent = '📨 發布第 1 題';
+                teacherPanel.classList.remove('hidden');
+                alert(`✅ 教室已建立！代碼：${STATE.roomId}\n請學生使用 student.html 頁面掃碼加入。`);
+            } catch (e) {
+                alert('❌ 建立教室失敗：' + e.message);
             }
         }
 
-        // ----- 13. 全螢幕鎖定（學生端） -----
-        function requestFullscreen() {
-            try {
-                const el = document.documentElement;
-                if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
-                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-            } catch (e) {}
-            document.addEventListener('touchmove', (e) => {
-                if (document.fullscreenElement || document.webkitFullscreenElement) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
-                    if (document.fullscreenElement || document.webkitFullscreenElement) {
-                        e.preventDefault();
-                        return false;
-                    }
-                }
-            });
-            window.addEventListener('beforeunload', (e) => {
-                if (document.fullscreenElement || document.webkitFullscreenElement) {
-                    e.preventDefault();
-                    e.returnValue = '確定要離開教室嗎？';
-                }
-            });
-        }
-
-        // ----- 14. QR Code -----
+        // ----- 10. QR Code -----
         async function showQRCode(roomId) {
-            // 把 room 參數放入 URL，讓掃描後直接進入
-            const url = window.location.href.split('?')[0] + `?room=${roomId}`;
+            const url = window.location.href.split('?')[0].replace('index.html', 'student.html') + `?room=${roomId}`;
             qrRoomCode.textContent = roomId;
             try {
                 if (typeof QRCode === 'undefined') {
@@ -1474,7 +1025,7 @@
             }
         }
 
-        // ----- 15. 監聽學生（教師端） -----
+        // ----- 11. 監聽學生 -----
         let studentsUnsubscribe = null;
 
         function listenStudents() {
@@ -1490,226 +1041,7 @@
             }, (err) => { console.warn('監聽學生失敗', err); });
         }
 
-        function listenOnlineCount() {
-            const q = collection(db, 'rooms', STATE.roomId, 'students');
-            onSnapshot(q, (snapshot) => {
-                let count = 0;
-                snapshot.forEach(doc => {
-                    if (doc.data().online !== false) count++;
-                });
-                onlineCount.textContent = count;
-            });
-        }
-
-        // ----- 16. 監聽教師指令（學生端） -----
-        let teacherCommandUnsub = null;
-
-        function listenTeacherCommands() {
-            if (teacherCommandUnsub) teacherCommandUnsub();
-            const roomRef = doc(db, 'rooms', STATE.roomId);
-            teacherCommandUnsub = onSnapshot(roomRef, async (snapshot) => {
-                const data = snapshot.data();
-                if (!data) return;
-                const qNum = data.currentQuestion || 0;
-                STATE.currentQuestion = qNum;
-                studentRoundDisplay.textContent = `題號：第 ${qNum} 題`;
-                const note = data.questionNote || '';
-                studentQuestionNote.textContent = note || '（教師尚未出題）';
-                const qType = data.questionType || 'choice';
-                STATE.questionType = qType;
-
-                // === 根據題型調整學生端輸入 ===
-                if (data.isAnswering === true) {
-                    STATE.isAnswering = true;
-                    enableStudentInput(true, qType);
-                    if (data.timerSeconds) startStudentTimer(data.timerSeconds);
-                    if (STATE.myAnswer) lockStudentInput();
-                } else {
-                    STATE.isAnswering = false;
-                    enableStudentInput(false, qType);
-                    clearStudentTimer();
-                }
-
-                if (data.revealedAnswer) {
-                    studentStatusMessage.textContent = `📢 正確答案：${data.revealedAnswer}`;
-                } else {
-                    if (!STATE.isLocked && !STATE.isAnswering) {
-                        studentStatusMessage.textContent = '⏳ 等待教師開始作答';
-                    } else if (!STATE.isLocked && STATE.isAnswering) {
-                        studentStatusMessage.textContent = '✏️ 請作答';
-                    }
-                }
-
-                if (data.clearAll === true) {
-                    STATE.myAnswer = null;
-                    STATE.isLocked = false;
-                    studentAnswerGrid.querySelectorAll('.answer-btn').forEach(b => b.classList.remove('selected'));
-                    studentTextInput.value = '';
-                    studentStatusMessage.textContent = '✅ 已清除，請重新作答';
-                    enableStudentInput(true, qType);
-                    await updateDoc(doc(db, 'rooms', STATE.roomId), { clearAll: false });
-                }
-
-                if (data.broadcastMsg && data.broadcastMsg.trim()) {
-                    showBroadcast(data.broadcastMsg);
-                    await updateDoc(doc(db, 'rooms', STATE.roomId), { broadcastMsg: '' });
-                }
-
-                STATE.specifiedStudents = data.specifiedStudents || [];
-                if (STATE.specifiedStudents.includes(STATE.studentId) && !STATE.isLocked && STATE.isAnswering) {
-                    studentStatusMessage.textContent = '👆 老師點名你回答！';
-                }
-            }, (err) => { console.warn('監聽失敗', err); });
-        }
-
-        // ----- 17. 監聽自己的答案（斷線重連） -----
-        let myAnswerUnsub = null;
-
-        function listenMyAnswer() {
-            if (myAnswerUnsub) myAnswerUnsub();
-            const ansRef = doc(db, 'rooms', STATE.roomId, 'answers', STATE.studentId);
-            myAnswerUnsub = onSnapshot(ansRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const data = snapshot.data();
-                    if (data.question === STATE.currentQuestion) {
-                        STATE.myAnswer = { choice: data.choice || null, text: data.text || '' };
-                        STATE.isLocked = true;
-                        if (data.choice) {
-                            studentAnswerGrid.querySelectorAll('.answer-btn').forEach(b => {
-                                b.classList.toggle('selected', b.dataset.choice === data.choice);
-                            });
-                        }
-                        if (data.text) studentTextInput.value = data.text;
-                        studentStatusMessage.textContent = '🔒 已送出答案（鎖定）';
-                        enableStudentInput(false, STATE.questionType);
-                    }
-                }
-            }, (err) => { console.warn('監聽答案失敗', err); });
-        }
-
-        // ----- 18. 學生作答（修正：根據題型啟用對應輸入） -----
-        function enableStudentInput(enabled, type) {
-            const isChoice = (type === 'choice');
-            const btns = studentAnswerGrid.querySelectorAll('.answer-btn');
-
-            // 選擇題按鈕：只有選擇題模式且啟用時才可用
-            btns.forEach(b => {
-                b.disabled = !enabled || !isChoice;
-            });
-
-            // 文字輸入框：只有文字題模式且啟用時才可用
-            studentTextInput.disabled = !enabled || isChoice;
-            if (enabled && !isChoice) {
-                studentTextInput.placeholder = '請輸入你的文字答案...';
-                studentTextInput.style.borderColor = '#2b7be4';
-                studentTextInput.style.background = 'white';
-            } else {
-                studentTextInput.placeholder = isChoice ? '（選擇題模式，請點選上方按鈕）' : '輸入文字答案（選填）';
-                studentTextInput.style.borderColor = '#d7e0e9';
-                studentTextInput.style.background = isChoice ? '#f0f2f5' : 'white';
-            }
-
-            studentSubmitBtn.disabled = !enabled;
-            if (!enabled) {
-                studentSubmitBtn.textContent = '⛔ 已鎖定';
-            } else {
-                studentSubmitBtn.textContent = '📤 送出答案';
-            }
-
-            // 指定學生模式
-            if (enabled && STATE.specifiedStudents.length > 0) {
-                if (!STATE.specifiedStudents.includes(STATE.studentId)) {
-                    studentStatusMessage.textContent = '⛔ 此題僅限指定學生作答';
-                    btns.forEach(b => b.disabled = true);
-                    studentTextInput.disabled = true;
-                    studentSubmitBtn.disabled = true;
-                }
-            }
-
-            // 如果是文字題，提示學生
-            if (enabled && !isChoice && !STATE.isLocked) {
-                studentStatusMessage.textContent = '✏️ 請在下方輸入框中輸入答案';
-            }
-        }
-
-        function lockStudentInput() {
-            enableStudentInput(false, STATE.questionType);
-            studentStatusMessage.textContent = '🔒 已送出答案（鎖定）';
-            STATE.isLocked = true;
-        }
-
-        async function submitStudentAnswer() {
-            if (STATE.isLocked) { alert('你已經送出答案，不能再修改。'); return; }
-            if (!STATE.isAnswering) { alert('教師尚未開放作答，請稍候。'); return; }
-            if (STATE.specifiedStudents.length > 0 && !STATE.specifiedStudents.includes(STATE.studentId)) {
-                alert('此題僅限指定學生作答。');
-                return;
-            }
-
-            const isChoice = (STATE.questionType === 'choice');
-            let choice = null;
-            let text = '';
-
-            if (isChoice) {
-                const selectedBtn = studentAnswerGrid.querySelector('.answer-btn.selected');
-                if (selectedBtn) choice = selectedBtn.dataset.choice;
-                if (!choice) { alert('請選擇 A/B/C/D'); return; }
-            } else {
-                text = studentTextInput.value.trim();
-                if (!text) { alert('請輸入文字答案'); return; }
-            }
-
-            try {
-                const ansRef = doc(db, 'rooms', STATE.roomId, 'answers', STATE.studentId);
-                await setDoc(ansRef, {
-                    studentId: STATE.studentId,
-                    name: STATE.studentName,
-                    class: STATE.studentClass || '',
-                    question: STATE.currentQuestion,
-                    choice: choice || '',
-                    text: text || '',
-                    timestamp: serverTimestamp(),
-                });
-                STATE.myAnswer = { choice, text };
-                lockStudentInput();
-                const studentRef = doc(db, 'rooms', STATE.roomId, 'students', STATE.studentId);
-                await updateDoc(studentRef, { online: true });
-                studentStatusMessage.textContent = '✅ 已成功送出！';
-            } catch (e) {
-                alert('❌ 送出失敗：' + e.message);
-            }
-        }
-
-        // ----- 19. 學生計時器 -----
-        let studentTimerInterval = null;
-
-        function startStudentTimer(seconds) {
-            clearStudentTimer();
-            let remain = seconds;
-            studentTimerDisplay.textContent = remain + 's';
-            studentTimerInterval = setInterval(() => {
-                remain--;
-                if (remain <= 0) {
-                    clearStudentTimer();
-                    studentTimerDisplay.textContent = '⌛ 時間到！';
-                    if (!STATE.isLocked && STATE.isAnswering) {
-                        studentStatusMessage.textContent = '⏰ 時間到！請儘快送出。';
-                    }
-                } else {
-                    studentTimerDisplay.textContent = remain + 's';
-                }
-            }, 1000);
-        }
-
-        function clearStudentTimer() {
-            if (studentTimerInterval) {
-                clearInterval(studentTimerInterval);
-                studentTimerInterval = null;
-            }
-            studentTimerDisplay.textContent = '--';
-        }
-
-        // ----- 20. 教師端：發布題目（包含題目批註與秒數） -----
+        // ----- 12. 發布題目 -----
         async function publishQuestion() {
             if (!STATE.roomId) { alert('請先建立教室！'); return; }
             const metaRef = doc(db, 'rooms', STATE.roomId, 'meta', 'info');
@@ -1720,14 +1052,13 @@
             currentQuestionDisplay.textContent = `第 ${qNum} 題`;
             publishBtn.textContent = `📨 發布第 ${qNum + 1} 題`;
 
-            // 發布時一併帶入題目批註與秒數
             const note = questionNoteInput.value.trim() || '';
             const qType = questionTypeSelect.value;
             const sec = parseInt(customSeconds.value) || 20;
 
             await updateDoc(doc(db, 'rooms', STATE.roomId), {
                 currentQuestion: qNum,
-                questionNote: note,
+                questionNote: note || `第 ${qNum} 題`,
                 questionType: qType,
                 isAnswering: false,
                 timerSeconds: sec,
@@ -1745,13 +1076,15 @@
             STATE.specifiedStudents = [];
             renderCards();
             updateCharts();
-            timerDisplay.textContent = sec + 's (已設定)';
+            timerDisplay.textContent = sec + 's';
+            timerLargeDisplay.textContent = sec;
+            timerLargeContainer.classList.add('hidden');
             startStopBtn.textContent = '▶️ 開始作答';
             startStopBtn.className = 'btn btn-primary';
-            alert(`📨 已發布第 ${qNum} 題，請設定倒數後點擊「開始作答」。`);
+            alert(`📨 已發布第 ${qNum} 題，請點擊「開始作答」。`);
         }
 
-        // ----- 21. 開始 / 停止作答 -----
+        // ----- 13. 開始 / 停止作答 -----
         async function toggleStartStop() {
             if (!STATE.roomId) return;
             const roomRef = doc(db, 'rooms', STATE.roomId);
@@ -1773,6 +1106,7 @@
         async function stopRound() {
             clearTeacherTimer();
             timerDisplay.textContent = '⏹️ 已停止';
+            timerLargeContainer.classList.add('hidden');
             await updateDoc(doc(db, 'rooms', STATE.roomId), { isAnswering: false });
             startStopBtn.textContent = '▶️ 開始作答';
             startStopBtn.className = 'btn btn-primary';
@@ -1781,21 +1115,44 @@
             updateCharts();
         }
 
-        // ----- 22. 教師計時器 -----
+        // ----- 14. 教師計時器（含大型顯示） -----
         let teacherTimerInterval = null;
 
         function startTeacherTimer(seconds) {
             clearTeacherTimer();
             let remain = seconds;
             timerDisplay.textContent = remain + 's';
+            timerLargeDisplay.textContent = remain;
+            timerLargeContainer.classList.remove('hidden');
+
+            // 當剩餘 5 秒時變紅色
+            if (remain <= 5) {
+                timerLargeDisplay.className = 'timer-large urgent';
+            } else {
+                timerLargeDisplay.className = 'timer-large';
+            }
+
             teacherTimerInterval = setInterval(async () => {
                 remain--;
+                timerDisplay.textContent = remain + 's';
+                timerLargeDisplay.textContent = remain;
+
+                if (remain <= 5) {
+                    timerLargeDisplay.className = 'timer-large urgent';
+                } else {
+                    timerLargeDisplay.className = 'timer-large';
+                }
+
                 if (remain <= 0) {
                     clearTeacherTimer();
                     timerDisplay.textContent = '⏰ 時間到！';
+                    timerLargeDisplay.textContent = '⏰';
+                    timerLargeDisplay.className = 'timer-large urgent';
                     await stopRound();
-                } else {
-                    timerDisplay.textContent = remain + 's';
+                    // 延遲一下關閉大型顯示
+                    setTimeout(() => {
+                        timerLargeContainer.classList.add('hidden');
+                    }, 2000);
                 }
             }, 1000);
         }
@@ -1807,7 +1164,7 @@
             }
         }
 
-        // ----- 23. 收集答案 -----
+        // ----- 15. 收集答案 -----
         async function collectAnswers() {
             if (!STATE.roomId) return;
             const q = query(
@@ -1826,7 +1183,7 @@
                 };
             });
             STATE.currentAnswers = answers;
-            const note = questionNoteInput.value.trim() || '';
+            const note = questionNoteInput.value.trim() || `第 ${STATE.currentQuestion} 題`;
             const qType = questionTypeSelect.value;
             STATE.history.push({
                 question: STATE.currentQuestion,
@@ -1844,7 +1201,7 @@
             updateCharts();
         }
 
-        // ----- 24. 公布答案 -----
+        // ----- 16. 公布答案 -----
         async function revealAnswer(answer) {
             STATE.correctAnswer = answer;
             STATE.isRevealed = true;
@@ -1867,20 +1224,22 @@
             updateCharts();
         }
 
-        // ----- 25. 排序切換 -----
+        // ----- 17. 排序 -----
         function toggleSort() {
             STATE.sortByTime = !STATE.sortByTime;
             sortToggleBtn.textContent = STATE.sortByTime ? '⏱️ 依時間' : '📋 依座號';
             renderCards();
         }
 
-        // ----- 26. 渲染卡牌 -----
+        // ----- 18. 渲染卡牌 / 文字清單 -----
         function renderCards() {
             let filtered = [];
             for (const cls of STATE.selectedClasses) {
                 const roster = STATE.rosterData[cls] || [];
                 filtered = filtered.concat(roster.map(s => ({ ...s, className: cls })));
             }
+
+            // 無班級模式
             if (STATE.customClassEnabled) {
                 const tempIds = Object.keys(STATE.currentAnswers).filter(id => id.startsWith('temp_'));
                 let html = '';
@@ -1908,7 +1267,8 @@
                 return;
             }
 
-            if (STATE.questionType === 'text' && !STATE.isAnswering && Object.keys(STATE.currentAnswers).length > 0) {
+            // === 文字題且已停止作答且已公布答案 → 顯示文字清單 ===
+            if (STATE.questionType === 'text' && STATE.isRevealed && Object.keys(STATE.currentAnswers).length > 0) {
                 cardContainer.classList.add('hidden');
                 textListContainer.classList.remove('hidden');
                 renderTextList(filtered);
@@ -1918,6 +1278,7 @@
                 textListContainer.classList.add('hidden');
             }
 
+            // 卡牌模式（選擇題或文字題未公布）
             let sorted = [...filtered];
             if (STATE.sortByTime) {
                 sorted.sort((a, b) => {
@@ -1996,19 +1357,20 @@
             }
         }
 
-        // ----- 27. 文字題清單 -----
+        // ----- 19. 文字題清單（顯示所有學生文字答案） -----
         function renderTextList(filtered) {
             let html = '';
             for (const s of filtered) {
                 const id = getStudentId(s);
                 const ans = STATE.currentAnswers[id] || null;
-                const text = ans?.text || '(未作答)';
+                const text = ans?.text || '(未送出)';
                 const isSpecified = STATE.specifiedStudents.includes(id);
                 let bg = '#f8faff';
                 if (ans) bg = '#e6f5e6';
                 if (isSpecified && !ans) bg = '#dbeafe';
                 html += `<div class="text-list-item" style="background:${bg};">
-                            <span class="seat">${s.number}</span>
+                            <span class="seat">${s.number}號</span>
+                            <span style="font-weight:500; min-width:60px;">${s.name}</span>
                             <span class="answer-text">${text}</span>
                             ${ans ? '✅' : '⏳'}
                         </div>`;
@@ -2016,7 +1378,7 @@
             textListContainer.innerHTML = html || '<div style="color:#888; padding:20px;">尚無作答資料</div>';
         }
 
-        // ----- 28. 指定學生 -----
+        // ----- 20. 指定學生 -----
         function toggleSpecifiedStudent(studentId) {
             const idx = STATE.specifiedStudents.indexOf(studentId);
             if (idx >= 0) STATE.specifiedStudents.splice(idx, 1);
@@ -2025,7 +1387,7 @@
             renderCards();
         }
 
-        // ----- 29. 隨機抽點 -----
+        // ----- 21. 隨機抽點 -----
         function randomPick() {
             let filtered = [];
             for (const cls of STATE.selectedClasses) {
@@ -2044,13 +1406,17 @@
             alert(`🎲 抽點：${picked.name} (${picked.number}號)`);
         }
 
-        // ----- 30. 廣播 -----
+        // ----- 22. 廣播 -----
         function showBroadcast(msg) {
             const old = document.querySelector('.broadcast-overlay');
             if (old) old.remove();
             const overlay = document.createElement('div');
             overlay.className = 'broadcast-overlay';
             overlay.innerHTML = `<div class="msg">${msg}</div>`;
+            overlay.style.cssText =
+                'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:9999;pointer-events:none;';
+            overlay.querySelector('.msg').style.cssText =
+                'background:white;padding:40px 60px;border-radius:60px;font-size:42px;font-weight:700;color:#0b2b4a;max-width:90vw;text-align:center;box-shadow:0 30px 60px rgba(0,0,0,0.3);animation:pulse 1s infinite alternate;';
             document.body.appendChild(overlay);
             setTimeout(() => { if (overlay.parentNode) overlay.remove(); }, 5000);
         }
@@ -2064,7 +1430,7 @@
             showBroadcast(msg);
         }
 
-        // ----- 31. 更新圖表 -----
+        // ----- 23. 更新圖表 -----
         function updateCharts() {
             const answers = STATE.currentAnswers;
             const total = Object.keys(answers).length;
@@ -2117,7 +1483,7 @@
             }
         }
 
-        // ----- 32. 匯出 Excel -----
+        // ----- 24. 匯出 Excel -----
         function exportExcel() {
             if (STATE.history.length === 0) { alert('目前沒有任何記錄可匯出。'); return; }
             const rows = [
@@ -2152,7 +1518,7 @@
             deleteRoom(STATE.roomId);
         }
 
-        // ----- 33. 清除所有紀錄 -----
+        // ----- 25. 清除紀錄 -----
         async function clearAllHistory() {
             if (!confirm('確定要清除所有紀錄，進入下一題嗎？')) return;
             STATE.currentAnswers = {};
@@ -2167,7 +1533,7 @@
             alert('✅ 已清除，請發布下一題。');
         }
 
-        // ----- 34. 刪除房間 -----
+        // ----- 26. 刪除房間 -----
         async function deleteRoom(roomId) {
             if (!roomId) return;
             try {
@@ -2186,7 +1552,7 @@
             } catch (e) { console.warn('刪除房間失敗', e); }
         }
 
-        // ----- 35. 自動清理過期房間（6小時） -----
+        // ----- 27. 自動清理過期房間 -----
         async function autoCleanExpiredRooms() {
             try {
                 const roomsRef = collection(db, 'rooms');
@@ -2216,11 +1582,11 @@
             } catch (e) { console.warn('自動清理失敗', e); }
         }
 
-        // ----- 36. 啟動 -----
+        // ----- 28. 啟動 -----
         init();
         setInterval(autoCleanExpiredRooms, 3600000);
         setTimeout(autoCleanExpiredRooms, 5000);
-        console.log('🚀 霧臺國小教室Q&A 已啟動！');
+        console.log('🚀 霧臺國小教室Q&A 教師端已啟動！');
     </script>
 </body>
 </html>
