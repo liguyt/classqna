@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="https://unpkg.com/tldraw@2/tldraw.css" />
   
   <style>
-    /* 讓畫布填滿整個螢幕，不出現捲軸 */
     body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background-color: #f8f9fa; }
     #root { width: 100vw; height: 100vh; }
   </style>
@@ -21,7 +20,7 @@
     "imports": {
       "react": "https://esm.sh/react@18.2.0",
       "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-      "tldraw": "https://esm.sh/tldraw@2"
+      "tldraw": "https://esm.sh/tldraw@2?external=react,react-dom"
     }
   }
   </script>
@@ -34,7 +33,6 @@
     const rootElement = document.getElementById('root');
     const root = createRoot(rootElement);
     
-    // 將 tldraw 畫布渲染到網頁上
     root.render(React.createElement(Tldraw));
   </script>
 </body>
