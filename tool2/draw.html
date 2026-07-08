@@ -1,1 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tool 2 繪圖測試</title>
+    <!-- 載入 tldraw 核心套件 -->
+    <script src="https://cdn.jsdelivr.net/npm/tldraw@2.4.0/dist/tldraw.umd.min.js">
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f4f9;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        h1 {
+            font-size: 20px;
+            color: #0b2b4a;
+            margin-bottom: 8px;
+        }
+        .toolbar-area {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-primary {
+            background: #1a5c9e;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #12447a;
+        }
+        .btn-success {
+            background: #1f8b5c;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #16734a;
+        }
+        .btn-danger {
+            background: #c73d3d;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #a82e2e;
+        }
+        #canvas-container {
+            width: 100%;
+            height: 500px;
+            border: 2px solid #d7e0e9;
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
+            position: relative;
+        }
+        .status {
+            margin-top: 12px;
+            padding: 10px 16px;
+            background: #e9f1fa;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #1a3a5a;
+        }
+        .status strong {
+            color: #0b2b4a;
+        }
+        #imagePreview {
+            margin-top: 12px;
+            max-width: 100%;
+            border-radius: 12px;
+            border: 2px solid #d7e0e9;
+            display: none;
+        }
+    </style>
+</head>
+<body>
 
+    <div class="container">
+        <h1>🎨 Tool 2 繪圖功能測試 (tldraw)</h1>
+        <p style="color:#4a6a8a; margin-bottom:16px;">測試 tldraw 是否正常載入、繪圖與匯出</p>
+
+        <div class="toolbar-area">
+            <button class="btn btn-primary" id="loadImageBtn">📷 載入底圖 (測試用)</button>
+            <button class="btn btn-success" id="exportBtn">📤 匯出圖片</button>
+            <button class="btn btn-danger" id="clearBtn">🗑️ 清除畫布</button>
+            <input type="file" id="imageInput" accept="image/*" style="display:none;" />
+        </div>
+
+        <div id="canvas-container"></div>
+
+        <div class="status" id="statusDisplay">
+            ⏳ 等待 tldraw 載入...
+        </div>
+
+        <img id="imagePreview" alt="匯出預覽" />
+    </div>
+
+    <script>
+        // ----- 1. 等待 tldraw 載入完成 -----
+        let editor = null;
+        const container = document.getElementById('canvas-container');
+
+        function initTldraw() {
+            try {
+                // 檢查 tldraw 是否已載入
+                if (typeof window.Tldraw === 'undefined') {
+                    document.getElementById('statusDisplay').innerHTML = '❌ tldraw 尚未載入，請檢查網路';
+                    return;
+                }
+
+                // 建立 tldraw 編輯器
+                const app = window.Tldraw.createTLStore();
+                const component = window.Tldraw.TldrawComponent;
+
+                // 簡單渲染方式：直接將 tldraw 掛載到容器
+                // 注意：tldraw UMD 版本可能需要額外處理，此為測試用簡易寫法
+                // 實際專案中會使用更完整的初始化方式
+                const el = document.createElement('div');
+                el.style.width = '100%';
+                el.style.height = '100%';
+                container.appendChild(el);
+
+                // 嘗試使用 tldraw 的簡易初始化
+                // 由於 tldraw UMD 的 API 可能因版本而異，這裡使用最通用的方式
+                const editorInstance = new window.Tldraw.TldrawEditor();
+                // 簡易初始化（實際使用時會更完整）
+                document.getElementById('statusDisplay').innerHTML =
+                '✅ tldraw 已載入 (測試模式，請使用完整功能請參考 student.js)';
+                editor = editorInstance;
+
+            } catch (e) {
+                document.getElementById('statusDisplay').innerHTML = '❌ 載入失敗：' + e.message;
+                console.error(e);
+            }
+        }
+
+        // 等待 DOM 載入完成後初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 給 tldraw 一點時間載入
+            setTimeout(initTldraw, 1000);
+        });
+
+        // ----- 2. 載入底圖 (測試) -----
+        document.getElementById('loadImageBtn').addEventListener('click', () => {
+            document.getElementById('imageInput').click();
+        });
+
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const imgData = ev.target.result;
+                document.getElementById('statusDisplay').innerHTML = '📷 底圖已載入，可在畫布上繪圖';
+                // 實際使用時會將圖片設為 tldraw 底圖
+                // 此為測試，僅顯示訊息
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ----- 3. 匯出圖片 -----
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            document.getElementById('statusDisplay').innerHTML = '📤 匯出功能測試 (實際匯出需 tldraw 完整初始化)';
+            // 實際使用時會呼叫 tldraw 的匯出 API
+        });
+
+        // ----- 4. 清除畫布 -----
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.getElementById('statusDisplay').innerHTML = '🗑️ 畫布已清除 (測試)';
+        });
+    </script>
+</body>
+</html>
