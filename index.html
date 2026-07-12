@@ -5,148 +5,204 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>霧臺國小教室Q&A - 教師端</title>
 
-    <!-- ===== Firebase SDK (模組化) ===== -->
+    <!-- Font Awesome 6 (免費圖示庫) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <!-- Firebase SDK -->
     <script type="importmap">
         {
             "imports": {
                 "firebase/app": "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js",
-                "firebase/storage": "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js"
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js"
             }
         }
     </script>
 
-    <!-- ===== XLSX (Excel 匯出) ===== -->
+    <!-- XLSX -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js">
     </script>
 
     <style>
         /* ============================================================
-                   完整樣式（與之前相同，為確保完整此處保留）
-                   ============================================================ */
+           全域重置 & 變數
+           ============================================================ */
+        :root {
+            --color-primary: #1a5c9e;
+            --color-primary-dark: #12447a;
+            --color-primary-light: #e8f0fe;
+            --color-success: #1f8b5c;
+            --color-success-light: #e6f5e6;
+            --color-warning: #d68d2c;
+            --color-danger: #c73d3d;
+            --color-danger-light: #fde8e8;
+            --color-text-primary: #0b2b4a;
+            --color-text-secondary: #4a6a8a;
+            --color-text-muted: #8899aa;
+            --color-bg: #f0f4f9;
+            --color-card: #ffffff;
+            --radius-sm: 12px;
+            --radius-md: 20px;
+            --radius-lg: 32px;
+            --radius-full: 9999px;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.08);
+            --transition: 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         html,
         body {
             width: 100%;
             height: 100%;
-            font-family: 'Segoe UI', 'PingFang TC', system-ui, sans-serif;
-            background: #f0f4f9;
+            font-family: 'Segoe UI', 'PingFang TC', system-ui, -apple-system, sans-serif;
+            background: var(--color-bg);
             overflow: hidden;
+            color: var(--color-text-primary);
         }
+
+        /* ============================================================
+           App 容器
+           ============================================================ */
         .app-container {
             width: 100vw;
             height: 100vh;
             height: 100dvh;
             display: flex;
             flex-direction: column;
-            background: #f0f4f9;
+            background: var(--color-bg);
             overflow: hidden;
             position: relative;
         }
 
-        /* 頂部狀態欄 */
+        /* ============================================================
+           頂部狀態欄（毛玻璃）
+           ============================================================ */
         .top-bar {
             flex-shrink: 0;
-            height: 56px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            height: 60px;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
             display: flex;
             align-items: center;
-            padding: 0 20px;
+            padding: 0 24px;
             z-index: 100;
             gap: 12px;
         }
+
         .top-bar .logo-area {
             display: flex;
             align-items: center;
             gap: 10px;
             flex-shrink: 0;
         }
+
         .top-bar .logo-area img {
             height: 32px;
             width: auto;
-            opacity: 0.5;
-            transition: opacity 0.3s;
+            opacity: 0.6;
+            transition: opacity var(--transition);
         }
+
         .top-bar .logo-area img:hover {
-            opacity: 0.9;
+            opacity: 1;
         }
+
         .top-bar .logo-area .brand {
-            font-weight: 600;
+            font-weight: 700;
             font-size: 16px;
-            color: #1a3a5a;
-            letter-spacing: 0.5px;
+            color: var(--color-text-primary);
+            letter-spacing: 0.3px;
         }
+
+        .top-bar .logo-area .brand span {
+            color: var(--color-primary);
+        }
+
         .top-bar .spacer {
             flex: 1;
         }
+
         .top-bar .room-code {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
-            color: #1a5c9e;
+            color: var(--color-primary);
             background: rgba(26, 92, 158, 0.10);
             padding: 4px 14px;
-            border-radius: 30px;
+            border-radius: var(--radius-full);
             display: none;
+            letter-spacing: 0.5px;
         }
+
         .top-bar .room-code.show {
             display: inline-block;
         }
+
         .top-bar .room-id-display {
             font-size: 13px;
             font-weight: 500;
-            color: #8899aa;
+            color: var(--color-text-muted);
             letter-spacing: 1px;
             background: transparent;
             padding: 4px 8px;
-            border-radius: 8px;
         }
+
         .top-bar .step-indicator {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
-            color: #4a6a8a;
-            background: rgba(26, 92, 158, 0.08);
+            color: var(--color-text-secondary);
+            background: rgba(0, 0, 0, 0.04);
             padding: 4px 16px;
-            border-radius: 30px;
+            border-radius: var(--radius-full);
             display: flex;
             align-items: center;
             gap: 6px;
         }
+
         .top-bar .step-indicator .step-dot {
             display: inline-block;
             width: 8px;
             height: 8px;
             border-radius: 50%;
             background: #d0d8e0;
-            margin: 0 2px;
-            transition: 0.3s;
-        }
-        .top-bar .step-indicator .step-dot.active {
-            background: #1a5c9e;
-            box-shadow: 0 0 0 3px rgba(26, 92, 158, 0.15);
-        }
-        .top-bar .step-indicator .step-dot.done {
-            background: #1f8b5c;
+            transition: var(--transition);
         }
 
-        /* 主內容區 */
+        .top-bar .step-indicator .step-dot.active {
+            background: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(26, 92, 158, 0.15);
+        }
+
+        .top-bar .step-indicator .step-dot.done {
+            background: var(--color-success);
+        }
+
+        /* ============================================================
+           頁面滑動容器
+           ============================================================ */
         .pages-wrapper {
             flex: 1;
             overflow: hidden;
             position: relative;
         }
+
         .pages-track {
             display: flex;
             height: 100%;
             transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
             will-change: transform;
         }
+
+        /* ============================================================
+           每個頁面
+           ============================================================ */
         .page {
             flex: 0 0 100%;
             height: 100%;
@@ -154,50 +210,61 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            background: #f0f4f9;
-            scroll-behavior: smooth;
+            background: var(--color-bg);
         }
 
         .page-title {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
-            color: #0b2b4a;
-            margin-bottom: 4px;
+            color: var(--color-text-primary);
+            margin-bottom: 2px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
+
         .page-title .badge {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
-            color: #4a6a8a;
+            color: var(--color-text-secondary);
             background: rgba(0, 0, 0, 0.04);
-            padding: 2px 12px;
-            border-radius: 30px;
+            padding: 2px 14px;
+            border-radius: var(--radius-full);
         }
+
         .page-subtitle {
             font-size: 15px;
-            color: #4a6a8a;
-            margin-bottom: 16px;
+            color: var(--color-text-secondary);
+            margin-bottom: 20px;
             font-weight: 400;
         }
 
+        /* ============================================================
+           毛玻璃卡片
+           ============================================================ */
         .card-panel {
-            background: white;
-            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: var(--radius-md);
             padding: 24px 28px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-            transition: 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
         }
+
         .card-panel.glow {
-            box-shadow: 0 0 0 2px rgba(26, 92, 158, 0.2), 0 8px 30px rgba(26, 92, 158, 0.08);
-            border-color: rgba(26, 92, 158, 0.2);
+            box-shadow: 0 0 0 2px rgba(26, 92, 158, 0.12), var(--shadow-md);
+            border-color: rgba(26, 92, 158, 0.15);
         }
+
         .card-panel+.card-panel {
             margin-top: 16px;
         }
 
+        /* ============================================================
+           表單元件（現代風格）
+           ============================================================ */
         .form-row {
             display: flex;
             flex-wrap: wrap;
@@ -205,89 +272,77 @@
             align-items: center;
             margin-bottom: 14px;
         }
+
         .form-row label {
             font-weight: 600;
-            color: #1a3146;
+            color: var(--color-text-primary);
             min-width: 70px;
-            font-size: 15px;
+            font-size: 14px;
         }
+
         .form-row input,
         .form-row select {
             flex: 1;
             min-width: 160px;
-            padding: 10px 16px;
-            border: 1.5px solid #d7e0e9;
-            border-radius: 30px;
+            padding: 10px 18px;
+            border: 1.5px solid rgba(0, 0, 0, 0.06);
+            border-radius: var(--radius-full);
             font-size: 15px;
-            background: white;
-            transition: 0.2s;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            transition: var(--transition);
+            color: var(--color-text-primary);
         }
+
         .form-row input:focus,
         .form-row select:focus {
-            border-color: #2b7be4;
+            border-color: var(--color-primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(43, 123, 228, 0.12);
+            box-shadow: 0 0 0 3px rgba(26, 92, 158, 0.10);
+            background: white;
         }
+
+        .form-row input::placeholder {
+            color: var(--color-text-muted);
+        }
+
         .form-row input[type="number"] {
             min-width: 60px;
             width: 80px;
             flex: 0 0 auto;
+            text-align: center;
         }
 
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-        .checkbox-group label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #eef3f9;
-            padding: 6px 14px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            color: #1a3a5a;
-            transition: 0.2s;
-            user-select: none;
-        }
-        .checkbox-group label:hover {
-            background: #e2eaf3;
-        }
-        .checkbox-group label input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
-
-        /* ===== 按鈕系統 ===== */
+        /* ============================================================
+           按鈕系統（毛玻璃 + 現代風格）
+           ============================================================ */
         .btn {
             border: none;
-            border-radius: 40px;
+            border-radius: var(--radius-full);
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: var(--transition);
             user-select: none;
-            border: 1px solid transparent;
             font-size: 15px;
-            padding: 10px 24px;
+            padding: 10px 28px;
             min-height: 44px;
             white-space: nowrap;
+            border: 1px solid transparent;
         }
+
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow-md);
         }
+
         .btn:active {
-            transform: translateY(0);
+            transform: translateY(0) scale(0.98);
         }
+
         .btn:disabled {
             opacity: 0.35;
             pointer-events: none;
@@ -295,81 +350,103 @@
         }
 
         .btn-primary {
-            background: #1a5c9e;
+            background: var(--color-primary);
             color: white;
             box-shadow: 0 4px 14px rgba(26, 92, 158, 0.2);
         }
+
         .btn-primary:hover {
-            background: #12447a;
+            background: var(--color-primary-dark);
+            box-shadow: 0 6px 20px rgba(26, 92, 158, 0.25);
         }
+
         .btn-success {
-            background: #1f8b5c;
+            background: var(--color-success);
             color: white;
             box-shadow: 0 4px 14px rgba(31, 139, 92, 0.2);
         }
+
         .btn-success:hover {
             background: #16734a;
         }
+
         .btn-danger {
-            background: #c73d3d;
+            background: var(--color-danger);
             color: white;
             box-shadow: 0 4px 14px rgba(199, 61, 61, 0.2);
         }
+
         .btn-danger:hover {
             background: #a82e2e;
         }
+
         .btn-warning {
-            background: #d68d2c;
+            background: var(--color-warning);
             color: white;
             box-shadow: 0 4px 14px rgba(214, 141, 44, 0.2);
         }
+
         .btn-warning:hover {
             background: #b8771f;
         }
+
         .btn-ghost {
-            background: #eef3f9;
-            color: #1a3a5a;
-            border: 1px solid #d7e0e9;
+            background: rgba(255, 255, 255, 0.6);
+            color: var(--color-text-primary);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(4px);
         }
+
         .btn-ghost:hover {
-            background: #e2eaf3;
+            background: white;
+            box-shadow: var(--shadow-sm);
         }
+
         .btn-outline {
             background: transparent;
-            border: 2px solid #1a5c9e;
-            color: #1a5c9e;
+            border: 2px solid var(--color-primary);
+            color: var(--color-primary);
         }
+
         .btn-outline:hover {
-            background: #1a5c9e;
+            background: var(--color-primary);
             color: white;
         }
+
         .btn-lg {
-            font-size: 18px;
+            font-size: 17px;
             padding: 14px 40px;
-            min-height: 56px;
+            min-height: 54px;
         }
+
         .btn-block {
             width: 100%;
             justify-content: center;
         }
+
         .btn-sm {
             font-size: 13px;
             padding: 6px 16px;
             min-height: 34px;
         }
+
         .btn-glow {
-            animation: glowPulse 2s ease-in-out infinite;
+            animation: glowPulse 2.5s ease-in-out infinite;
         }
+
         @keyframes glowPulse {
             0%,
             100% {
-                box-shadow: 0 0 0 0 rgba(26, 92, 158, 0.3);
+                box-shadow: 0 0 0 0 rgba(26, 92, 158, 0.2);
             }
             50% {
                 box-shadow: 0 0 0 8px rgba(26, 92, 158, 0);
             }
         }
 
+        /* ============================================================
+           頁面底部操作區
+           ============================================================ */
         .page-footer {
             flex-shrink: 0;
             display: flex;
@@ -379,92 +456,143 @@
             margin-top: auto;
             border-top: 1px solid rgba(0, 0, 0, 0.04);
         }
+
         .page-footer .nav-left {
             display: flex;
             gap: 10px;
         }
+
         .page-footer .nav-right {
             display: flex;
             gap: 10px;
         }
 
-        /* 浮動工具列 */
-        .floating-toolbar {
+        /* ============================================================
+           浮動 Dock 工具列（毛玻璃風格）
+           ============================================================ */
+        .floating-dock {
             position: fixed;
-            right: 20px;
-            bottom: 100px;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
+            z-index: 200;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            gap: 4px;
+            user-select: none;
+        }
+
+        .floating-dock .dock-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            z-index: 200;
-        }
-        .floating-toolbar .fab {
+            justify-content: center;
             width: 48px;
             height: 48px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: transparent;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 18px;
+            position: relative;
+            gap: 2px;
+        }
+
+        .floating-dock .dock-item .label {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            opacity: 0;
+            transform: translateY(4px);
+            transition: var(--transition);
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .floating-dock .dock-item:hover {
+            background: rgba(26, 92, 158, 0.08);
+            color: var(--color-primary);
+            transform: translateY(-4px);
+        }
+
+        .floating-dock .dock-item:hover .label {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .floating-dock .dock-item.active {
+            color: var(--color-primary);
+            background: rgba(26, 92, 158, 0.10);
+        }
+
+        .floating-dock .dock-divider {
+            width: 1px;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.06);
+            margin: 0 4px;
+        }
+
+        .floating-dock .dock-toggle {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: white;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            border: none;
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--color-text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            cursor: pointer;
-            transition: 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-            color: #1a3a5a;
-            position: relative;
-        }
-        .floating-toolbar .fab:hover {
-            transform: scale(1.08);
-            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
-        }
-        .floating-toolbar .fab .tooltip {
-            position: absolute;
-            right: 56px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            font-size: 13px;
-            padding: 4px 12px;
-            border-radius: 8px;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: 0.2s;
-        }
-        .floating-toolbar .fab:hover .tooltip {
-            opacity: 1;
-        }
-        .floating-toolbar .menu-items {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 0;
-            overflow: hidden;
-            opacity: 0;
-            transition: 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-            transform: scale(0.8);
-            transform-origin: bottom center;
-        }
-        .floating-toolbar .menu-items.open {
-            max-height: 300px;
-            opacity: 1;
-            transform: scale(1);
-        }
-        .floating-toolbar .menu-items .fab {
-            width: 44px;
-            height: 44px;
-            font-size: 18px;
         }
 
-        /* QR Code 彈窗 */
-        .qr-modal {
+        .floating-dock .dock-toggle:hover {
+            background: rgba(0, 0, 0, 0.08);
+            color: var(--color-text-primary);
+        }
+
+        /* Dock 收合狀態 */
+        .floating-dock.collapsed .dock-item:not(.dock-toggle) {
+            width: 0;
+            padding: 0;
+            margin: 0;
+            opacity: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .floating-dock.collapsed .dock-divider {
+            width: 0;
+            margin: 0;
+            opacity: 0;
+        }
+
+        .floating-dock.collapsed {
+            padding: 8px 12px;
+        }
+
+        /* ============================================================
+           彈窗（毛玻璃）
+           ============================================================ */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             display: none;
@@ -473,76 +601,76 @@
             z-index: 300;
             animation: fadeIn 0.3s ease;
         }
-        .qr-modal.show {
+
+        .modal-overlay.show {
             display: flex;
-        }
-        .qr-modal .modal-box {
-            background: white;
-            border-radius: 32px;
-            padding: 32px 40px;
-            text-align: center;
-            max-width: 90vw;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
-            animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        .qr-modal .modal-box #qrcodeDisplay {
-            display: flex;
-            justify-content: center;
-            margin: 8px 0 16px 0;
         }
 
-        /* 廣播彈窗 */
-        .broadcast-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 300;
-            animation: fadeIn 0.3s ease;
-        }
-        .broadcast-modal.show {
-            display: flex;
-        }
-        .broadcast-modal .modal-box {
-            background: white;
-            border-radius: 32px;
-            padding: 28px 32px;
+        .modal-box {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            padding: 32px 40px;
             max-width: 480px;
             width: 90%;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: var(--shadow-lg);
             animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            text-align: center;
         }
-        .broadcast-modal .modal-box textarea {
+
+        .modal-box h3 {
+            font-size: 18px;
+            color: var(--color-text-primary);
+            margin-bottom: 4px;
+        }
+
+        .modal-box p {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .modal-box textarea {
             width: 100%;
             padding: 12px 16px;
-            border: 1.5px solid #d7e0e9;
-            border-radius: 16px;
-            font-size: 16px;
+            border: 1.5px solid rgba(0, 0, 0, 0.06);
+            border-radius: var(--radius-sm);
+            font-size: 15px;
             font-family: inherit;
             resize: vertical;
             min-height: 80px;
             margin: 12px 0;
-            transition: 0.2s;
+            background: rgba(255, 255, 255, 0.7);
+            transition: var(--transition);
         }
-        .broadcast-modal .modal-box textarea:focus {
-            border-color: #2b7be4;
+
+        .modal-box textarea:focus {
+            border-color: var(--color-primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(43, 123, 228, 0.12);
+            box-shadow: 0 0 0 3px rgba(26, 92, 158, 0.10);
         }
-        .broadcast-modal .modal-box .btn-row {
+
+        .modal-box .btn-row {
             display: flex;
             gap: 10px;
             justify-content: flex-end;
         }
 
-        /* 卡牌區 */
+        .modal-box .close-btn {
+            margin-top: 8px;
+        }
+
+        .modal-box #qrcodeDisplay {
+            display: flex;
+            justify-content: center;
+            margin: 8px 0 16px 0;
+        }
+
+        /* ============================================================
+           卡牌
+           ============================================================ */
         .card-pool {
             display: flex;
             flex-wrap: wrap;
@@ -551,68 +679,82 @@
             min-height: 80px;
             padding: 8px 0;
         }
+
         .card {
-            background: #eef2f7;
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: var(--radius-sm);
             padding: 8px 14px;
             min-width: 62px;
             text-align: center;
             font-weight: 600;
             font-size: 17px;
-            color: #1a2f44;
-            border-left: 5px solid #bcc9d9;
-            transition: 0.25s;
+            color: var(--color-text-primary);
+            border-left: 4px solid #d0d8e0;
+            transition: var(--transition);
             cursor: default;
         }
+
         .card.submitted {
-            background: #cde8d5;
-            border-left-color: #1f8b5c;
+            background: var(--color-success-light);
+            border-left-color: var(--color-success);
         }
+
         .card.reveal-correct {
-            background: #b7e0c9;
-            border-left-color: #0f6e42;
+            background: var(--color-success-light);
+            border-left-color: var(--color-success);
             color: #064d2b;
         }
+
         .card.reveal-wrong {
-            background: #f3dbdb;
-            border-left-color: #b13e3e;
+            background: var(--color-danger-light);
+            border-left-color: var(--color-danger);
             color: #6e2b2b;
             opacity: 0.7;
         }
+
         .card.specified {
             background: #bfdbfe;
             border-left-color: #2563eb;
         }
+
         .card .sub-label {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 400;
             display: block;
-            color: #3d5d7a;
+            color: var(--color-text-secondary);
             margin-top: 2px;
         }
+
         .card.clickable {
             cursor: pointer;
         }
+
         .card.clickable:hover {
             transform: scale(1.04);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--shadow-sm);
         }
 
-        /* 計時器 */
+        /* ============================================================
+           計時器
+           ============================================================ */
         .timer-large {
             font-size: 72px;
             font-weight: 700;
-            color: #1a5c9e;
+            color: var(--color-primary);
             text-align: center;
             padding: 4px 0;
             letter-spacing: 4px;
             line-height: 1.1;
-            transition: 0.2s;
+            transition: var(--transition);
+            text-shadow: 0 4px 20px rgba(26, 92, 158, 0.10);
         }
+
         .timer-large.urgent {
-            color: #c73d3d;
+            color: var(--color-danger);
             animation: blink 0.6s ease infinite alternate;
         }
+
         @keyframes blink {
             from {
                 opacity: 1;
@@ -622,7 +764,9 @@
             }
         }
 
-        /* 文字題清單 */
+        /* ============================================================
+           文字題清單
+           ============================================================ */
         .text-list {
             display: flex;
             flex-direction: column;
@@ -632,47 +776,57 @@
             overflow-y: auto;
             padding-right: 4px;
         }
+
         .text-list-item {
             display: flex;
             align-items: center;
             gap: 12px;
             padding: 8px 14px;
-            background: #f8faff;
-            border-radius: 14px;
-            border-left: 5px solid #bcc9d9;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: var(--radius-sm);
+            border-left: 4px solid #d0d8e0;
             font-size: 15px;
-            transition: 0.2s;
+            transition: var(--transition);
         }
+
         .text-list-item .seat {
             font-weight: 700;
             min-width: 44px;
-            color: #1a3a5a;
+            color: var(--color-text-primary);
         }
+
         .text-list-item .name {
             font-weight: 500;
             min-width: 56px;
-            color: #1a3a5a;
+            color: var(--color-text-primary);
         }
+
         .text-list-item .answer-text {
             flex: 1;
             word-break: break-word;
-            color: #0b2b4a;
+            color: var(--color-text-primary);
         }
+
         .text-list-item input[type="checkbox"] {
             width: 18px;
             height: 18px;
             cursor: pointer;
             flex-shrink: 0;
+            accent-color: var(--color-primary);
         }
+
         .text-list-item .score-badge {
             font-size: 14px;
             font-weight: 700;
-            color: #1f8b5c;
+            color: var(--color-success);
             min-width: 36px;
             text-align: right;
         }
 
-        /* 排行榜 */
+        /* ============================================================
+           排行榜
+           ============================================================ */
         .rank-list {
             display: flex;
             flex-direction: column;
@@ -682,130 +836,109 @@
             overflow-y: auto;
             padding-right: 4px;
         }
+
         .rank-item {
             display: flex;
             align-items: center;
             gap: 14px;
             padding: 8px 16px;
-            background: #f8faff;
-            border-radius: 14px;
-            border-left: 5px solid #d7e0e9;
-            transition: 0.2s;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: var(--radius-sm);
+            border-left: 4px solid #d0d8e0;
+            transition: var(--transition);
         }
+
         .rank-item .rank-num {
             font-weight: 700;
             font-size: 18px;
-            color: #1a5c9e;
+            color: var(--color-primary);
             min-width: 32px;
             text-align: center;
         }
+
         .rank-item .rank-name {
             font-weight: 500;
             flex: 1;
-            color: #0b2b4a;
+            color: var(--color-text-primary);
         }
+
         .rank-item .rank-score {
             font-weight: 700;
             font-size: 18px;
-            color: #1f8b5c;
+            color: var(--color-success);
             min-width: 40px;
             text-align: right;
         }
+
         .rank-item.top1 {
             border-left-color: #f59e0b;
             background: #fffbeb;
         }
+
         .rank-item.top2 {
             border-left-color: #94a3b8;
             background: #f8fafc;
         }
+
         .rank-item.top3 {
             border-left-color: #d97706;
             background: #fffbeb;
         }
 
-        /* 圖片題相關 */
-        .image-preview-area {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8faff;
-            border-radius: 12px;
-            border: 2px dashed #d7e0e9;
-            text-align: center;
-        }
-        .image-preview-area img {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
+        /* ============================================================
+           工具選單（checkbox 群組）
+           ============================================================ */
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
         }
 
-        .image-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
-        }
-        .image-grid .grid-item {
-            border-radius: 12px;
-            overflow: hidden;
-            border: 2px solid #d7e0e9;
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
             cursor: pointer;
-            position: relative;
-            background: #f8faff;
-            transition: 0.2s;
-        }
-        .image-grid .grid-item:hover {
-            transform: scale(1.03);
-            border-color: #1a5c9e;
-        }
-        .image-grid .grid-item img {
-            width: 100%;
-            aspect-ratio: 1;
-            object-fit: cover;
-        }
-        .image-grid .grid-item .label {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            font-size: 12px;
-            padding: 2px 6px;
-            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            transition: var(--transition);
+            user-select: none;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0, 0, 0, 0.04);
         }
 
-        .image-result-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 12px;
-        }
-        .image-result-grid .result-item {
-            border-radius: 12px;
-            overflow: hidden;
-            border: 2px solid #d7e0e9;
-            background: #f8faff;
-        }
-        .image-result-grid .result-item img {
-            width: 100%;
-            aspect-ratio: 1;
-            object-fit: cover;
-        }
-        .image-result-grid .result-item .label {
-            font-size: 12px;
-            padding: 4px 8px;
-            text-align: center;
+        .checkbox-group label:hover {
             background: white;
-            color: #1a3a5a;
+            box-shadow: var(--shadow-sm);
         }
 
+        .checkbox-group label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--color-primary);
+        }
+
+        /* ============================================================
+           其他
+           ============================================================ */
         .hidden {
             display: none !important;
         }
+
         .flex-1 {
             flex: 1;
         }
 
-        /* 動畫 */
+        /* ============================================================
+           動畫
+           ============================================================ */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -814,6 +947,7 @@
                 opacity: 1;
             }
         }
+
         @keyframes slideUp {
             from {
                 opacity: 0;
@@ -825,49 +959,141 @@
             }
         }
 
-        /* RWD */
+        .fade-in {
+            animation: fadeIn 0.4s ease;
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* ============================================================
+           滾動條美化
+           ============================================================ */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c0c8d4;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aab8;
+        }
+
+        /* ============================================================
+           RWD
+           ============================================================ */
         @media (max-width: 640px) {
             .page {
                 padding: 16px;
             }
+
             .top-bar {
-                height: 48px;
+                height: 52px;
                 padding: 0 12px;
             }
+
             .top-bar .logo-area .brand {
                 font-size: 14px;
             }
+
             .top-bar .step-indicator {
-                font-size: 12px;
-                padding: 2px 12px;
+                font-size: 11px;
+                padding: 2px 10px;
             }
+
+            .top-bar .step-indicator .step-dot {
+                width: 6px;
+                height: 6px;
+            }
+
             .card-panel {
                 padding: 16px;
             }
+
             .form-row {
                 flex-direction: column;
                 align-items: stretch;
                 gap: 6px;
             }
+
             .form-row label {
                 min-width: unset;
             }
+
             .btn-lg {
-                font-size: 16px;
+                font-size: 15px;
                 padding: 12px 24px;
                 min-height: 48px;
             }
+
             .timer-large {
                 font-size: 48px;
             }
-            .floating-toolbar {
-                right: 12px;
-                bottom: 80px;
+
+            .floating-dock {
+                bottom: 16px;
+                padding: 6px 12px;
             }
-            .floating-toolbar .fab {
+
+            .floating-dock .dock-item {
                 width: 40px;
                 height: 40px;
-                font-size: 17px;
+                font-size: 15px;
+            }
+
+            .modal-box {
+                padding: 24px 20px;
+            }
+
+            .modal-box textarea {
+                min-height: 60px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .top-bar .logo-area .brand {
+                font-size: 12px;
+            }
+
+            .top-bar .step-indicator {
+                font-size: 10px;
+                padding: 2px 8px;
+            }
+
+            .top-bar .room-code {
+                font-size: 11px;
+                padding: 2px 10px;
+            }
+
+            .btn {
+                font-size: 13px;
+                padding: 8px 16px;
+                min-height: 36px;
+            }
+
+            .btn-lg {
+                font-size: 14px;
+                padding: 10px 18px;
+                min-height: 42px;
+            }
+
+            .floating-dock .dock-item {
+                width: 34px;
+                height: 34px;
+                font-size: 13px;
+            }
+
+            .floating-dock .dock-item .label {
+                font-size: 8px;
             }
         }
     </style>
@@ -876,11 +1102,13 @@
 
     <div class="app-container" id="app">
 
-        <!-- 頂部狀態欄 -->
+        <!-- ============================================================
+           頂部狀態欄
+           ============================================================ -->
         <header class="top-bar" id="topBar">
             <div class="logo-area">
                 <img src="logo.jpg" alt="校徽" id="schoolLogo" onerror="this.style.display='none'" />
-                <span class="brand">霧臺國小</span>
+                <span class="brand">霧臺<span>國小</span></span>
             </div>
             <span class="room-id-display" id="roomIdDisplay">----</span>
             <div class="spacer"></div>
@@ -895,182 +1123,258 @@
             </span>
         </header>
 
-        <!-- 主內容區 -->
+        <!-- ============================================================
+           主內容區（滑動頁面）
+           ============================================================ -->
         <div class="pages-wrapper">
             <div class="pages-track" id="pagesTrack">
 
-                <!-- PAGE 1 -->
+                <!-- ==========================================================
+                   PAGE 1：教室設定
+                   ========================================================== -->
                 <section class="page" data-page="1">
-                    <div class="page-title">📚 教室設定 <span class="badge">步驟 1 / 5</span></div>
+                    <div class="page-title">
+                        📚 教室設定
+                        <span class="badge">步驟 1 / 5</span>
+                    </div>
                     <div class="page-subtitle">設定教師姓名與上課班級，建立你的虛擬教室</div>
+
                     <div class="card-panel" style="flex:1;">
                         <div class="form-row">
-                            <label>🧑‍🏫 教師姓名</label>
+                            <label><i class="fa-regular fa-user" style="margin-right:6px;"></i>教師姓名</label>
                             <input type="text" id="teacherNameInput" placeholder="請輸入姓名（可跳過）" value="陳老師" />
                         </div>
                         <div class="form-row" style="align-items:flex-start;">
-                            <label>🏫 上課班級</label>
+                            <label><i class="fa-regular fa-building" style="margin-right:6px;"></i>上課班級</label>
                             <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
                                 <div id="classCheckboxContainer" class="checkbox-group"></div>
                                 <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:4px;">
-                                    <label style="display:flex; align-items:center; gap:6px; background:#eef3f9; padding:4px 14px; border-radius:30px; font-size:14px; cursor:pointer;">
+                                    <label style="display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.7); padding:4px 14px; border-radius:30px; font-size:14px; cursor:pointer; backdrop-filter:blur(4px); border:1px solid rgba(0,0,0,0.04);">
                                         <input type="checkbox" id="customClassCheckbox" /> 無班級（自訂人數）
                                     </label>
-                                    <input type="number" id="customStudentCount" min="1" max="50" value="20" style="width:80px; padding:6px 12px; border:1.5px solid #d7e0e9; border-radius:30px; font-size:14px;" disabled />
-                                    <span style="font-size:13px; color:#8899aa;">人</span>
+                                    <input type="number" id="customStudentCount" min="1" max="50" value="20" style="width:80px; padding:6px 12px; border:1.5px solid rgba(0,0,0,0.06); border-radius:30px; font-size:14px; background:rgba(255,255,255,0.7);" disabled />
+                                    <span style="font-size:13px; color:var(--color-text-muted);">人</span>
                                 </div>
                             </div>
                         </div>
+
                         <div style="margin-top:16px;">
-                            <button class="btn btn-primary btn-lg btn-glow" id="enterRoomBtn" style="width:100%;">🏫 建立教室</button>
+                            <button class="btn btn-primary btn-lg btn-block btn-glow" id="enterRoomBtn">
+                                <i class="fa-solid fa-door-open" style="margin-right:8px;"></i>建立教室
+                            </button>
                         </div>
-                        <div id="roomInfo" class="hidden" style="margin-top:16px; background:#e1edfb; border-radius:30px; padding:10px 20px; display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center;">
-                            <span>👥 線上人數：<strong id="onlineCount">0</strong></span>
-                            <span>📌 目前題號：<strong id="currentQuestionDisplay">第 0 題</strong></span>
+
+                        <div id="roomInfo" class="hidden" style="margin-top:16px; background:rgba(225,237,251,0.7); backdrop-filter:blur(4px); border-radius:30px; padding:10px 20px; display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center; border:1px solid rgba(255,255,255,0.3);">
+                            <span><i class="fa-regular fa-hashtag" style="margin-right:4px;"></i>教室代碼：<strong id="roomIdDisplay">----</strong></span>
+                            <span><i class="fa-regular fa-user" style="margin-right:4px;"></i>線上人數：<strong id="onlineCount">0</strong></span>
+                            <span><i class="fa-regular fa-file-lines" style="margin-right:4px;"></i>目前題號：<strong id="currentQuestionDisplay">第 0 題</strong></span>
                         </div>
                     </div>
+
                     <div class="page-footer">
                         <div class="nav-left"></div>
                         <div class="nav-right">
-                            <button class="btn btn-primary btn-lg" id="gotoPage2Btn" disabled>下一步 ➜</button>
+                            <button class="btn btn-primary btn-lg" id="gotoPage2Btn" disabled>
+                                下一步 <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i>
+                            </button>
                         </div>
                     </div>
                 </section>
 
-                <!-- PAGE 2 -->
+                <!-- ==========================================================
+                   PAGE 2：命題與發布
+                   ========================================================== -->
                 <section class="page" data-page="2">
-                    <div class="page-title">✏️ 命題與發布 <span class="badge">步驟 2 / 5</span></div>
+                    <div class="page-title">
+                        ✏️ 命題與發布
+                        <span class="badge">步驟 2 / 5</span>
+                    </div>
                     <div class="page-subtitle">輸入題目內容，選擇題型、配分與作答時間</div>
+
                     <div class="card-panel glow" style="flex:1;">
                         <div class="form-row">
-                            <label>📝 題目批註</label>
+                            <label><i class="fa-regular fa-pen-to-square" style="margin-right:6px;"></i>題目批註</label>
                             <input type="text" id="questionNoteInput" placeholder="請輸入本題題目" style="font-size:17px;" />
                         </div>
                         <div class="form-row">
-                            <label>📋 題型</label>
+                            <label><i class="fa-regular fa-list" style="margin-right:6px;"></i>題型</label>
                             <select id="questionTypeSelect">
-                                <option value="choice">選擇題 (A/B/C/D)</option>
-                                <option value="text">文字題 (自由輸入)</option>
-                                <option value="image">📷 圖片題 (繪圖塗註)</option>
+                                <option value="choice"><i class="fa-regular fa-circle-check"></i> 選擇題 (A/B/C/D)</option>
+                                <option value="text"><i class="fa-regular fa-pen"></i> 文字題 (自由輸入)</option>
+                                <!-- Tool 2 圖片題已隱藏，待 Storage 處理完成後可恢復 -->
                             </select>
-                            <label>⭐ 配分</label>
+                            <label><i class="fa-regular fa-star" style="margin-right:6px;"></i>配分</label>
                             <input type="number" id="questionScoreInput" min="1" max="10" value="1" style="width:70px; min-width:60px; text-align:center;" />
-                            <label style="min-width:50px;">⏱️ 秒數</label>
-                            <input type="number" id="customSeconds" placeholder="秒" style="width:80px;min-width:60px;" value="30" />
+                            <label><i class="fa-regular fa-clock" style="margin-right:6px;"></i>秒數</label>
+                            <input type="number" id="customSeconds" placeholder="秒" style="width:80px;min-width:60px;" value="20" />
                             <button class="btn btn-ghost btn-sm" data-seconds="10">10s</button>
                             <button class="btn btn-ghost btn-sm" data-seconds="30">30s</button>
                             <button class="btn btn-ghost btn-sm" data-seconds="60">60s</button>
                         </div>
-                        <!-- 圖片上傳區 -->
-                        <div id="imageUploadArea" class="hidden" style="margin-top:12px; padding:16px; background:#f8faff; border-radius:16px; border:2px dashed #d7e0e9;">
-                            <div class="form-row">
-                                <label>📷 上傳圖片</label>
-                                <input type="file" id="imageFileInput" accept="image/*" style="flex:1;" />
-                                <span style="font-size:13px; color:#8899aa;">支援 PNG / JPG / WebP</span>
-                            </div>
-                            <div id="imagePreviewArea" class="image-preview-area hidden">
-                                <img id="imagePreview" src="" alt="圖片預覽" />
-                                <div style="margin-top:6px; font-size:13px; color:#4a6a8a;" id="imagePreviewName"></div>
-                            </div>
-                        </div>
+
                         <div style="margin-top:12px;">
-                            <button class="btn btn-success btn-lg btn-block btn-glow" id="publishBtn">📨 發布第 1 題</button>
+                            <button class="btn btn-success btn-lg btn-block btn-glow" id="publishBtn">
+                                <i class="fa-regular fa-paper-plane" style="margin-right:8px;"></i>發布第 1 題
+                            </button>
                         </div>
-                        <div id="publishStatus" style="margin-top:10px; text-align:center; font-size:14px; color:#4a6a8a;">尚未發布</div>
+
+                        <div id="publishStatus" style="margin-top:10px; text-align:center; font-size:14px; color:var(--color-text-secondary);">
+                            尚未發布
+                        </div>
                     </div>
+
                     <div class="page-footer">
-                        <div class="nav-left"><button class="btn btn-ghost" id="backToPage1">◀ 上一頁</button></div>
-                        <div class="nav-right"><button class="btn btn-primary btn-lg" id="gotoPage3Btn" disabled>下一步 ➜</button></div>
+                        <div class="nav-left">
+                            <button class="btn btn-ghost" id="backToPage1">
+                                <i class="fa-solid fa-arrow-left" style="margin-right:6px;"></i>上一頁
+                            </button>
+                        </div>
+                        <div class="nav-right">
+                            <button class="btn btn-primary btn-lg" id="gotoPage3Btn" disabled>
+                                下一步 <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i>
+                            </button>
+                        </div>
                     </div>
                 </section>
 
-                <!-- PAGE 3 -->
+                <!-- ==========================================================
+                   PAGE 3：即時監控
+                   ========================================================== -->
                 <section class="page" data-page="3">
-                    <div class="page-title">📊 即時監控 <span class="badge">步驟 3 / 5</span></div>
+                    <div class="page-title">
+                        📊 即時監控
+                        <span class="badge">步驟 3 / 5</span>
+                    </div>
                     <div class="page-subtitle" id="page3Subtitle">觀察學生作答情況，管理作答流程</div>
+
                     <div class="card-panel" style="flex:1; display:flex; flex-direction:column;">
                         <div id="timerLargeContainer" style="text-align:center; padding:4px 0;">
                             <div class="timer-large" id="timerLargeDisplay">--</div>
-                            <div style="font-size:14px; color:#4a6a8a;" id="timerLabel">⏱️ 等待開始</div>
+                            <div style="font-size:14px; color:var(--color-text-secondary);" id="timerLabel"><i class="fa-regular fa-clock" style="margin-right:6px;"></i>等待開始</div>
                         </div>
+
                         <div id="cardContainer" class="card-pool" style="min-height:60px; flex:1;">
-                            <div style="color:#8899aa; padding:20px; text-align:center; width:100%;">尚未建立教室或發布題目</div>
+                            <div style="color:var(--color-text-muted); padding:20px; text-align:center; width:100%;">尚未建立教室或發布題目</div>
                         </div>
+
                         <div id="textListContainer" class="text-list hidden"></div>
-                        <!-- 圖片題縮圖區 -->
-                        <div id="imageGridContainer" class="hidden" style="flex:1; overflow-y:auto; padding:4px 0;">
-                            <div id="imageGrid" class="image-grid"></div>
-                        </div>
+
                         <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; justify-content:center;">
-                            <button class="btn btn-primary btn-lg" id="startStopBtn" style="min-width:160px;" disabled>▶️ 開始作答</button>
-                            <button class="btn btn-ghost" id="broadcastBtn3" style="display:inline-flex;">📢 廣播</button>
-                            <button class="btn btn-ghost" id="viewTextAnswersBtn" style="display:none;">📝 觀看所有學生回答</button>
+                            <button class="btn btn-primary btn-lg" id="startStopBtn" style="min-width:160px;" disabled>
+                                <i class="fa-regular fa-play" style="margin-right:8px;"></i>開始作答
+                            </button>
+                            <button class="btn btn-ghost" id="broadcastBtn3" style="display:inline-flex;">
+                                <i class="fa-regular fa-bullhorn" style="margin-right:6px;"></i>廣播
+                            </button>
+                            <button class="btn btn-ghost" id="viewTextAnswersBtn" style="display:none;">
+                                <i class="fa-regular fa-eye" style="margin-right:6px;"></i>觀看所有回答
+                            </button>
                         </div>
                     </div>
+
                     <div class="page-footer">
-                        <div class="nav-left"><button class="btn btn-ghost" id="backToPage2">◀ 上一頁</button></div>
-                        <div class="nav-right"><button class="btn btn-primary btn-lg" id="gotoPage4Btn" disabled>下一步 ➜</button></div>
+                        <div class="nav-left">
+                            <button class="btn btn-ghost" id="backToPage2">
+                                <i class="fa-solid fa-arrow-left" style="margin-right:6px;"></i>上一頁
+                            </button>
+                        </div>
+                        <div class="nav-right">
+                            <button class="btn btn-primary btn-lg" id="gotoPage4Btn" disabled>
+                                下一步 <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i>
+                            </button>
+                        </div>
                     </div>
                 </section>
 
-                <!-- PAGE 4 -->
+                <!-- ==========================================================
+                   PAGE 4：結果公布
+                   ========================================================== -->
                 <section class="page" data-page="4">
-                    <div class="page-title">🎯 結果公布 <span class="badge">步驟 4 / 5</span></div>
+                    <div class="page-title">
+                        🎯 結果公布
+                        <span class="badge">步驟 4 / 5</span>
+                    </div>
                     <div class="page-subtitle" id="page4Subtitle">公布答案或檢視學生文字回答</div>
+
                     <div class="card-panel" style="flex:1; display:flex; flex-direction:column;">
                         <div id="choiceRevealArea">
                             <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px;">
-                                <span style="font-weight:600; color:#1a3146;">✅ 公布正確答案：</span>
+                                <span style="font-weight:600; color:var(--color-text-primary);"><i class="fa-regular fa-check-circle" style="margin-right:6px;"></i>公布正確答案：</span>
                                 <button class="btn btn-warning" data-answer="A">A</button>
                                 <button class="btn btn-warning" data-answer="B">B</button>
                                 <button class="btn btn-warning" data-answer="C">C</button>
                                 <button class="btn btn-warning" data-answer="D">D</button>
-                                <button class="btn btn-ghost btn-sm" id="hideAnswerBtn">隱藏結果</button>
+                                <button class="btn btn-ghost btn-sm" id="hideAnswerBtn"><i class="fa-regular fa-eye-slash" style="margin-right:4px;"></i>隱藏</button>
                             </div>
                             <div id="choiceResultCards" class="card-pool" style="min-height:50px;">
-                                <div style="color:#8899aa; padding:10px; text-align:center; width:100%;">請公布答案</div>
+                                <div style="color:var(--color-text-muted); padding:10px; text-align:center; width:100%;">請公布答案</div>
                             </div>
                         </div>
+
                         <div id="textGradingArea" class="hidden" style="flex:1; display:flex; flex-direction:column;">
-                            <div style="font-weight:600; color:#1a3146; margin-bottom:8px;">📝 勾選答對的學生（點擊即加分）</div>
-                            <div id="textGradingList" class="text-list" style="flex:1;">
-                                <div style="color:#8899aa; padding:10px; text-align:center;">尚無作答資料</div>
+                            <div style="font-weight:600; color:var(--color-text-primary); margin-bottom:8px;">
+                                <i class="fa-regular fa-pen" style="margin-right:6px;"></i>勾選答對的學生（點擊即加分）
                             </div>
-                            <div style="margin-top:8px; font-size:14px; color:#4a6a8a; text-align:center;">勾選即時加分，取消即時扣分</div>
-                        </div>
-                        <div id="imageResultArea" class="hidden" style="flex:1; display:flex; flex-direction:column;">
-                            <div style="font-weight:600; color:#1a3146; margin-bottom:8px;">📷 學生繪圖作品</div>
-                            <div id="imageResultGrid" class="image-result-grid"></div>
+                            <div id="textGradingList" class="text-list" style="flex:1;">
+                                <div style="color:var(--color-text-muted); padding:10px; text-align:center;">尚無作答資料</div>
+                            </div>
+                            <div style="margin-top:8px; font-size:14px; color:var(--color-text-secondary); text-align:center;">
+                                勾選即時加分，取消即時扣分
+                            </div>
                         </div>
                     </div>
+
                     <div class="page-footer">
-                        <div class="nav-left"><button class="btn btn-ghost" id="backToPage3">◀ 上一頁</button></div>
-                        <div class="nav-right"><button class="btn btn-primary btn-lg" id="gotoPage5Btn" disabled>下一步 ➜</button></div>
+                        <div class="nav-left">
+                            <button class="btn btn-ghost" id="backToPage3">
+                                <i class="fa-solid fa-arrow-left" style="margin-right:6px;"></i>上一頁
+                            </button>
+                        </div>
+                        <div class="nav-right">
+                            <button class="btn btn-primary btn-lg" id="gotoPage5Btn" disabled>
+                                下一步 <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i>
+                            </button>
+                        </div>
                     </div>
                 </section>
 
-                <!-- PAGE 5 -->
+                <!-- ==========================================================
+                   PAGE 5：結算與排行榜
+                   ========================================================== -->
                 <section class="page" data-page="5">
-                    <div class="page-title">🏆 結算與排行榜 <span class="badge">步驟 5 / 5</span></div>
+                    <div class="page-title">
+                        🏆 結算與排行榜
+                        <span class="badge">步驟 5 / 5</span>
+                    </div>
                     <div class="page-subtitle">檢視累計得分榜，匯出記錄或進入下一題</div>
+
                     <div class="card-panel" style="flex:1; display:flex; flex-direction:column;">
                         <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <span style="font-weight:600; color:#1a3146;">🏆 累計得分榜</span>
+                            <span style="font-weight:600; color:var(--color-text-primary);"><i class="fa-regular fa-trophy" style="margin-right:6px;"></i>累計得分榜</span>
                             <div style="display:flex; gap:8px;">
-                                <button class="btn btn-ghost btn-sm" id="rankSortBtn">📋 依分數排序</button>
+                                <button class="btn btn-ghost btn-sm" id="rankSortBtn"><i class="fa-regular fa-arrow-up-wide-short" style="margin-right:4px;"></i>依分數排序</button>
                             </div>
                         </div>
                         <div id="rankList" class="rank-list" style="flex:1;">
-                            <div style="color:#8899aa; padding:20px; text-align:center;">尚無得分記錄</div>
+                            <div style="color:var(--color-text-muted); padding:20px; text-align:center;">尚無得分記錄</div>
                         </div>
+
                         <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; justify-content:center;">
-                            <button class="btn btn-danger btn-lg" id="clearAllBtn" style="flex:1; min-width:180px;">🗑️ 清除本題 · 進入下一題</button>
-                            <button class="btn btn-success btn-lg" id="exportExcelBtn" style="flex:1; min-width:180px;">📥 下載 Excel 記錄</button>
-                            <button class="btn btn-success btn-lg" id="exportZipBtn" style="flex:1; min-width:180px;">📦 下載 ZIP (含圖片)</button>
+                            <button class="btn btn-danger btn-lg" id="clearAllBtn" style="flex:1; min-width:180px;">
+                                <i class="fa-regular fa-trash-can" style="margin-right:8px;"></i>清除本題 · 進入下一題
+                            </button>
+                            <button class="btn btn-success btn-lg" id="exportExcelBtn" style="flex:1; min-width:180px;">
+                                <i class="fa-regular fa-file-excel" style="margin-right:8px;"></i>下載 Excel
+                            </button>
                         </div>
                     </div>
+
                     <div class="page-footer">
-                        <div class="nav-left"><button class="btn btn-ghost" id="backToPage4">◀ 上一頁</button></div>
+                        <div class="nav-left">
+                            <button class="btn btn-ghost" id="backToPage4">
+                                <i class="fa-solid fa-arrow-left" style="margin-right:6px;"></i>上一頁
+                            </button>
+                        </div>
                         <div class="nav-right"></div>
                     </div>
                 </section>
@@ -1078,72 +1382,89 @@
             </div><!-- /pages-track -->
         </div><!-- /pages-wrapper -->
 
-        <!-- ===== 浮動工具列 ===== -->
-        <div class="floating-toolbar" id="floatingToolbar">
-            <div class="menu-items" id="menuItems">
-                <div class="fab" id="fabQR" title="顯示 QR Code">📱<span class="tooltip">QR Code</span></div>
-                <div class="fab" id="fabBroadcast" title="廣播訊息">📢<span class="tooltip">廣播</span></div>
-                <div class="fab" id="fabLockScreen" title="鎖定學生畫面">🔒<span class="tooltip">鎖定畫面</span></div>
-            </div>
-            <div class="fab" id="fabToggleMenu" title="展開工具">⋯<span class="tooltip">工具</span></div>
+        <!-- ============================================================
+           浮動 Dock 工具列（毛玻璃）
+           ============================================================ -->
+        <div class="floating-dock" id="floatingDock">
+            <!-- 工具按鈕（預設顯示） -->
+            <button class="dock-item" id="dockQR" title="顯示 QR Code">
+                <i class="fa-regular fa-qrcode"></i>
+                <span class="label">QR碼</span>
+            </button>
+
+            <button class="dock-item" id="dockBroadcast" title="廣播訊息">
+                <i class="fa-regular fa-bullhorn"></i>
+                <span class="label">廣播</span>
+            </button>
+
+            <button class="dock-item" id="dockLockScreen" title="鎖定學生畫面">
+                <i class="fa-regular fa-lock"></i>
+                <span class="label">鎖定</span>
+            </button>
+
+            <div class="dock-divider"></div>
+
+            <!-- 未來工具佔位（已隱藏） -->
+            <!--
+            <button class="dock-item" id="dockTimer" title="計時器">
+                <i class="fa-regular fa-clock"></i>
+                <span class="label">計時</span>
+            </button>
+            <button class="dock-item" id="dockDice" title="骰子">
+                <i class="fa-regular fa-dice"></i>
+                <span class="label">骰子</span>
+            </button>
+            <button class="dock-item" id="dockPicker" title="隨機點名">
+                <i class="fa-regular fa-user-plus"></i>
+                <span class="label">點名</span>
+            </button>
+            -->
+
+            <!-- 展開/收合按鈕 -->
+            <button class="dock-toggle" id="dockToggle" title="展開/收合工具">
+                <i class="fa-solid fa-ellipsis"></i>
+            </button>
         </div>
 
-        <!-- ===== QR Code 彈窗 ===== -->
-        <div class="qr-modal" id="qrModal">
+        <!-- ============================================================
+           QR Code 彈窗
+           ============================================================ -->
+        <div class="modal-overlay" id="qrModal">
             <div class="modal-box">
-                <h3>📱 掃描 QR Code 加入教室</h3>
+                <h3><i class="fa-regular fa-qrcode" style="margin-right:8px;"></i>掃描 QR Code 加入教室</h3>
                 <p id="qrModalRoomCode">教室代碼：----</p>
                 <div id="qrcodeDisplay"></div>
-                <button class="btn btn-ghost close-btn" id="qrModalClose">關閉</button>
+                <button class="btn btn-ghost close-btn" id="qrModalClose"><i class="fa-regular fa-xmark" style="margin-right:4px;"></i>關閉</button>
             </div>
         </div>
 
-        <!-- ===== 廣播彈窗 ===== -->
-        <div class="broadcast-modal" id="broadcastModal">
+        <!-- ============================================================
+           廣播彈窗
+           ============================================================ -->
+        <div class="modal-overlay" id="broadcastModal">
             <div class="modal-box">
-                <h3>📢 廣播訊息</h3>
-                <p style="font-size:14px; color:#4a6a8a;">訊息將以跑馬燈方式顯示在學生端</p>
+                <h3><i class="fa-regular fa-bullhorn" style="margin-right:8px;"></i>廣播訊息</h3>
+                <p style="font-size:14px; color:var(--color-text-secondary);">訊息將以跑馬燈方式顯示在學生端</p>
                 <textarea id="broadcastInput" placeholder="請輸入要廣播的訊息..."></textarea>
                 <div class="btn-row">
-                    <button class="btn btn-ghost" id="broadcastCancel">取消</button>
-                    <button class="btn btn-primary" id="broadcastSend">📤 發送</button>
+                    <button class="btn btn-ghost" id="broadcastCancel"><i class="fa-regular fa-xmark" style="margin-right:4px;"></i>取消</button>
+                    <button class="btn btn-primary" id="broadcastSend"><i class="fa-regular fa-paper-plane" style="margin-right:4px;"></i>發送</button>
                 </div>
             </div>
         </div>
 
     </div><!-- /app-container -->
 
-    <!-- ============================================================ -->
     <script type="module">
         // ============================================================
-        // 1. Firebase 初始化 (模組化)
+        // 1. Firebase 初始化
         // ============================================================
         import { initializeApp } from "firebase/app";
         import {
-            getFirestore,
-            doc,
-            setDoc,
-            getDoc,
-            updateDoc,
-            deleteDoc,
-            collection,
-            query,
-            where,
-            onSnapshot,
-            getDocs,
-            writeBatch,
-            serverTimestamp,
-            increment,
-            addDoc,
-            runTransaction
+            getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc,
+            collection, query, where, onSnapshot, getDocs, writeBatch,
+            serverTimestamp, increment, addDoc, runTransaction
         } from "firebase/firestore";
-        import {
-            getStorage,
-            ref,
-            uploadBytes,
-            getDownloadURL,
-            deleteObject
-        } from "firebase/storage";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAVllhBuONIqLlPlvCgnozPEE2834HFTxA",
@@ -1155,7 +1476,6 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
         // ============================================================
         // 2. 全域狀態
@@ -1186,10 +1506,6 @@
             isPublished: false,
             isStopped: false,
             flowState: 'idle',
-            questionImageUrl: null,
-            studentImages: [],
-            imageAnswersUnsubscribe: null,
-            teacherFocusUnsubscribe: null,
         };
 
         // ============================================================
@@ -1229,19 +1545,11 @@
         const publishBtn = $('#publishBtn');
         const publishStatus = $('#publishStatus');
 
-        const imageUploadArea = $('#imageUploadArea');
-        const imageFileInput = $('#imageFileInput');
-        const imagePreviewArea = $('#imagePreviewArea');
-        const imagePreview = $('#imagePreview');
-        const imagePreviewName = $('#imagePreviewName');
-
         const timerLargeContainer = $('#timerLargeContainer');
         const timerLargeDisplay = $('#timerLargeDisplay');
         const timerLabel = $('#timerLabel');
         const cardContainer = $('#cardContainer');
         const textListContainer = $('#textListContainer');
-        const imageGridContainer = $('#imageGridContainer');
-        const imageGrid = $('#imageGrid');
         const startStopBtn = $('#startStopBtn');
         const viewTextAnswersBtn = $('#viewTextAnswersBtn');
         const page3Subtitle = $('#page3Subtitle');
@@ -1250,8 +1558,6 @@
         const choiceResultCards = $('#choiceResultCards');
         const textGradingArea = $('#textGradingArea');
         const textGradingList = $('#textGradingList');
-        const imageResultArea = $('#imageResultArea');
-        const imageResultGrid = $('#imageResultGrid');
         const hideAnswerBtn = $('#hideAnswerBtn');
         const page4Subtitle = $('#page4Subtitle');
 
@@ -1259,13 +1565,13 @@
         const rankSortBtn = $('#rankSortBtn');
         const clearAllBtn = $('#clearAllBtn');
         const exportExcelBtn = $('#exportExcelBtn');
-        const exportZipBtn = $('#exportZipBtn');
 
-        const fabToggleMenu = $('#fabToggleMenu');
-        const menuItems = $('#menuItems');
-        const fabQR = $('#fabQR');
-        const fabBroadcast = $('#fabBroadcast');
-        const fabLockScreen = $('#fabLockScreen');
+        const dockQR = $('#dockQR');
+        const dockBroadcast = $('#dockBroadcast');
+        const dockLockScreen = $('#dockLockScreen');
+        const dockToggle = $('#dockToggle');
+        const floatingDock = $('#floatingDock');
+
         const qrModal = $('#qrModal');
         const qrcodeDisplay = $('#qrcodeDisplay');
         const qrModalRoomCode = $('#qrModalRoomCode');
@@ -1338,15 +1644,15 @@
             publishBtn.disabled = !(state === 'idle' || state === 'stopped');
             if (state === 'published' || state === 'idle') {
                 startStopBtn.disabled = false;
-                startStopBtn.textContent = '▶️ 開始作答';
+                startStopBtn.innerHTML = '<i class="fa-regular fa-play" style="margin-right:8px;"></i>開始作答';
                 startStopBtn.className = 'btn btn-primary btn-lg';
             } else if (state === 'answering') {
                 startStopBtn.disabled = false;
-                startStopBtn.textContent = '⏹️ 停止作答';
+                startStopBtn.innerHTML = '<i class="fa-regular fa-stop" style="margin-right:8px;"></i>停止作答';
                 startStopBtn.className = 'btn btn-danger btn-lg';
             } else if (state === 'stopped') {
                 startStopBtn.disabled = true;
-                startStopBtn.textContent = '⏸️ 已停止';
+                startStopBtn.innerHTML = '<i class="fa-regular fa-pause" style="margin-right:8px;"></i>已停止';
                 startStopBtn.className = 'btn btn-ghost btn-lg';
             }
             gotoPage4Btn.disabled = state !== 'stopped';
@@ -1602,33 +1908,7 @@
         }
 
         // ============================================================
-        // 10. 題型切換
-        // ============================================================
-        questionTypeSelect.addEventListener('change', function() {
-            const isImage = this.value === 'image';
-            imageUploadArea.classList.toggle('hidden', !isImage);
-            if (!isImage) {
-                imagePreviewArea.classList.add('hidden');
-                imageFileInput.value = '';
-                STATE.questionImageUrl = null;
-            }
-        });
-
-        imageFileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                imagePreview.src = ev.target.result;
-                imagePreviewArea.classList.remove('hidden');
-                imagePreviewName.textContent = `📷 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-                STATE.questionImageUrl = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // ============================================================
-        // 11. 發布題目（含圖片上傳）
+        // 10. 發布題目
         // ============================================================
         async function publishQuestion() {
             if (!STATE.roomId) { alert('請先建立教室！'); return; }
@@ -1648,42 +1928,16 @@
             STATE.questionScore = Math.min(10, Math.max(1, score));
             const qType = questionTypeSelect.value;
             const note = questionNoteInput.value.trim() || `第 ${qNum} 題`;
-            const sec = parseInt(customSeconds.value) || 30;
+            const sec = parseInt(customSeconds.value) || 20;
 
             currentQuestionDisplay.textContent = `第 ${qNum} 題`;
             publishBtn.textContent = `📨 發布第 ${qNum + 1} 題`;
             publishStatus.textContent = `✅ 已發布第 ${qNum} 題（配分：${STATE.questionScore} 分）`;
 
-            let imageUrl = null;
-
-            // === 圖片題處理 ===
-            if (qType === 'image') {
-                const file = imageFileInput.files[0];
-                if (!file) {
-                    alert('請先上傳圖片');
-                    return;
-                }
-                try {
-                    // 使用模組化 Storage
-                    const storageRef = ref(storage,
-                        `teachers/${STATE.teacherName}/${STATE.roomId}/question_${roundId}.png`);
-                    const snapshot = await uploadBytes(storageRef, file);
-                    imageUrl = await getDownloadURL(snapshot.ref);
-                    STATE.questionImageUrl = imageUrl;
-                    publishStatus.textContent = `✅ 已發布第 ${qNum} 題（圖片已上傳）`;
-                } catch (e) {
-                    alert('上傳圖片失敗：' + e.message);
-                    console.error('上傳圖片錯誤', e);
-                    return;
-                }
-            }
-
-            // 重置狀態
             STATE.correctAnswer = null;
             STATE.isRevealed = false;
 
-            // 寫入 Firebase
-            const roomData = {
+            await updateDoc(doc(db, 'rooms', STATE.roomId), {
                 currentQuestion: qNum,
                 currentRoundId: roundId,
                 questionNote: note,
@@ -1694,12 +1948,7 @@
                 revealedAnswer: null,
                 clearAll: true,
                 specifiedStudents: [],
-                teacherFocus: null,
-            };
-            if (qType === 'image' && imageUrl) {
-                roomData.questionImageUrl = imageUrl;
-            }
-            await updateDoc(doc(db, 'rooms', STATE.roomId), roomData);
+            });
             await sleep(300);
             await updateDoc(doc(db, 'rooms', STATE.roomId), { clearAll: false });
             await setDoc(metaRef, { questionCounter: qNum + 1 });
@@ -1715,15 +1964,10 @@
             timerLabel.textContent = '⏱️ 等待開始作答';
             timerLargeContainer.style.display = 'block';
 
-            startStopBtn.textContent = '▶️ 開始作答';
+            startStopBtn.innerHTML = '<i class="fa-regular fa-play" style="margin-right:8px;"></i>開始作答';
             startStopBtn.className = 'btn btn-primary btn-lg';
 
             choiceResultCards.innerHTML = '<div style="color:#8899aa; padding:10px; text-align:center; width:100%;">請公布答案</div>';
-
-            imageGridContainer.classList.add('hidden');
-            imageResultArea.classList.add('hidden');
-            imageResultGrid.innerHTML = '';
-            STATE.studentImages = [];
 
             updateCards();
             updateCharts();
@@ -1732,111 +1976,28 @@
 
             if (qType === 'text') {
                 viewTextAnswersBtn.style.display = 'inline-flex';
-            } else if (qType === 'image') {
-                viewTextAnswersBtn.style.display = 'none';
-                listenImageAnswers();
             } else {
                 viewTextAnswersBtn.style.display = 'none';
             }
 
             updateFlowButtons();
-            alert(`📨 已發布第 ${qNum} 題（${qType === 'image' ? '圖片題' : qType === 'text' ? '文字題' : '選擇題'}），請點擊「開始作答」。`);
+            alert(`📨 已發布第 ${qNum} 題（${qType === 'text' ? '文字題' : '選擇題'}），請點擊「開始作答」。`);
         }
 
         // ============================================================
-        // 12. 監聽圖片答案（九宮格）
-        // ============================================================
-        function listenImageAnswers() {
-            if (STATE.imageAnswersUnsubscribe) {
-                STATE.imageAnswersUnsubscribe();
-                STATE.imageAnswersUnsubscribe = null;
-            }
-            const q = query(
-                collection(db, 'rooms', STATE.roomId, 'answers'),
-                where('roundId', '==', STATE.currentRoundId),
-                where('imageUrl', '!=', null)
-            );
-            STATE.imageAnswersUnsubscribe = onSnapshot(q, (snapshot) => {
-                const results = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    results.push({
-                        studentId: data.studentId,
-                        name: data.name || data.studentId,
-                        imageUrl: data.imageUrl,
-                        timestamp: data.timestamp?.toDate?.() || new Date(),
-                    });
-                });
-                results.sort((a, b) => a.studentId.localeCompare(b.studentId));
-                STATE.studentImages = results;
-                updateImageGrid(results);
-                updateImageResultGrid(results);
-            }, (err) => {
-                console.warn('監聽圖片答案失敗', err);
-            });
-        }
-
-        function updateImageGrid(images) {
-            if (images.length === 0) {
-                imageGridContainer.classList.add('hidden');
-                return;
-            }
-            imageGridContainer.classList.remove('hidden');
-            let html = '';
-            for (const img of images) {
-                html += `
-                            <div class="grid-item" data-student-id="${img.studentId}" data-image-url="${img.imageUrl}"
-                                 onclick="window._handleImageClick('${img.imageUrl}')">
-                                <img src="${img.imageUrl}" />
-                                <div class="label">${img.studentId} ${img.name}</div>
-                            </div>
-                        `;
-            }
-            imageGrid.innerHTML = html;
-        }
-
-        window._handleImageClick = async function(imageUrl) {
-            if (!STATE.roomId) return;
-            try {
-                await updateDoc(doc(db, 'rooms', STATE.roomId), { teacherFocus: imageUrl });
-                alert('✅ 已廣播此圖片至所有學生端');
-            } catch (e) {
-                alert('廣播失敗：' + e.message);
-            }
-        };
-
-        function updateImageResultGrid(images) {
-            if (images.length === 0) {
-                imageResultArea.classList.add('hidden');
-                return;
-            }
-            imageResultArea.classList.remove('hidden');
-            let html = '';
-            for (const img of images) {
-                html += `
-                            <div class="result-item">
-                                <img src="${img.imageUrl}" />
-                                <div class="label">${img.studentId} ${img.name}</div>
-                            </div>
-                        `;
-            }
-            imageResultGrid.innerHTML = html;
-        }
-
-        // ============================================================
-        // 13. 開始 / 停止作答
+        // 11. 開始 / 停止作答
         // ============================================================
         async function toggleStartStop() {
             if (!STATE.roomId) return;
             if (STATE.flowState === 'idle' || STATE.flowState === 'stopped' || STATE.flowState === 'published') {
-                const sec = parseInt(customSeconds.value) || 30;
+                const sec = parseInt(customSeconds.value) || 20;
                 await updateDoc(doc(db, 'rooms', STATE.roomId), { isAnswering: true, timerSeconds: sec });
                 STATE.isAnswering = true;
                 STATE.flowState = 'answering';
-                startStopBtn.textContent = '⏹️ 停止作答';
+                startStopBtn.innerHTML = '<i class="fa-regular fa-stop" style="margin-right:8px;"></i>停止作答';
                 startStopBtn.className = 'btn btn-danger btn-lg';
                 startTeacherTimer(sec);
-                timerLabel.textContent = '⏱️ 作答中...';
+                timerLabel.innerHTML = '<i class="fa-regular fa-clock" style="margin-right:6px;"></i>作答中...';
                 updateFlowButtons();
             } else if (STATE.flowState === 'answering') {
                 await stopRound();
@@ -1847,13 +2008,13 @@
 
         async function stopRound() {
             clearTeacherTimer();
-            timerLabel.textContent = '⏱️ 已停止';
+            timerLabel.innerHTML = '<i class="fa-regular fa-clock" style="margin-right:6px;"></i>已停止';
             timerLargeDisplay.textContent = '⏹️';
             await updateDoc(doc(db, 'rooms', STATE.roomId), { isAnswering: false });
             STATE.isAnswering = false;
             STATE.isStopped = true;
             STATE.flowState = 'stopped';
-            startStopBtn.textContent = '⏸️ 已停止';
+            startStopBtn.innerHTML = '<i class="fa-regular fa-pause" style="margin-right:8px;"></i>已停止';
             startStopBtn.className = 'btn btn-ghost btn-lg';
             await collectAnswers();
             updateCards();
@@ -1863,7 +2024,7 @@
         }
 
         // ============================================================
-        // 14. 教師計時器
+        // 12. 教師計時器
         // ============================================================
         let teacherTimerInterval = null;
 
@@ -1884,7 +2045,7 @@
                     clearTeacherTimer();
                     timerLargeDisplay.textContent = '⏰';
                     timerLargeDisplay.className = 'timer-large urgent';
-                    timerLabel.textContent = '⏱️ 時間到！';
+                    timerLabel.innerHTML = '<i class="fa-regular fa-clock" style="margin-right:6px;"></i>時間到！';
                     await stopRound();
                 }
             }, 1000);
@@ -1898,7 +2059,7 @@
         }
 
         // ============================================================
-        // 15. 收集答案
+        // 13. 收集答案
         // ============================================================
         async function collectAnswers() {
             if (!STATE.roomId || !STATE.currentRoundId) return;
@@ -1914,7 +2075,6 @@
                     name: data.name || data.studentId,
                     choice: data.choice || '',
                     text: data.text || '',
-                    imageUrl: data.imageUrl || '',
                     timestamp: data.timestamp?.toDate?.() || new Date(),
                 };
             });
@@ -1934,7 +2094,6 @@
                     name: ans.name,
                     choice: ans.choice,
                     text: ans.text,
-                    imageUrl: ans.imageUrl,
                     timestamp: ans.timestamp,
                 })),
             });
@@ -1943,7 +2102,7 @@
         }
 
         // ============================================================
-        // 16. 公布答案（選擇題）
+        // 14. 公布答案（選擇題）
         // ============================================================
         async function revealAnswer(answer) {
             STATE.correctAnswer = answer;
@@ -1974,7 +2133,7 @@
         }
 
         // ============================================================
-        // 17. 更新卡牌（保留既有邏輯，此處為簡化版）
+        // 15. 更新卡牌
         // ============================================================
         function updateCards() {
             let filtered = [];
@@ -2101,7 +2260,7 @@
         }
 
         // ============================================================
-        // 18. 指定學生
+        // 16. 指定學生
         // ============================================================
         function toggleSpecifiedStudent(studentId) {
             const idx = STATE.specifiedStudents.indexOf(studentId);
@@ -2112,7 +2271,7 @@
         }
 
         // ============================================================
-        // 19. 排行榜
+        // 17. 排行榜
         // ============================================================
         function updateCharts() { updateRankList(); }
 
@@ -2137,7 +2296,7 @@
         }
 
         // ============================================================
-        // 20. 文字題給分
+        // 18. 文字題給分
         // ============================================================
         function renderTextGrading() {
             const filtered = [];
@@ -2186,20 +2345,19 @@
         }
 
         // ============================================================
-        // 21. 觀看文字答案
+        // 19. 觀看文字答案
         // ============================================================
         function viewTextAnswers() {
             goToPage(4);
             choiceRevealArea.classList.add('hidden');
             textGradingArea.classList.remove('hidden');
-            imageResultArea.classList.add('hidden');
             page4Subtitle.textContent = '📝 勾選答對的學生，即時加分';
             renderTextGrading();
             gotoPage5Btn.disabled = false;
         }
 
         // ============================================================
-        // 22. 清除記錄
+        // 20. 清除記錄
         // ============================================================
         async function clearAllHistory() {
             if (!confirm('確定要清除所有紀錄，進入下一題嗎？\n（累計得分將保留）')) return;
@@ -2217,14 +2375,6 @@
             STATE.currentQuestion = 0;
             STATE.currentRoundId = null;
             STATE.flowState = 'idle';
-            STATE.studentImages = [];
-            imageGridContainer.classList.add('hidden');
-            imageResultArea.classList.add('hidden');
-
-            if (STATE.imageAnswersUnsubscribe) {
-                STATE.imageAnswersUnsubscribe();
-                STATE.imageAnswersUnsubscribe = null;
-            }
 
             currentQuestionDisplay.textContent = '第 0 題';
             publishBtn.textContent = `📨 發布第 ${nextQNum} 題`;
@@ -2243,7 +2393,7 @@
             gotoPage5Btn.disabled = true;
 
             timerLargeDisplay.textContent = '--';
-            timerLabel.textContent = '⏱️ 等待開始';
+            timerLabel.innerHTML = '<i class="fa-regular fa-clock" style="margin-right:6px;"></i>等待開始';
             timerLargeContainer.style.display = 'block';
             choiceResultCards.innerHTML = '<div style="color:#8899aa; padding:10px; text-align:center; width:100%;">請公布答案</div>';
 
@@ -2252,12 +2402,12 @@
         }
 
         // ============================================================
-        // 23. 匯出 Excel
+        // 21. 匯出 Excel
         // ============================================================
         function exportExcel() {
             if (STATE.history.length === 0) { alert('目前沒有任何記錄可匯出。'); return; }
             const rows = [
-                ['題號', '題型', '題目批註', '配分', '座號', '姓名', '作答選項', '文字答案', '圖片URL', '是否正確', '得分']
+                ['題號', '題型', '題目批註', '配分', '座號', '姓名', '作答選項', '文字答案', '是否正確', '得分']
             ];
             for (const h of STATE.history) {
                 const score = h.score || 1;
@@ -2274,20 +2424,16 @@
                     } else if (h.type === 'text') {
                         earnedScore = STATE.cumulativeScores[ans.studentId] || 0;
                         isCorrect = earnedScore > 0 ? '✅ 正確' : '';
-                    } else if (h.type === 'image') {
-                        isCorrect = ans.imageUrl ? '📷 已繳交' : '';
-                        earnedScore = ans.imageUrl ? score : 0;
                     }
                     rows.push([
                         h.question,
-                        h.type === 'choice' ? '選擇題' : h.type === 'text' ? '文字題' : '圖片題',
+                        h.type === 'choice' ? '選擇題' : '文字題',
                         h.note || '',
                         score,
                         ans.studentId || '',
                         ans.name || '',
                         ans.choice || '',
                         ans.text || '',
-                        ans.imageUrl || '',
                         isCorrect,
                         earnedScore,
                     ]);
@@ -2303,105 +2449,7 @@
         }
 
         // ============================================================
-        // 24. 匯出 ZIP（含圖片）
-        // ============================================================
-        async function exportZip() {
-            if (STATE.history.length === 0) {
-                alert('目前沒有任何記錄可匯出。');
-                return;
-            }
-            try {
-                if (typeof window.JSZip === 'undefined') {
-                    await new Promise((resolve, reject) => {
-                        const script = document.createElement('script');
-                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-                        script.onload = resolve;
-                        script.onerror = () => reject(new Error('JSZip 載入失敗'));
-                        document.head.appendChild(script);
-                    });
-                }
-                const JSZip = window.JSZip;
-                const zip = new JSZip();
-
-                const rows = [
-                    ['題號', '題型', '題目批註', '配分', '座號', '姓名', '作答選項', '文字答案', '是否正確', '得分']
-                ];
-                for (const h of STATE.history) {
-                    const score = h.score || 1;
-                    for (const ans of h.answers) {
-                        let isCorrect = '';
-                        let earnedScore = 0;
-                        if (h.type === 'choice') {
-                            if (ans.choice && ans.choice === h.correctAnswer) {
-                                isCorrect = '✅ 正確';
-                                earnedScore = score;
-                            } else if (ans.choice) {
-                                isCorrect = '❌ 錯誤';
-                            }
-                        } else if (h.type === 'text') {
-                            earnedScore = STATE.cumulativeScores[ans.studentId] || 0;
-                            isCorrect = earnedScore > 0 ? '✅ 正確' : '';
-                        } else if (h.type === 'image') {
-                            isCorrect = ans.imageUrl ? '📷 已繳交' : '';
-                            earnedScore = ans.imageUrl ? score : 0;
-                        }
-                        rows.push([
-                            h.question,
-                            h.type === 'choice' ? '選擇題' : h.type === 'text' ? '文字題' : '圖片題',
-                            h.note || '',
-                            score,
-                            ans.studentId || '',
-                            ans.name || '',
-                            ans.choice || '',
-                            ans.text || '',
-                            isCorrect,
-                            earnedScore,
-                        ]);
-                    }
-                }
-                const wb = XLSX.utils.book_new();
-                const ws = XLSX.utils.aoa_to_sheet(rows);
-                XLSX.utils.book_append_sheet(wb, ws, '課堂記錄');
-                const excelBuffer = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
-                zip.file(`成績表_${STATE.roomId}.xlsx`, excelBuffer);
-
-                const imageFolder = zip.folder('學生圖片');
-                let imageCount = 0;
-                for (const h of STATE.history) {
-                    if (h.type !== 'image') continue;
-                    for (const ans of h.answers) {
-                        if (!ans.imageUrl) continue;
-                        try {
-                            const resp = await fetch(ans.imageUrl);
-                            if (!resp.ok) continue;
-                            const blob = await resp.blob();
-                            const ext = blob.type.split('/')[1] || 'png';
-                            const fileName = `${ans.studentId}_${ans.name}.${ext}`;
-                            imageFolder.file(fileName, blob);
-                            imageCount++;
-                        } catch (e) {
-                            console.warn('下載圖片失敗', ans.studentId, e);
-                        }
-                    }
-                }
-
-                const zipBlob = await zip.generateAsync({ type: 'blob' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(zipBlob);
-                link.download =
-                `課堂記錄_${STATE.roomId}_${new Date().toISOString().slice(0, 10)}.zip`;
-                link.click();
-                URL.revokeObjectURL(link.href);
-
-                alert(`✅ ZIP 已下載！包含 ${imageCount} 張圖片`);
-            } catch (e) {
-                alert('打包下載失敗：' + e.message);
-                console.error(e);
-            }
-        }
-
-        // ============================================================
-        // 25. 廣播
+        // 22. 廣播
         // ============================================================
         async function sendBroadcast() {
             const msg = broadcastInput.value.trim();
@@ -2413,7 +2461,7 @@
         }
 
         // ============================================================
-        // 26. 鎖定畫面
+        // 23. 鎖定畫面
         // ============================================================
         async function toggleLockScreen() {
             if (!STATE.roomId) { alert('請先建立教室'); return; }
@@ -2423,13 +2471,14 @@
             const isLocked = data?.isLocked || false;
             const newLock = !isLocked;
             await updateDoc(roomRef, { isLocked: newLock });
-            fabLockScreen.textContent = newLock ? '🔓' : '🔒';
-            fabLockScreen.title = newLock ? '解鎖學生畫面' : '鎖定學生畫面';
+            dockLockScreen.innerHTML = newLock ?
+                '<i class="fa-regular fa-lock-open"></i><span class="label">解鎖</span>' :
+                '<i class="fa-regular fa-lock"></i><span class="label">鎖定</span>';
             alert(newLock ? '✅ 學生畫面已鎖定' : '✅ 學生畫面已解鎖');
         }
 
         // ============================================================
-        // 27. 管理後台
+        // 24. 管理後台
         // ============================================================
         let clickCount = 0,
             clickTimer = null;
@@ -2473,7 +2522,7 @@
         }
 
         // ============================================================
-        // 28. 自動清理過期房間
+        // 25. 自動清理過期房間
         // ============================================================
         async function autoCleanExpiredRooms() {
             try {
@@ -2505,7 +2554,7 @@
         }
 
         // ============================================================
-        // 29. 更新選擇題結果卡牌
+        // 26. 更新選擇題結果卡牌
         // ============================================================
         function updateChoiceResultCards() {
             const filtered = [];
@@ -2549,7 +2598,7 @@
         }
 
         // ============================================================
-        // 30. 事件綁定
+        // 27. 事件綁定
         // ============================================================
         gotoPage2Btn.addEventListener('click', () => goToPage(2));
         gotoPage3Btn.addEventListener('click', () => goToPage(3));
@@ -2569,18 +2618,11 @@
             if (STATE.questionType === 'text') {
                 choiceRevealArea.classList.add('hidden');
                 textGradingArea.classList.remove('hidden');
-                imageResultArea.classList.add('hidden');
                 page4Subtitle.textContent = '📝 勾選答對的學生，即時加分';
                 renderTextGrading();
-            } else if (STATE.questionType === 'image') {
-                choiceRevealArea.classList.add('hidden');
-                textGradingArea.classList.add('hidden');
-                imageResultArea.classList.remove('hidden');
-                page4Subtitle.textContent = '📷 學生繪圖作品';
             } else {
                 choiceRevealArea.classList.remove('hidden');
                 textGradingArea.classList.add('hidden');
-                imageResultArea.classList.add('hidden');
                 page4Subtitle.textContent = '✅ 公布正確答案，學生端會顯示對錯';
                 updateChoiceResultCards();
                 if (STATE.isRevealed && STATE.correctAnswer) {
@@ -2628,7 +2670,6 @@
 
         clearAllBtn.addEventListener('click', clearAllHistory);
         exportExcelBtn.addEventListener('click', exportExcel);
-        exportZipBtn.addEventListener('click', exportZip);
 
         let rankSortAsc = false;
         rankSortBtn.addEventListener('click', () => {
@@ -2637,24 +2678,36 @@
             updateRankList();
         });
 
-        fabToggleMenu.addEventListener('click', () => { menuItems.classList.toggle('open'); });
-        fabQR.addEventListener('click', () => {
+        // ----- Dock 工具列 -----
+        dockToggle.addEventListener('click', () => {
+            floatingDock.classList.toggle('collapsed');
+            const icon = dockToggle.querySelector('i');
+            if (floatingDock.classList.contains('collapsed')) {
+                icon.className = 'fa-solid fa-ellipsis';
+            } else {
+                icon.className = 'fa-solid fa-xmark';
+            }
+        });
+
+        dockQR.addEventListener('click', () => {
             if (STATE.roomId) { showQRCode(STATE.roomId);
                 qrModal.classList.add('show'); } else { alert('請先建立教室'); }
         });
-        qrModalClose.addEventListener('click', () => qrModal.classList.remove('show'));
-        qrModal.addEventListener('click', (e) => { if (e.target === qrModal) qrModal.classList.remove('show'); });
 
-        fabBroadcast.addEventListener('click', () => {
+        dockBroadcast.addEventListener('click', () => {
             if (STATE.roomId) { broadcastModal.classList.add('show');
                 broadcastInput.focus(); } else { alert('請先建立教室'); }
         });
+
+        dockLockScreen.addEventListener('click', toggleLockScreen);
+
+        qrModalClose.addEventListener('click', () => qrModal.classList.remove('show'));
+        qrModal.addEventListener('click', (e) => { if (e.target === qrModal) qrModal.classList.remove('show'); });
+
         broadcastCancel.addEventListener('click', () => broadcastModal.classList.remove('show'));
         broadcastSend.addEventListener('click', sendBroadcast);
         broadcastModal.addEventListener('click', (e) => { if (e.target === broadcastModal) broadcastModal.classList.remove(
                 'show'); });
-
-        fabLockScreen.addEventListener('click', toggleLockScreen);
 
         document.querySelectorAll('[data-seconds]').forEach(btn => {
             btn.addEventListener('click', () => { customSeconds.value = btn.dataset.seconds; });
@@ -2669,18 +2722,8 @@
             });
         }
 
-        window._handleImageClick = async function(imageUrl) {
-            if (!STATE.roomId) return;
-            try {
-                await updateDoc(doc(db, 'rooms', STATE.roomId), { teacherFocus: imageUrl });
-                alert('✅ 已廣播此圖片至所有學生端');
-            } catch (e) {
-                alert('廣播失敗：' + e.message);
-            }
-        };
-
         // ============================================================
-        // 31. 初始化
+        // 28. 初始化
         // ============================================================
         async function init() {
             await loadRosterFromSheet();
@@ -2690,7 +2733,7 @@
             gotoPage4Btn.disabled = true;
             gotoPage5Btn.disabled = true;
             updateFlowButtons();
-            console.log('🚀 霧臺國小教室Q&A 教師端 v2.0 (Tool 2 整合) 已啟動！');
+            console.log('🚀 霧臺國小教室Q&A 教師端 v2.0 (視覺翻新) 已啟動！');
         }
 
         init();
