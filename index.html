@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>霧臺國小教室Q&A - 教師端</title>
 
-    <!-- Google Material Symbols (現代圖示庫) -->
+    <!-- Google Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
 
     <!-- Firebase SDK -->
@@ -22,1487 +22,21 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js">
     </script>
 
+    <!-- 主視覺樣式 -->
+    <link rel="stylesheet" href="css/style.css" />
+
     <style>
-        /* ============================================================
-           全域變數（現代毛玻璃風格）
-           ============================================================ */
-        :root {
-            --primary: #4f46e5;
-            --primary-light: #818cf8;
-            --primary-dark: #4338ca;
-            --secondary: #7c3aed;
-            --success: #10b981;
-            --success-light: #d1fae5;
-            --warning: #f59e0b;
-            --warning-light: #fef3c7;
-            --danger: #ef4444;
-            --danger-light: #fecaca;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --bg-start: #eef2ff;
-            --bg-end: #f5f3ff;
-            --glass-bg: rgba(255, 255, 255, 0.55);
-            --glass-border: rgba(255, 255, 255, 0.3);
-            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
-            --radius-sm: 12px;
-            --radius-md: 20px;
-            --radius-lg: 28px;
-            --radius-full: 9999px;
-            --transition: 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            width: 100%;
-            height: 100%;
-            font-family: 'Segoe UI', 'PingFang TC', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 50%, #fdf2f8 100%);
-            overflow: hidden;
-            color: var(--text-primary);
-        }
-
-        /* ============================================================
-           App 容器
-           ============================================================ */
-        .app-container {
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            background: transparent;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* ============================================================
-           頂部狀態欄（毛玻璃）
-           ============================================================ */
-        .top-bar {
-            flex-shrink: 0;
-            height: 60px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--glass-border);
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            z-index: 100;
-            gap: 12px;
-        }
-
-        .top-bar .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        .top-bar .logo-area img {
-            height: 32px;
-            width: auto;
-            opacity: 0.7;
-            transition: var(--transition);
-        }
-
-        .top-bar .logo-area img:hover {
-            opacity: 1;
-        }
-
-        .top-bar .logo-area .brand {
-            font-weight: 700;
-            font-size: 16px;
-            color: var(--text-primary);
-            letter-spacing: 0.3px;
-        }
-
-        .top-bar .logo-area .brand span {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .top-bar .spacer {
-            flex: 1;
-        }
-
-        .top-bar .room-code {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--primary);
-            background: rgba(79, 70, 229, 0.10);
-            padding: 4px 14px;
-            border-radius: var(--radius-full);
-            display: none;
-            letter-spacing: 0.5px;
-        }
-
-        .top-bar .room-code.show {
-            display: inline-block;
-        }
-
-        .top-bar .room-id-display {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-muted);
-            letter-spacing: 1px;
-            background: transparent;
-            padding: 4px 8px;
-        }
-
-        .top-bar .step-indicator {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            background: rgba(255, 255, 255, 0.3);
-            padding: 4px 16px;
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            backdrop-filter: blur(4px);
-        }
-
-        .top-bar .step-indicator .step-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #d0d8e0;
-            transition: var(--transition);
-        }
-
-        .top-bar .step-indicator .step-dot.active {
-            background: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
-        }
-
-        .top-bar .step-indicator .step-dot.done {
-            background: var(--success);
-        }
-
-        /* ============================================================
-           頁面滑動容器
-           ============================================================ */
-        .pages-wrapper {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .pages-track {
-            display: flex;
-            height: 100%;
-            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-            will-change: transform;
-        }
-
-        /* ============================================================
-           每個頁面
-           ============================================================ */
-        .page {
-            flex: 0 0 100%;
-            height: 100%;
-            padding: 20px 28px 16px 28px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            background: transparent;
-        }
-
-        .page-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .page-title .badge {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            background: rgba(255, 255, 255, 0.4);
-            padding: 2px 14px;
-            border-radius: var(--radius-full);
-            backdrop-filter: blur(4px);
-        }
-
-        .page-subtitle {
-            font-size: 15px;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-            font-weight: 400;
-        }
-
-        /* ============================================================
-           毛玻璃卡片
-           ============================================================ */
-        .card-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: var(--radius-md);
-            padding: 24px 28px;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-shadow);
-            transition: var(--transition);
-        }
-
-        .card-panel.glow {
-            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.08), var(--glass-shadow);
-            border-color: rgba(79, 70, 229, 0.15);
-        }
-
-        .card-panel+.card-panel {
-            margin-top: 14px;
-        }
-
-        /* ============================================================
-           表單元件
-           ============================================================ */
-        .form-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px 14px;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .form-row label {
-            font-weight: 600;
-            color: var(--text-primary);
-            min-width: 70px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .form-row label .material-symbols-outlined {
-            font-size: 18px;
-            color: var(--primary);
-        }
-
-        .form-row input,
-        .form-row select {
-            flex: 1;
-            min-width: 140px;
-            padding: 10px 18px;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            border-radius: var(--radius-full);
-            font-size: 15px;
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(4px);
-            transition: var(--transition);
-            color: var(--text-primary);
-        }
-
-        .form-row input:focus,
-        .form-row select:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.10);
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        .form-row input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .form-row input[type="number"] {
-            min-width: 60px;
-            width: 80px;
-            flex: 0 0 auto;
-            text-align: center;
-        }
-
-        /* ============================================================
-           按鈕系統（漸層 + 毛玻璃）
-           ============================================================ */
-        .btn {
-            border: none;
-            border-radius: var(--radius-full);
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: var(--transition);
-            user-select: none;
-            font-size: 15px;
-            padding: 10px 28px;
-            min-height: 44px;
-            white-space: nowrap;
-            border: 1px solid transparent;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        .btn:active {
-            transform: translateY(0) scale(0.97);
-        }
-
-        .btn:disabled {
-            opacity: 0.35;
-            pointer-events: none;
-            transform: none !important;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.2);
-        }
-
-        .btn-primary:hover {
-            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
-        }
-
-        .btn-success:hover {
-            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
-        }
-
-        .btn-danger:hover {
-            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.2);
-        }
-
-        .btn-warning:hover {
-            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .btn-ghost {
+        /* ===== 頁面特定微調（覆蓋 style.css） ===== */
+        /* 此處保留少量頁面專屬樣式，不影響整體主題 */
+        .lang-toggle button[data-lang="zh"]:hover,
+        .lang-toggle button[data-lang="en"]:hover {
             background: rgba(255, 255, 255, 0.5);
-            color: var(--text-primary);
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            backdrop-filter: blur(4px);
         }
-
-        .btn-ghost:hover {
-            background: rgba(255, 255, 255, 0.8);
-            box-shadow: var(--glass-shadow);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary);
+        .lang-toggle button[data-lang="zh"].active,
+        .lang-toggle button[data-lang="en"].active {
+            background: white;
             color: var(--primary);
-        }
-
-        .btn-outline:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-lg {
-            font-size: 17px;
-            padding: 14px 40px;
-            min-height: 54px;
-        }
-
-        .btn-block {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .btn-sm {
-            font-size: 13px;
-            padding: 6px 16px;
-            min-height: 34px;
-        }
-
-        .btn-glow {
-            animation: glowPulse 2.5s ease-in-out infinite;
-        }
-
-        @keyframes glowPulse {
-            0%,
-            100% {
-                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.2);
-            }
-            50% {
-                box-shadow: 0 0 0 8px rgba(79, 70, 229, 0);
-            }
-        }
-
-        /* ============================================================
-           頁面底部操作區
-           ============================================================ */
-        .page-footer {
-            flex-shrink: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 14px;
-            margin-top: auto;
-            border-top: 1px solid rgba(0, 0, 0, 0.04);
-        }
-
-        .page-footer .nav-left {
-            display: flex;
-            gap: 10px;
-        }
-
-        .page-footer .nav-right {
-            display: flex;
-            gap: 10px;
-        }
-
-        /* ============================================================
-           底部收合 Dock 工具列（毛玻璃）
-           ============================================================ */
-        .floating-dock {
-            position: fixed;
-            bottom: 28px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 6px 12px;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: var(--radius-lg);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
-            z-index: 200;
-            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-            user-select: none;
-        }
-
-        .floating-dock .dock-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 44px;
-            height: 44px;
-            border-radius: var(--radius-sm);
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 22px;
-            position: relative;
-            gap: 1px;
-            font-family: inherit;
-        }
-
-        .floating-dock .dock-item .material-symbols-outlined {
-            font-size: 24px;
-            transition: var(--transition);
-        }
-
-        .floating-dock .dock-item .label {
-            font-size: 8px;
-            font-weight: 600;
-            color: var(--text-muted);
-            opacity: 0;
-            transform: translateY(4px);
-            transition: var(--transition);
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-        }
-
-        .floating-dock .dock-item:hover {
-            background: rgba(79, 70, 229, 0.06);
-            color: var(--primary);
-            transform: translateY(-4px);
-        }
-
-        .floating-dock .dock-item:hover .label {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .floating-dock .dock-item.active {
-            color: var(--primary);
-            background: rgba(79, 70, 229, 0.06);
-        }
-
-        .floating-dock .dock-divider {
-            width: 1px;
-            height: 28px;
-            background: rgba(0, 0, 0, 0.06);
-            margin: 0 2px;
-        }
-
-        .floating-dock .dock-toggle {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(0, 0, 0, 0.03);
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .floating-dock .dock-toggle:hover {
-            background: rgba(0, 0, 0, 0.06);
-            color: var(--text-primary);
-        }
-
-        /* Dock 收合狀態 */
-        .floating-dock.collapsed .dock-item:not(.dock-toggle) {
-            width: 0;
-            padding: 0;
-            margin: 0;
-            opacity: 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        .floating-dock.collapsed .dock-divider {
-            width: 0;
-            margin: 0;
-            opacity: 0;
-        }
-
-        .floating-dock.collapsed {
-            padding: 6px 12px;
-        }
-
-        /* ============================================================
-           工具彈窗（毛玻璃）
-           ============================================================ */
-        .tool-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 400;
-            animation: fadeIn 0.25s ease;
-        }
-
-        .tool-modal.show {
-            display: flex;
-        }
-
-        .tool-modal .modal-box {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-radius: var(--radius-lg);
-            padding: 28px 32px;
-            max-width: 480px;
-            width: 92%;
-            max-height: 85vh;
-            overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
-            animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        .tool-modal .modal-box .modal-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 6px;
-        }
-
-        .tool-modal .modal-box .modal-title .material-symbols-outlined {
-            font-size: 28px;
-            color: var(--primary);
-        }
-
-        .tool-modal .modal-box .modal-desc {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-
-        .tool-modal .modal-box .modal-close {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .tool-modal .modal-box .modal-close:hover {
-            color: var(--text-primary);
-            transform: rotate(90deg);
-        }
-
-        /* ============================================================
-           計時器
-           ============================================================ */
-        .timer-display {
-            font-size: 72px;
-            font-weight: 700;
-            text-align: center;
-            padding: 12px 0;
-            letter-spacing: 4px;
-            color: var(--text-primary);
-            font-variant-numeric: tabular-nums;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: var(--radius-sm);
-            backdrop-filter: blur(4px);
-            margin-bottom: 12px;
-        }
-
-        .timer-display.urgent {
-            color: var(--danger);
-            animation: blink 0.6s ease infinite alternate;
-        }
-
-        .timer-controls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .timer-presets {
-            display: flex;
-            gap: 6px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        .timer-presets .btn {
-            min-height: 32px;
-            padding: 4px 16px;
-            font-size: 13px;
-        }
-
-        /* ============================================================
-           骰子
-           ============================================================ */
-        .dice-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-            padding: 12px 0;
-        }
-
-        .dice-display {
-            font-size: 80px;
-            width: 100px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: var(--radius-md);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: var(--glass-shadow);
-            transition: var(--transition);
-            user-select: none;
-        }
-
-        .dice-display.rolling {
-            animation: diceRoll 0.8s ease;
-        }
-
-        @keyframes diceRoll {
-            0% {
-                transform: rotate(0deg) scale(1);
-            }
-            25% {
-                transform: rotate(90deg) scale(1.1);
-            }
-            50% {
-                transform: rotate(180deg) scale(0.9);
-            }
-            75% {
-                transform: rotate(270deg) scale(1.1);
-            }
-            100% {
-                transform: rotate(360deg) scale(1);
-            }
-        }
-
-        .dice-history {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            justify-content: center;
-            font-size: 20px;
-            color: var(--text-secondary);
-            min-height: 32px;
-        }
-
-        /* ============================================================
-           隨機點名器
-           ============================================================ */
-        .picker-display {
-            font-size: 32px;
-            font-weight: 700;
-            text-align: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: var(--radius-sm);
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 12px;
-            transition: var(--transition);
-        }
-
-        .picker-display.spinning {
-            animation: textPulse 0.1s ease infinite alternate;
-        }
-
-        @keyframes textPulse {
-            from {
-                opacity: 0.5;
-                transform: scale(0.98);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1.02);
-            }
-        }
-
-        .picker-display .result {
-            color: var(--primary);
-        }
-
-        .picker-controls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        /* ============================================================
-           投票
-           ============================================================ */
-        .vote-options {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin: 8px 0;
-        }
-
-        .vote-option {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 14px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: var(--transition);
-            border: 1px solid transparent;
-        }
-
-        .vote-option:hover {
-            background: rgba(255, 255, 255, 0.5);
-            border-color: rgba(79, 70, 229, 0.15);
-        }
-
-        .vote-option .vote-label {
-            flex: 1;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .vote-option .vote-bar {
-            flex: 2;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.04);
-            border-radius: var(--radius-full);
-            overflow: hidden;
-            min-width: 60px;
-        }
-
-        .vote-option .vote-bar .vote-fill {
-            height: 100%;
-            border-radius: var(--radius-full);
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            transition: width 0.5s ease;
-            width: 0%;
-        }
-
-        .vote-option .vote-count {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            min-width: 28px;
-            text-align: right;
-        }
-
-        .vote-option.selected {
-            border-color: var(--primary);
-            background: rgba(79, 70, 229, 0.06);
-        }
-
-        /* ============================================================
-           小組評分
-           ============================================================ */
-        .group-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
-            margin: 8px 0;
-        }
-
-        .group-card {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: var(--radius-sm);
-            padding: 12px 14px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: var(--transition);
-        }
-
-        .group-card .group-name {
-            font-weight: 600;
-            font-size: 16px;
-            color: var(--text-primary);
-        }
-
-        .group-card .group-score {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--primary);
-            margin: 4px 0;
-        }
-
-        .group-card .group-controls {
-            display: flex;
-            gap: 6px;
-            justify-content: center;
-        }
-
-        .group-card .group-controls .btn {
-            min-height: 28px;
-            padding: 2px 12px;
-            font-size: 13px;
-        }
-
-        /* ============================================================
-           卡牌
-           ============================================================ */
-        .card-pool {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            min-height: 80px;
-            padding: 8px 0;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(4px);
-            border-radius: var(--radius-sm);
-            padding: 8px 14px;
-            min-width: 62px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 17px;
-            color: var(--text-primary);
-            border-left: 4px solid #d0d8e0;
-            transition: var(--transition);
-            cursor: default;
-        }
-
-        .card.submitted {
-            background: var(--success-light);
-            border-left-color: var(--success);
-        }
-
-        .card.reveal-correct {
-            background: var(--success-light);
-            border-left-color: var(--success);
-            color: #064d2b;
-        }
-
-        .card.reveal-wrong {
-            background: var(--danger-light);
-            border-left-color: var(--danger);
-            color: #6e2b2b;
-            opacity: 0.7;
-        }
-
-        .card.specified {
-            background: #bfdbfe;
-            border-left-color: #2563eb;
-        }
-
-        .card .sub-label {
-            font-size: 12px;
-            font-weight: 400;
-            display: block;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        .card.clickable {
-            cursor: pointer;
-        }
-
-        .card.clickable:hover {
-            transform: scale(1.04);
-            box-shadow: var(--glass-shadow);
-        }
-
-        /* ============================================================
-           計時器（大型）
-           ============================================================ */
-        .timer-large {
-            font-size: 72px;
-            font-weight: 700;
-            color: var(--primary);
-            text-align: center;
-            padding: 4px 0;
-            letter-spacing: 4px;
-            line-height: 1.1;
-            transition: var(--transition);
-            text-shadow: 0 4px 20px rgba(79, 70, 229, 0.08);
-        }
-
-        .timer-large.urgent {
-            color: var(--danger);
-            animation: blink 0.6s ease infinite alternate;
-        }
-
-        @keyframes blink {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0.25;
-            }
-        }
-
-        /* ============================================================
-           文字題清單
-           ============================================================ */
-        .text-list {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            width: 100%;
-            max-height: 320px;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-
-        .text-list-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 14px;
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(4px);
-            border-radius: var(--radius-sm);
-            border-left: 4px solid #d0d8e0;
-            font-size: 15px;
-            transition: var(--transition);
-        }
-
-        .text-list-item .seat {
-            font-weight: 700;
-            min-width: 44px;
-            color: var(--text-primary);
-        }
-
-        .text-list-item .name {
-            font-weight: 500;
-            min-width: 56px;
-            color: var(--text-primary);
-        }
-
-        .text-list-item .answer-text {
-            flex: 1;
-            word-break: break-word;
-            color: var(--text-primary);
-        }
-
-        .text-list-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            flex-shrink: 0;
-            accent-color: var(--primary);
-        }
-
-        .text-list-item .score-badge {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--success);
-            min-width: 36px;
-            text-align: right;
-        }
-
-        /* ============================================================
-           排行榜
-           ============================================================ */
-        .rank-list {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            width: 100%;
-            max-height: 280px;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-
-        .rank-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(4px);
-            border-radius: var(--radius-sm);
-            border-left: 4px solid #d0d8e0;
-            transition: var(--transition);
-        }
-
-        .rank-item .rank-num {
-            font-weight: 700;
-            font-size: 18px;
-            color: var(--primary);
-            min-width: 32px;
-            text-align: center;
-        }
-
-        .rank-item .rank-name {
-            font-weight: 500;
-            flex: 1;
-            color: var(--text-primary);
-        }
-
-        .rank-item .rank-score {
-            font-weight: 700;
-            font-size: 18px;
-            color: var(--success);
-            min-width: 40px;
-            text-align: right;
-        }
-
-        .rank-item.top1 {
-            border-left-color: #f59e0b;
-            background: #fffbeb;
-        }
-
-        .rank-item.top2 {
-            border-left-color: #94a3b8;
-            background: #f8fafc;
-        }
-
-        .rank-item.top3 {
-            border-left-color: #d97706;
-            background: #fffbeb;
-        }
-
-        /* ============================================================
-           工具選單
-           ============================================================ */
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .checkbox-group label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.5);
-            padding: 6px 14px;
-            border-radius: var(--radius-full);
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-primary);
-            transition: var(--transition);
-            user-select: none;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-        }
-
-        .checkbox-group label:hover {
-            background: rgba(255, 255, 255, 0.8);
-            box-shadow: var(--glass-shadow);
-        }
-
-        .checkbox-group label input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-            accent-color: var(--primary);
-        }
-
-        /* ============================================================
-           Modal 彈窗（QR Code / 廣播）
-           ============================================================ */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 300;
-            animation: fadeIn 0.25s ease;
-        }
-
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        .modal-box {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-radius: var(--radius-lg);
-            padding: 28px 32px;
-            max-width: 480px;
-            width: 90%;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
-            animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-            text-align: center;
-            position: relative;
-        }
-
-        .modal-box h3 {
-            font-size: 18px;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .modal-box p {
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin-bottom: 16px;
-        }
-
-        .modal-box textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            border-radius: var(--radius-sm);
-            font-size: 15px;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 80px;
-            margin: 12px 0;
-            background: rgba(255, 255, 255, 0.6);
-            transition: var(--transition);
-        }
-
-        .modal-box textarea:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.10);
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        .modal-box .btn-row {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .modal-box .close-btn {
-            margin-top: 8px;
-        }
-
-        .modal-box #qrcodeDisplay {
-            display: flex;
-            justify-content: center;
-            margin: 8px 0 16px 0;
-        }
-
-        /* ============================================================
-           其他
-           ============================================================ */
-        .hidden {
-            display: none !important;
-        }
-
-        .flex-1 {
-            flex: 1;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .mt-8 {
-            margin-top: 8px;
-        }
-
-        .mt-12 {
-            margin-top: 12px;
-        }
-
-        .gap-8 {
-            gap: 8px;
-        }
-
-        /* ============================================================
-           動畫
-           ============================================================ */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.4s ease;
-        }
-
-        .slide-up {
-            animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        /* ============================================================
-           滾動條美化
-           ============================================================ */
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #c0c8d4;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a0aab8;
-        }
-
-        /* ============================================================
-           RWD
-           ============================================================ */
-        @media (max-width: 640px) {
-            .page {
-                padding: 12px 14px 10px 14px;
-            }
-
-            .top-bar {
-                height: 50px;
-                padding: 0 12px;
-            }
-
-            .top-bar .logo-area .brand {
-                font-size: 13px;
-            }
-
-            .top-bar .step-indicator {
-                font-size: 11px;
-                padding: 2px 10px;
-            }
-
-            .top-bar .step-indicator .step-dot {
-                width: 6px;
-                height: 6px;
-            }
-
-            .card-panel {
-                padding: 14px 16px;
-            }
-
-            .form-row {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 4px;
-            }
-
-            .form-row label {
-                min-width: unset;
-            }
-
-            .btn-lg {
-                font-size: 15px;
-                padding: 12px 20px;
-                min-height: 46px;
-            }
-
-            .timer-display {
-                font-size: 48px;
-            }
-
-            .dice-display {
-                font-size: 60px;
-                width: 80px;
-                height: 80px;
-            }
-
-            .floating-dock {
-                bottom: 12px;
-                padding: 4px 8px;
-            }
-
-            .floating-dock .dock-item {
-                width: 36px;
-                height: 36px;
-                font-size: 18px;
-            }
-
-            .floating-dock .dock-item .material-symbols-outlined {
-                font-size: 20px;
-            }
-
-            .tool-modal .modal-box {
-                padding: 20px 16px;
-            }
-
-            .modal-box {
-                padding: 20px 16px;
-            }
-
-            .picker-display {
-                font-size: 24px;
-                padding: 14px;
-                min-height: 60px;
-            }
-
-            .group-grid {
-                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            }
-
-            .timer-presets .btn {
-                font-size: 12px;
-                padding: 2px 12px;
-                min-height: 28px;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .top-bar .logo-area .brand {
-                font-size: 11px;
-            }
-
-            .top-bar .step-indicator {
-                font-size: 9px;
-                padding: 2px 6px;
-            }
-
-            .top-bar .room-code {
-                font-size: 10px;
-                padding: 2px 8px;
-            }
-
-            .btn {
-                font-size: 13px;
-                padding: 6px 14px;
-                min-height: 34px;
-            }
-
-            .btn-lg {
-                font-size: 14px;
-                padding: 10px 16px;
-                min-height: 40px;
-            }
-
-            .floating-dock .dock-item {
-                width: 30px;
-                height: 30px;
-                font-size: 15px;
-            }
-
-            .floating-dock .dock-item .material-symbols-outlined {
-                font-size: 17px;
-            }
-
-            .floating-dock .dock-item .label {
-                font-size: 7px;
-            }
-
-            .timer-display {
-                font-size: 36px;
-            }
-
-            .dice-display {
-                font-size: 48px;
-                width: 64px;
-                height: 64px;
-            }
+            box-shadow: var(--shadow-sm);
         }
     </style>
 </head>
@@ -1516,10 +50,15 @@
         <header class="top-bar" id="topBar">
             <div class="logo-area">
                 <img src="logo.jpg" alt="校徽" id="schoolLogo" onerror="this.style.display='none'" />
-                <span class="brand">霧臺<span>國小</span></span>
+                <span class="brand" id="appBrand">霧臺<span>國小</span></span>
             </div>
             <span class="room-id-display" id="roomIdDisplay">----</span>
             <div class="spacer"></div>
+            <!-- 語言切換 -->
+            <div class="lang-toggle" id="langToggle">
+                <button data-lang="zh" class="active" id="langZh">中</button>
+                <button data-lang="en" id="langEn">EN</button>
+            </div>
             <span class="room-code" id="roomCodeDisplay">教室：----</span>
             <span class="step-indicator" id="stepIndicator">
                 <span class="step-dot active" data-step="1"></span>
@@ -1539,24 +78,24 @@
 
                 <!-- PAGE 1 -->
                 <section class="page" data-page="1">
-                    <div class="page-title">
+                    <div class="page-title" id="page1Title">
                         📚 教室設定
-                        <span class="badge">步驟 1 / 5</span>
+                        <span class="badge" id="page1Badge">步驟 1 / 5</span>
                     </div>
-                    <div class="page-subtitle">設定教師姓名與上課班級，建立你的虛擬教室</div>
+                    <div class="page-subtitle" id="page1Subtitle">設定教師姓名與上課班級，建立你的虛擬教室</div>
 
                     <div class="card-panel" style="flex:1;">
                         <div class="form-row">
-                            <label><span class="material-symbols-outlined">person</span>教師姓名</label>
+                            <label><span class="material-symbols-outlined">person</span> <span id="labelTeacherName">教師姓名</span></label>
                             <input type="text" id="teacherNameInput" placeholder="請輸入姓名（可跳過）" value="陳老師" />
                         </div>
                         <div class="form-row" style="align-items:flex-start;">
-                            <label><span class="material-symbols-outlined">groups</span>上課班級</label>
+                            <label><span class="material-symbols-outlined">groups</span> <span id="labelClassSelect">上課班級</span></label>
                             <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
                                 <div id="classCheckboxContainer" class="checkbox-group"></div>
                                 <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:4px;">
                                     <label style="display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.5); padding:4px 14px; border-radius:30px; font-size:14px; cursor:pointer; backdrop-filter:blur(4px); border:1px solid rgba(0,0,0,0.04);">
-                                        <input type="checkbox" id="customClassCheckbox" /> 無班級（自訂人數）
+                                        <input type="checkbox" id="customClassCheckbox" /> <span id="labelCustomClass">無班級（自訂人數）</span>
                                     </label>
                                     <input type="number" id="customStudentCount" min="1" max="50" value="20" style="width:80px; padding:6px 12px; border:1px solid rgba(0,0,0,0.06); border-radius:30px; font-size:14px; background:rgba(255,255,255,0.6);" disabled />
                                     <span style="font-size:13px; color:var(--text-muted);">人</span>
@@ -1566,14 +105,14 @@
 
                         <div style="margin-top:16px;">
                             <button class="btn btn-primary btn-lg btn-block btn-glow" id="enterRoomBtn">
-                                <span class="material-symbols-outlined">door_open</span> 建立教室
+                                <span class="material-symbols-outlined">door_open</span> <span id="btnCreateRoom">建立教室</span>
                             </button>
                         </div>
 
                         <div id="roomInfo" class="hidden" style="margin-top:16px; background:rgba(255,255,255,0.4); backdrop-filter:blur(4px); border-radius:30px; padding:10px 20px; display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center; border:1px solid rgba(255,255,255,0.2);">
-                            <span><span class="material-symbols-outlined" style="font-size:16px;">hashtag</span> 教室代碼：<strong id="roomIdDisplay">----</strong></span>
-                            <span><span class="material-symbols-outlined" style="font-size:16px;">person</span> 線上人數：<strong id="onlineCount">0</strong></span>
-                            <span><span class="material-symbols-outlined" style="font-size:16px;">description</span> 目前題號：<strong id="currentQuestionDisplay">第 0 題</strong></span>
+                            <span><span class="material-symbols-outlined" style="font-size:16px;">hashtag</span> <span id="labelRoomCode">教室代碼</span>：<strong id="roomIdDisplay2">----</strong></span>
+                            <span><span class="material-symbols-outlined" style="font-size:16px;">person</span> <span id="labelOnlineCount">線上人數</span>：<strong id="onlineCount">0</strong></span>
+                            <span><span class="material-symbols-outlined" style="font-size:16px;">description</span> <span id="labelCurrentQuestion">目前題號</span>：<strong id="currentQuestionDisplay">第 0 題</strong></span>
                         </div>
                     </div>
 
@@ -1581,7 +120,7 @@
                         <div class="nav-left"></div>
                         <div class="nav-right">
                             <button class="btn btn-primary btn-lg" id="gotoPage2Btn" disabled>
-                                下一步 <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+                                <span id="btnNext1">下一步</span> <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
                             </button>
                         </div>
                     </div>
@@ -1589,26 +128,26 @@
 
                 <!-- PAGE 2 -->
                 <section class="page" data-page="2">
-                    <div class="page-title">
+                    <div class="page-title" id="page2Title">
                         ✏️ 命題與發布
-                        <span class="badge">步驟 2 / 5</span>
+                        <span class="badge" id="page2Badge">步驟 2 / 5</span>
                     </div>
-                    <div class="page-subtitle">輸入題目內容，選擇題型、配分與作答時間</div>
+                    <div class="page-subtitle" id="page2Subtitle">輸入題目內容，選擇題型、配分與作答時間</div>
 
                     <div class="card-panel glow" style="flex:1;">
                         <div class="form-row">
-                            <label><span class="material-symbols-outlined">edit_note</span>題目批註</label>
+                            <label><span class="material-symbols-outlined">edit_note</span> <span id="labelQuestionNote">題目批註</span></label>
                             <input type="text" id="questionNoteInput" placeholder="請輸入本題題目" style="font-size:17px;" />
                         </div>
                         <div class="form-row">
-                            <label><span class="material-symbols-outlined">list</span>題型</label>
+                            <label><span class="material-symbols-outlined">list</span> <span id="labelQuestionType">題型</span></label>
                             <select id="questionTypeSelect">
-                                <option value="choice"><span class="material-symbols-outlined">check_circle</span> 選擇題 (A/B/C/D)</option>
-                                <option value="text"><span class="material-symbols-outlined">edit</span> 文字題 (自由輸入)</option>
+                                <option value="choice"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> <span id="optChoice">選擇題 (A/B/C/D)</span></option>
+                                <option value="text"><span class="material-symbols-outlined" style="font-size:16px;">edit</span> <span id="optText">文字題 (自由輸入)</span></option>
                             </select>
-                            <label><span class="material-symbols-outlined">star</span>配分</label>
+                            <label><span class="material-symbols-outlined">star</span> <span id="labelScore">配分</span></label>
                             <input type="number" id="questionScoreInput" min="1" max="10" value="1" style="width:70px; min-width:60px; text-align:center;" />
-                            <label><span class="material-symbols-outlined">timer</span>秒數</label>
+                            <label><span class="material-symbols-outlined">timer</span> <span id="labelSeconds">秒數</span></label>
                             <input type="number" id="customSeconds" placeholder="秒" style="width:80px;min-width:60px;" value="20" />
                             <button class="btn btn-ghost btn-sm" data-seconds="10">10s</button>
                             <button class="btn btn-ghost btn-sm" data-seconds="30">30s</button>
@@ -1617,24 +156,24 @@
 
                         <div style="margin-top:12px;">
                             <button class="btn btn-success btn-lg btn-block btn-glow" id="publishBtn">
-                                <span class="material-symbols-outlined">send</span> 發布第 1 題
+                                <span class="material-symbols-outlined">send</span> <span id="btnPublish">發布第 1 題</span>
                             </button>
                         </div>
 
                         <div id="publishStatus" style="margin-top:10px; text-align:center; font-size:14px; color:var(--text-secondary);">
-                            尚未發布
+                            <span id="statusNotPublished">尚未發布</span>
                         </div>
                     </div>
 
                     <div class="page-footer">
                         <div class="nav-left">
                             <button class="btn btn-ghost" id="backToPage1">
-                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> 上一頁
+                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> <span id="btnBack1">上一頁</span>
                             </button>
                         </div>
                         <div class="nav-right">
                             <button class="btn btn-primary btn-lg" id="gotoPage3Btn" disabled>
-                                下一步 <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+                                <span id="btnNext2">下一步</span> <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
                             </button>
                         </div>
                     </div>
@@ -1642,33 +181,33 @@
 
                 <!-- PAGE 3 -->
                 <section class="page" data-page="3">
-                    <div class="page-title">
+                    <div class="page-title" id="page3Title">
                         📊 即時監控
-                        <span class="badge">步驟 3 / 5</span>
+                        <span class="badge" id="page3Badge">步驟 3 / 5</span>
                     </div>
                     <div class="page-subtitle" id="page3Subtitle">觀察學生作答情況，管理作答流程</div>
 
                     <div class="card-panel" style="flex:1; display:flex; flex-direction:column;">
                         <div id="timerLargeContainer" style="text-align:center; padding:4px 0;">
                             <div class="timer-large" id="timerLargeDisplay">--</div>
-                            <div style="font-size:14px; color:var(--text-secondary);" id="timerLabel"><span class="material-symbols-outlined" style="font-size:18px;">timer</span> 等待開始</div>
+                            <div style="font-size:14px; color:var(--text-secondary);" id="timerLabel"><span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span id="labelTimerWaiting">等待開始</span></div>
                         </div>
 
                         <div id="cardContainer" class="card-pool" style="min-height:60px; flex:1;">
-                            <div style="color:var(--text-muted); padding:20px; text-align:center; width:100%;">尚未建立教室或發布題目</div>
+                            <div style="color:var(--text-muted); padding:20px; text-align:center; width:100%;" id="noClassMsg">尚未建立教室或發布題目</div>
                         </div>
 
                         <div id="textListContainer" class="text-list hidden"></div>
 
                         <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; justify-content:center;">
                             <button class="btn btn-primary btn-lg" id="startStopBtn" style="min-width:160px;" disabled>
-                                <span class="material-symbols-outlined">play_arrow</span> 開始作答
+                                <span class="material-symbols-outlined">play_arrow</span> <span id="btnStartStop">開始作答</span>
                             </button>
                             <button class="btn btn-ghost" id="broadcastBtn3" style="display:inline-flex;">
-                                <span class="material-symbols-outlined">campaign</span> 廣播
+                                <span class="material-symbols-outlined">campaign</span> <span id="btnBroadcast3">廣播</span>
                             </button>
                             <button class="btn btn-ghost" id="viewTextAnswersBtn" style="display:none;">
-                                <span class="material-symbols-outlined">visibility</span> 觀看所有回答
+                                <span class="material-symbols-outlined">visibility</span> <span id="btnViewAll">觀看所有回答</span>
                             </button>
                         </div>
                     </div>
@@ -1676,12 +215,12 @@
                     <div class="page-footer">
                         <div class="nav-left">
                             <button class="btn btn-ghost" id="backToPage2">
-                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> 上一頁
+                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> <span id="btnBack2">上一頁</span>
                             </button>
                         </div>
                         <div class="nav-right">
                             <button class="btn btn-primary btn-lg" id="gotoPage4Btn" disabled>
-                                下一步 <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+                                <span id="btnNext3">下一步</span> <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
                             </button>
                         </div>
                     </div>
@@ -1689,35 +228,35 @@
 
                 <!-- PAGE 4 -->
                 <section class="page" data-page="4">
-                    <div class="page-title">
+                    <div class="page-title" id="page4Title">
                         🎯 結果公布
-                        <span class="badge">步驟 4 / 5</span>
+                        <span class="badge" id="page4Badge">步驟 4 / 5</span>
                     </div>
                     <div class="page-subtitle" id="page4Subtitle">公布答案或檢視學生文字回答</div>
 
                     <div class="card-panel" style="flex:1; display:flex; flex-direction:column;">
                         <div id="choiceRevealArea">
                             <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px;">
-                                <span style="font-weight:600; color:var(--text-primary);"><span class="material-symbols-outlined">check_circle</span> 公布正確答案：</span>
+                                <span style="font-weight:600; color:var(--text-primary);"><span class="material-symbols-outlined">check_circle</span> <span id="labelRevealAnswer">公布正確答案：</span></span>
                                 <button class="btn btn-warning" data-answer="A">A</button>
                                 <button class="btn btn-warning" data-answer="B">B</button>
                                 <button class="btn btn-warning" data-answer="C">C</button>
                                 <button class="btn btn-warning" data-answer="D">D</button>
-                                <button class="btn btn-ghost btn-sm" id="hideAnswerBtn"><span class="material-symbols-outlined" style="font-size:16px;">visibility_off</span> 隱藏</button>
+                                <button class="btn btn-ghost btn-sm" id="hideAnswerBtn"><span class="material-symbols-outlined" style="font-size:16px;">visibility_off</span> <span id="btnHide">隱藏</span></button>
                             </div>
                             <div id="choiceResultCards" class="card-pool" style="min-height:50px;">
-                                <div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;">請公布答案</div>
+                                <div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;" id="revealPlaceholder">請公布答案</div>
                             </div>
                         </div>
 
                         <div id="textGradingArea" class="hidden" style="flex:1; display:flex; flex-direction:column;">
                             <div style="font-weight:600; color:var(--text-primary); margin-bottom:8px;">
-                                <span class="material-symbols-outlined">edit</span> 勾選答對的學生（點擊即加分）
+                                <span class="material-symbols-outlined">edit</span> <span id="labelGradingHint">勾選答對的學生（點擊即加分）</span>
                             </div>
                             <div id="textGradingList" class="text-list" style="flex:1;">
-                                <div style="color:var(--text-muted); padding:10px; text-align:center;">尚無作答資料</div>
+                                <div style="color:var(--text-muted); padding:10px; text-align:center;" id="gradingEmpty">尚無作答資料</div>
                             </div>
-                            <div style="margin-top:8px; font-size:14px; color:var(--text-secondary); text-align:center;">
+                            <div style="margin-top:8px; font-size:14px; color:var(--text-secondary); text-align:center;" id="gradingSubHint">
                                 勾選即時加分，取消即時扣分
                             </div>
                         </div>
@@ -1726,12 +265,12 @@
                     <div class="page-footer">
                         <div class="nav-left">
                             <button class="btn btn-ghost" id="backToPage3">
-                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> 上一頁
+                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> <span id="btnBack3">上一頁</span>
                             </button>
                         </div>
                         <div class="nav-right">
                             <button class="btn btn-primary btn-lg" id="gotoPage5Btn" disabled>
-                                下一步 <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+                                <span id="btnNext4">下一步</span> <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
                             </button>
                         </div>
                     </div>
@@ -1739,29 +278,29 @@
 
                 <!-- PAGE 5 -->
                 <section class="page" data-page="5">
-                    <div class="page-title">
+                    <div class="page-title" id="page5Title">
                         🏆 結算與排行榜
-                        <span class="badge">步驟 5 / 5</span>
+                        <span class="badge" id="page5Badge">步驟 5 / 5</span>
                     </div>
-                    <div class="page-subtitle">檢視累計得分榜，匯出記錄或進入下一題</div>
+                    <div class="page-subtitle" id="page5Subtitle">檢視累計得分榜，匯出記錄或進入下一題</div>
 
                     <div class="card-panel" style="flex:1; display:flex; flex-direction:column;">
                         <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <span style="font-weight:600; color:var(--text-primary);"><span class="material-symbols-outlined">emoji_events</span> 累計得分榜</span>
+                            <span style="font-weight:600; color:var(--text-primary);"><span class="material-symbols-outlined">emoji_events</span> <span id="labelScoreboard">累計得分榜</span></span>
                             <div style="display:flex; gap:8px;">
-                                <button class="btn btn-ghost btn-sm" id="rankSortBtn"><span class="material-symbols-outlined" style="font-size:16px;">sort</span> 依分數排序</button>
+                                <button class="btn btn-ghost btn-sm" id="rankSortBtn"><span class="material-symbols-outlined" style="font-size:16px;">sort</span> <span id="btnSortScore">依分數排序</span></button>
                             </div>
                         </div>
                         <div id="rankList" class="rank-list" style="flex:1;">
-                            <div style="color:var(--text-muted); padding:20px; text-align:center;">尚無得分記錄</div>
+                            <div style="color:var(--text-muted); padding:20px; text-align:center;" id="rankEmpty">尚無得分記錄</div>
                         </div>
 
                         <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; justify-content:center;">
                             <button class="btn btn-danger btn-lg" id="clearAllBtn" style="flex:1; min-width:180px;">
-                                <span class="material-symbols-outlined">delete</span> 清除本題 · 進入下一題
+                                <span class="material-symbols-outlined">delete</span> <span id="btnClearNext">清除本題 · 進入下一題</span>
                             </button>
                             <button class="btn btn-success btn-lg" id="exportExcelBtn" style="flex:1; min-width:180px;">
-                                <span class="material-symbols-outlined">table_rows</span> 下載 Excel
+                                <span class="material-symbols-outlined">table_rows</span> <span id="btnDownloadExcel">下載 Excel</span>
                             </button>
                         </div>
                     </div>
@@ -1769,7 +308,7 @@
                     <div class="page-footer">
                         <div class="nav-left">
                             <button class="btn btn-ghost" id="backToPage4">
-                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> 上一頁
+                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> <span id="btnBack4">上一頁</span>
                             </button>
                         </div>
                         <div class="nav-right"></div>
@@ -1780,50 +319,50 @@
         </div><!-- /pages-wrapper -->
 
         <!-- ============================================================
-           底部收合 Dock 工具列（毛玻璃）
+           底部收合 Dock 工具列
            ============================================================ -->
         <div class="floating-dock collapsed" id="floatingDock">
             <!-- 工具按鈕 -->
-            <button class="dock-item" id="dockQR" title="顯示 QR Code">
+            <button class="dock-item" id="dockQR" title="QR Code">
                 <span class="material-symbols-outlined">qr_code</span>
-                <span class="label">QR碼</span>
+                <span class="label" id="dockLabelQR">QR碼</span>
             </button>
 
-            <button class="dock-item" id="dockBroadcast" title="廣播訊息">
+            <button class="dock-item" id="dockBroadcast" title="廣播">
                 <span class="material-symbols-outlined">campaign</span>
-                <span class="label">廣播</span>
+                <span class="label" id="dockLabelBroadcast">廣播</span>
             </button>
 
-            <button class="dock-item" id="dockLockScreen" title="鎖定學生畫面">
+            <button class="dock-item" id="dockLockScreen" title="鎖定畫面">
                 <span class="material-symbols-outlined">lock</span>
-                <span class="label">鎖定</span>
+                <span class="label" id="dockLabelLock">鎖定</span>
             </button>
 
             <div class="dock-divider"></div>
 
             <button class="dock-item" id="dockTimer" title="計時器">
                 <span class="material-symbols-outlined">timer</span>
-                <span class="label">計時</span>
+                <span class="label" id="dockLabelTimer">計時</span>
             </button>
 
             <button class="dock-item" id="dockDice" title="骰子">
                 <span class="material-symbols-outlined">casino</span>
-                <span class="label">骰子</span>
+                <span class="label" id="dockLabelDice">骰子</span>
             </button>
 
             <button class="dock-item" id="dockPicker" title="隨機點名">
                 <span class="material-symbols-outlined">person_add</span>
-                <span class="label">點名</span>
+                <span class="label" id="dockLabelPicker">點名</span>
             </button>
 
             <button class="dock-item" id="dockVote" title="投票">
                 <span class="material-symbols-outlined">how_to_vote</span>
-                <span class="label">投票</span>
+                <span class="label" id="dockLabelVote">投票</span>
             </button>
 
             <button class="dock-item" id="dockGroup" title="小組評分">
                 <span class="material-symbols-outlined">group</span>
-                <span class="label">小組</span>
+                <span class="label" id="dockLabelGroup">小組</span>
             </button>
 
             <!-- 展開/收合按鈕 -->
@@ -1832,36 +371,30 @@
             </button>
         </div>
 
-        <!-- ============================================================
-           QR Code 彈窗
-           ============================================================ -->
+        <!-- ===== QR Code 彈窗 ===== -->
         <div class="modal-overlay" id="qrModal">
             <div class="modal-box">
-                <h3><span class="material-symbols-outlined" style="font-size:28px;">qr_code</span> 掃描 QR Code 加入教室</h3>
+                <h3><span class="material-symbols-outlined" style="font-size:28px;">qr_code</span> <span id="qrTitle">掃描 QR Code 加入教室</span></h3>
                 <p id="qrModalRoomCode">教室代碼：----</p>
                 <div id="qrcodeDisplay"></div>
-                <button class="btn btn-ghost close-btn" id="qrModalClose"><span class="material-symbols-outlined" style="font-size:16px;">close</span> 關閉</button>
+                <button class="btn btn-ghost close-btn" id="qrModalClose"><span class="material-symbols-outlined" style="font-size:16px;">close</span> <span id="qrClose">關閉</span></button>
             </div>
         </div>
 
-        <!-- ============================================================
-           廣播彈窗
-           ============================================================ -->
+        <!-- ===== 廣播彈窗 ===== -->
         <div class="modal-overlay" id="broadcastModal">
             <div class="modal-box">
-                <h3><span class="material-symbols-outlined" style="font-size:28px;">campaign</span> 廣播訊息</h3>
-                <p style="font-size:14px; color:var(--text-secondary);">訊息將以跑馬燈方式顯示在學生端</p>
+                <h3><span class="material-symbols-outlined" style="font-size:28px;">campaign</span> <span id="broadcastTitle">廣播訊息</span></h3>
+                <p style="font-size:14px; color:var(--text-secondary);" id="broadcastDesc">訊息將以跑馬燈方式顯示在學生端</p>
                 <textarea id="broadcastInput" placeholder="請輸入要廣播的訊息..."></textarea>
                 <div class="btn-row">
-                    <button class="btn btn-ghost" id="broadcastCancel"><span class="material-symbols-outlined" style="font-size:16px;">close</span> 取消</button>
-                    <button class="btn btn-primary" id="broadcastSend"><span class="material-symbols-outlined" style="font-size:16px;">send</span> 發送</button>
+                    <button class="btn btn-ghost" id="broadcastCancel"><span class="material-symbols-outlined" style="font-size:16px;">close</span> <span id="broadcastCancelBtn">取消</span></button>
+                    <button class="btn btn-primary" id="broadcastSend"><span class="material-symbols-outlined" style="font-size:16px;">send</span> <span id="broadcastSendBtn">發送</span></button>
                 </div>
             </div>
         </div>
 
-        <!-- ============================================================
-           工具彈窗容器
-           ============================================================ -->
+        <!-- ===== 工具彈窗容器 ===== -->
         <div class="tool-modal" id="toolModal">
             <div class="modal-box" id="toolModalContent">
                 <!-- 動態內容由 JavaScript 產生 -->
@@ -1872,7 +405,7 @@
 
     <script type="module">
         // ============================================================
-        // 1. Firebase 初始化
+        // 1. 匯入 Firebase
         // ============================================================
         import { initializeApp } from "firebase/app";
         import {
@@ -1881,6 +414,15 @@
             serverTimestamp, increment, addDoc, runTransaction
         } from "firebase/firestore";
 
+        // ============================================================
+        // 2. 匯入語言包
+        // ============================================================
+        import { zh } from './locales/zh.js';
+        import { en } from './locales/en.js';
+
+        // ============================================================
+        // 3. Firebase 設定
+        // ============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyAVllhBuONIqLlPlvCgnozPEE2834HFTxA",
             authDomain: "classqna-7898b.firebaseapp.com",
@@ -1893,7 +435,59 @@
         const db = getFirestore(app);
 
         // ============================================================
-        // 2. 全域狀態
+        // 4. 語言管理
+        // ============================================================
+        let currentLang = 'zh';
+
+        function t(key) {
+            const dict = currentLang === 'zh' ? zh : en;
+            return dict[key] || key;
+        }
+
+        function updateAllTexts() {
+            // 頂部
+            document.getElementById('appBrand').innerHTML = t('appName').replace('霧臺<span>國小</span>', '霧臺<span>國小</span>');
+            // 頁面標題與按鈕 - 透過 data-i18n 屬性逐一更新
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                const text = t(key);
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    el.placeholder = text;
+                } else {
+                    el.textContent = text;
+                }
+            });
+            // 特殊處理：帶 HTML 的標題
+            const brandEl = document.querySelector('.brand');
+            if (brandEl) {
+                const name = t('appName');
+                if (currentLang === 'zh') {
+                    brandEl.innerHTML = '霧臺<span>國小</span>';
+                } else {
+                    brandEl.textContent = 'Wutai Elementary';
+                }
+            }
+            // 更新步驟文字
+            const stepNum = STATE.currentPage || 1;
+            document.getElementById('stepText').textContent = t(`step${stepNum}`);
+
+            // 更新語言切換按鈕狀態
+            document.getElementById('langZh').className = currentLang === 'zh' ? 'active' : '';
+            document.getElementById('langEn').className = currentLang === 'en' ? 'active' : '';
+        }
+
+        // 語言切換事件
+        document.getElementById('langZh').addEventListener('click', () => {
+            currentLang = 'zh';
+            updateAllTexts();
+        });
+        document.getElementById('langEn').addEventListener('click', () => {
+            currentLang = 'en';
+            updateAllTexts();
+        });
+
+        // ============================================================
+        // 5. 全域狀態
         // ============================================================
         const STATE = {
             roomId: null,
@@ -1928,10 +522,11 @@
             voteResults: {},
             groups: [],
             groupScores: {},
+            groupFloatVisible: false,
         };
 
         // ============================================================
-        // 3. DOM 參照
+        // 6. DOM 參照（簡化版）
         // ============================================================
         const $ = (s) => document.querySelector(s);
         const $$ = (s) => document.querySelectorAll(s);
@@ -2012,10 +607,8 @@
         const toolModal = $('#toolModal');
         const toolModalContent = $('#toolModalContent');
 
-        const schoolLogo = $('#schoolLogo');
-
         // ============================================================
-        // 4. 輔助函式
+        // 7. 輔助函式
         // ============================================================
         function generateRoomId() { return String(Math.floor(1000 + Math.random() * 9000)); }
 
@@ -2041,7 +634,7 @@
         }
 
         // ============================================================
-        // 5. 頁面導航（簡化）
+        // 8. 頁面導航
         // ============================================================
         function goToPage(pageNum) {
             const totalPages = 5;
@@ -2054,9 +647,9 @@
                 if (idx + 1 === pageNum) dot.classList.add('active');
                 else if (idx + 1 < pageNum) dot.classList.add('done');
             });
-            stepText.textContent = `步驟 ${pageNum} / ${totalPages}`;
+            stepText.textContent = t(`step${pageNum}`);
             if (STATE.roomId && pageNum >= 2) {
-                roomCodeDisplay.textContent = `教室：${STATE.roomId}`;
+                roomCodeDisplay.textContent = `${t('roomCodeLabel')}：${STATE.roomId}`;
                 roomCodeDisplay.classList.add('show');
                 roomIdDisplay.textContent = STATE.roomId;
             } else {
@@ -2081,24 +674,24 @@
             if (state === 'published' || state === 'idle') {
                 startStopBtn.disabled = false;
                 startStopBtn.innerHTML =
-                    '<span class="material-symbols-outlined">play_arrow</span> 開始作答';
+                    `<span class="material-symbols-outlined">play_arrow</span> <span data-i18n="startAnswering">開始作答</span>`;
                 startStopBtn.className = 'btn btn-primary btn-lg';
             } else if (state === 'answering') {
                 startStopBtn.disabled = false;
                 startStopBtn.innerHTML =
-                    '<span class="material-symbols-outlined">stop</span> 停止作答';
+                    `<span class="material-symbols-outlined">stop</span> <span data-i18n="stopAnswering">停止作答</span>`;
                 startStopBtn.className = 'btn btn-danger btn-lg';
             } else if (state === 'stopped') {
                 startStopBtn.disabled = true;
                 startStopBtn.innerHTML =
-                    '<span class="material-symbols-outlined">pause</span> 已停止';
+                    `<span class="material-symbols-outlined">pause</span> <span data-i18n="stopped">已停止</span>`;
                 startStopBtn.className = 'btn btn-ghost btn-lg';
             }
             gotoPage4Btn.disabled = state !== 'stopped';
         }
 
         // ============================================================
-        // 6. 載入名單
+        // 9. 載入名單
         // ============================================================
         async function loadRosterFromSheet() {
             const url =
@@ -2185,7 +778,7 @@
         });
 
         // ============================================================
-        // 7. 教室建立（簡化，只保留核心）
+        // 10. 教室建立
         // ============================================================
         async function checkExistingRoom(teacherName) {
             try {
@@ -2235,7 +828,7 @@
             const selected = STATE.selectedClasses;
             const custom = customClassCheckbox.checked;
             if (selected.length === 0 && !custom) {
-                alert('請至少勾選一個班級，或啟用「無班級」模式');
+                alert(t('errorNoClass'));
                 return;
             }
 
@@ -2275,12 +868,18 @@
                     customStudentCount: custom ? STATE.customStudentCount : 0,
                     expireAt: new Date(Date.now() + 6 * 3600 * 1000).toISOString(),
                     isLocked: false,
+                    // 工具狀態
+                    voteActive: false,
+                    voteOptions: [],
+                    voteResults: {},
+                    groups: [],
+                    groupScores: {},
                 });
                 await setDoc(doc(db, 'rooms', STATE.roomId, 'meta', 'info'), { questionCounter: 1 });
                 onlineCount.textContent = '0';
                 listenStudents();
                 STATE.currentQuestion = 0;
-                currentQuestionDisplay.textContent = '第 0 題';
+                currentQuestionDisplay.textContent = `${t('currentQuestion')} 第 0 題`;
                 STATE.currentAnswers = {};
                 STATE.history = [];
                 STATE.cumulativeScores = {};
@@ -2288,8 +887,9 @@
                 STATE.isPublished = false;
                 STATE.isStopped = false;
                 STATE.flowState = 'idle';
-                publishBtn.textContent = '📨 發布第 1 題';
-                publishStatus.textContent = '尚未發布';
+                publishBtn.innerHTML =
+                    `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', '1')}`;
+                publishStatus.innerHTML = `<span data-i18n="publishStatus">尚未發布</span>`;
                 updateCards();
                 updateCharts();
                 gotoPage2Btn.disabled = false;
@@ -2297,20 +897,20 @@
                 showQRCode(STATE.roomId);
                 qrModal.classList.add('show');
                 updateFlowButtons();
-                alert(`✅ 教室已建立！代碼：${STATE.roomId}`);
+                alert(t('successRoomCreated').replace('{code}', STATE.roomId));
             } catch (e) {
-                alert('❌ 建立教室失敗：' + e.message);
+                alert(t('errorCreateRoom') + '\n' + e.message);
             }
         }
 
         // ============================================================
-        // 8. QR Code
+        // 11. QR Code
         // ============================================================
         async function showQRCode(roomId) {
             const base = window.location.href.split('?')[0];
             const basePath = base.substring(0, base.lastIndexOf('/') + 1);
             const url = basePath + 'student.html?room=' + roomId;
-            qrModalRoomCode.textContent = `教室代碼：${roomId}`;
+            qrModalRoomCode.textContent = `${t('roomCodeLabel')}：${roomId}`;
             try {
                 if (typeof QRCode === 'undefined') {
                     await new Promise((resolve, reject) => {
@@ -2331,7 +931,7 @@
         }
 
         // ============================================================
-        // 9. 監聽學生
+        // 12. 監聽學生
         // ============================================================
         let studentsUnsubscribe = null;
 
@@ -2347,12 +947,12 @@
         }
 
         // ============================================================
-        // 10. 發布題目
+        // 13. 發布題目
         // ============================================================
         async function publishQuestion() {
-            if (!STATE.roomId) { alert('請先建立教室！'); return; }
+            if (!STATE.roomId) { alert(t('errorNoRoom')); return; }
             if (STATE.flowState === 'answering') {
-                alert('請先停止作答再發布新題目');
+                alert(t('errorPublish'));
                 return;
             }
 
@@ -2369,9 +969,11 @@
             const note = questionNoteInput.value.trim() || `第 ${qNum} 題`;
             const sec = parseInt(customSeconds.value) || 20;
 
-            currentQuestionDisplay.textContent = `第 ${qNum} 題`;
-            publishBtn.textContent = `📨 發布第 ${qNum + 1} 題`;
-            publishStatus.textContent = `✅ 已發布第 ${qNum} 題（配分：${STATE.questionScore} 分）`;
+            currentQuestionDisplay.textContent = `${t('currentQuestion')} 第 ${qNum} 題`;
+            publishBtn.innerHTML =
+                `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', qNum + 1)}`;
+            publishStatus.innerHTML =
+                `${t('published').replace('{n}', qNum).replace('{score}', STATE.questionScore)}`;
 
             STATE.correctAnswer = null;
             STATE.isRevealed = false;
@@ -2400,13 +1002,16 @@
             STATE.flowState = 'published';
 
             timerLargeDisplay.textContent = sec;
-            timerLabel.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">timer</span> 等待開始作答';
+            timerLabel.innerHTML =
+                `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="waitingStart">等待開始</span>`;
             timerLargeContainer.style.display = 'block';
 
-            startStopBtn.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> 開始作答';
+            startStopBtn.innerHTML =
+                `<span class="material-symbols-outlined">play_arrow</span> <span data-i18n="startAnswering">開始作答</span>`;
             startStopBtn.className = 'btn btn-primary btn-lg';
 
-            choiceResultCards.innerHTML = '<div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;">請公布答案</div>';
+            choiceResultCards.innerHTML =
+                `<div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;" data-i18n="revealPlaceholder">請公布答案</div>`;
 
             updateCards();
             updateCharts();
@@ -2424,7 +1029,7 @@
         }
 
         // ============================================================
-        // 11. 開始 / 停止作答
+        // 14. 開始 / 停止作答
         // ============================================================
         async function toggleStartStop() {
             if (!STATE.roomId) return;
@@ -2433,10 +1038,12 @@
                 await updateDoc(doc(db, 'rooms', STATE.roomId), { isAnswering: true, timerSeconds: sec });
                 STATE.isAnswering = true;
                 STATE.flowState = 'answering';
-                startStopBtn.innerHTML = '<span class="material-symbols-outlined">stop</span> 停止作答';
+                startStopBtn.innerHTML =
+                    `<span class="material-symbols-outlined">stop</span> <span data-i18n="stopAnswering">停止作答</span>`;
                 startStopBtn.className = 'btn btn-danger btn-lg';
                 startTeacherTimer(sec);
-                timerLabel.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">timer</span> 作答中...';
+                timerLabel.innerHTML =
+                    `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="answering">作答中...</span>`;
                 updateFlowButtons();
             } else if (STATE.flowState === 'answering') {
                 await stopRound();
@@ -2447,13 +1054,15 @@
 
         async function stopRound() {
             clearTeacherTimer();
-            timerLabel.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">timer</span> 已停止';
+            timerLabel.innerHTML =
+                `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="stopped">已停止</span>`;
             timerLargeDisplay.textContent = '⏹️';
             await updateDoc(doc(db, 'rooms', STATE.roomId), { isAnswering: false });
             STATE.isAnswering = false;
             STATE.isStopped = true;
             STATE.flowState = 'stopped';
-            startStopBtn.innerHTML = '<span class="material-symbols-outlined">pause</span> 已停止';
+            startStopBtn.innerHTML =
+                `<span class="material-symbols-outlined">pause</span> <span data-i18n="stopped">已停止</span>`;
             startStopBtn.className = 'btn btn-ghost btn-lg';
             await collectAnswers();
             updateCards();
@@ -2463,7 +1072,7 @@
         }
 
         // ============================================================
-        // 12. 教師計時器
+        // 15. 教師計時器
         // ============================================================
         let teacherTimerInterval = null;
 
@@ -2484,7 +1093,8 @@
                     clearTeacherTimer();
                     timerLargeDisplay.textContent = '⏰';
                     timerLargeDisplay.className = 'timer-large urgent';
-                    timerLabel.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">timer</span> 時間到！';
+                    timerLabel.innerHTML =
+                        `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="timeUp">時間到！</span>`;
                     await stopRound();
                 }
             }, 1000);
@@ -2498,7 +1108,7 @@
         }
 
         // ============================================================
-        // 13. 收集答案
+        // 16. 收集答案
         // ============================================================
         async function collectAnswers() {
             if (!STATE.roomId || !STATE.currentRoundId) return;
@@ -2541,7 +1151,7 @@
         }
 
         // ============================================================
-        // 14. 公布答案（選擇題）
+        // 17. 公布答案（選擇題）
         // ============================================================
         async function revealAnswer(answer) {
             STATE.correctAnswer = answer;
@@ -2572,7 +1182,7 @@
         }
 
         // ============================================================
-        // 15. 更新卡牌
+        // 18. 更新卡牌
         // ============================================================
         function updateCards() {
             let filtered = [];
@@ -2598,13 +1208,13 @@
                     html += `<div class="${cls}"><div>${label}</div><span class="sub-label">${sub}</span></div>`;
                 }
                 cardContainer.innerHTML = html ||
-                    '<div style="color:var(--text-muted); padding:20px; text-align:center; width:100%;">尚無臨時學生作答</div>';
+                    '<div style="color:var(--text-muted); padding:20px; text-align:center; width:100%;" data-i18n="noStudents">尚無臨時學生作答</div>';
                 return;
             }
 
             if (filtered.length === 0) {
                 cardContainer.innerHTML =
-                    '<div style="color:var(--text-muted); padding:20px; text-align:center; width:100%;">請勾選班級</div>';
+                    '<div style="color:var(--text-muted); padding:20px; text-align:center; width:100%;" data-i18n="noClassSelected">請勾選班級</div>';
                 return;
             }
 
@@ -2637,7 +1247,7 @@
 
                 if (isSpecified && !submitted && STATE.flowState === 'answering') {
                     cls += ' specified';
-                    sub = '👆 點名';
+                    sub = '👆 ' + t('specified');
                 }
 
                 if (submitted) {
@@ -2660,11 +1270,11 @@
                     }
                 } else {
                     if (STATE.flowState === 'answering' && isSpecified) {
-                        sub = '⏳ 等待中';
+                        sub = '⏳ ' + t('waiting');
                     } else if (STATE.flowState === 'answering') {
-                        sub = '⏳ 未交';
+                        sub = '⏳ ' + t('notSubmitted');
                     } else {
-                        sub = '⏸️ 等待';
+                        sub = '⏸️ ' + t('waiting');
                     }
                 }
 
@@ -2699,7 +1309,7 @@
         }
 
         // ============================================================
-        // 16. 指定學生
+        // 19. 指定學生
         // ============================================================
         function toggleSpecifiedStudent(studentId) {
             const idx = STATE.specifiedStudents.indexOf(studentId);
@@ -2710,14 +1320,15 @@
         }
 
         // ============================================================
-        // 17. 排行榜
+        // 20. 排行榜
         // ============================================================
         function updateCharts() { updateRankList(); }
 
         function updateRankList() {
             const sorted = Object.entries(STATE.cumulativeScores).sort((a, b) => b[1] - a[1]).slice(0, 20);
             if (sorted.length === 0) {
-                rankList.innerHTML = '<div style="color:var(--text-muted); padding:20px; text-align:center;">尚無得分記錄</div>';
+                rankList.innerHTML =
+                    '<div style="color:var(--text-muted); padding:20px; text-align:center;" data-i18n="noScore">尚無得分記錄</div>';
                 return;
             }
             let html = '';
@@ -2728,13 +1339,13 @@
                 if (idx === 1) rankClass += ' top2';
                 if (idx === 2) rankClass += ' top3';
                 const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`;
-                html += `<div class="${rankClass}"><span class="rank-num">${medal}</span><span class="rank-name">${name}</span><span class="rank-score">${score} 分</span></div>`;
+                html += `<div class="${rankClass}"><span class="rank-num">${medal}</span><span class="rank-name">${name}</span><span class="rank-score">${score} ${t('score')}</span></div>`;
             });
             rankList.innerHTML = html;
         }
 
         // ============================================================
-        // 18. 文字題給分
+        // 21. 文字題給分
         // ============================================================
         function renderTextGrading() {
             const filtered = [];
@@ -2743,7 +1354,8 @@
                 filtered.push(...roster.map(s => ({ ...s, className: cls })));
             }
             if (filtered.length === 0) {
-                textGradingList.innerHTML = '<div style="color:var(--text-muted); padding:10px; text-align:center;">無學生資料</div>';
+                textGradingList.innerHTML =
+                    '<div style="color:var(--text-muted); padding:10px; text-align:center;" data-i18n="noStudents">無學生資料</div>';
                 return;
             }
             const score = STATE.questionScore || 1;
@@ -2783,22 +1395,22 @@
         }
 
         // ============================================================
-        // 19. 觀看文字答案
+        // 22. 觀看文字答案
         // ============================================================
         function viewTextAnswers() {
             goToPage(4);
             choiceRevealArea.classList.add('hidden');
             textGradingArea.classList.remove('hidden');
-            page4Subtitle.textContent = '📝 勾選答對的學生，即時加分';
+            page4Subtitle.textContent = t('resultRevealDescText');
             renderTextGrading();
             gotoPage5Btn.disabled = false;
         }
 
         // ============================================================
-        // 20. 清除記錄
+        // 23. 清除記錄
         // ============================================================
         async function clearAllHistory() {
-            if (!confirm('確定要清除所有紀錄，進入下一題嗎？\n（累計得分將保留）')) return;
+            if (!confirm(t('groupDeleteConfirm') || '確定要清除所有紀錄，進入下一題嗎？\n（累計得分將保留）')) return;
             const metaRef = doc(db, 'rooms', STATE.roomId, 'meta', 'info');
             const metaSnap = await getDoc(metaRef);
             let nextQNum = 1;
@@ -2814,9 +1426,10 @@
             STATE.currentRoundId = null;
             STATE.flowState = 'idle';
 
-            currentQuestionDisplay.textContent = '第 0 題';
-            publishBtn.textContent = `📨 發布第 ${nextQNum} 題`;
-            publishStatus.textContent = '尚未發布';
+            currentQuestionDisplay.textContent = `${t('currentQuestion')} 第 0 題`;
+            publishBtn.innerHTML =
+                `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', nextQNum)}`;
+            publishStatus.innerHTML = `<span data-i18n="publishStatus">尚未發布</span>`;
 
             updateCards();
             updateCharts();
@@ -2831,21 +1444,25 @@
             gotoPage5Btn.disabled = true;
 
             timerLargeDisplay.textContent = '--';
-            timerLabel.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">timer</span> 等待開始';
+            timerLabel.innerHTML =
+                `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="waitingStart">等待開始</span>`;
             timerLargeContainer.style.display = 'block';
-            choiceResultCards.innerHTML = '<div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;">請公布答案</div>';
+            choiceResultCards.innerHTML =
+                `<div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;" data-i18n="revealPlaceholder">請公布答案</div>`;
 
             updateFlowButtons();
-            alert('✅ 已清除，請發布下一題。');
+            alert(t('successCleared'));
         }
 
         // ============================================================
-        // 21. 匯出 Excel
+        // 24. 匯出 Excel
         // ============================================================
         function exportExcel() {
-            if (STATE.history.length === 0) { alert('目前沒有任何記錄可匯出。'); return; }
+            if (STATE.history.length === 0) { alert(t('noScore')); return; }
             const rows = [
-                ['題號', '題型', '題目批註', '配分', '座號', '姓名', '作答選項', '文字答案', '是否正確', '得分']
+                [t('questionNote'), t('questionType'), t('score'), t('studentId'), t('studentName'), t('choice'), t('text'),
+                    t('correct'), t('earnedScore')
+                ]
             ];
             for (const h of STATE.history) {
                 const score = h.score || 1;
@@ -2864,9 +1481,8 @@
                         isCorrect = earnedScore > 0 ? '✅ 正確' : '';
                     }
                     rows.push([
-                        h.question,
-                        h.type === 'choice' ? '選擇題' : '文字題',
                         h.note || '',
+                        h.type === 'choice' ? '選擇題' : '文字題',
                         score,
                         ans.studentId || '',
                         ans.name || '',
@@ -2883,51 +1499,53 @@
             const fileName =
                 `霧臺國小_課堂記錄_${STATE.roomId || 'class'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
             XLSX.writeFile(wb, fileName);
-            alert('✅ Excel 已下載！');
+            alert(t('successExcelDownloaded'));
         }
 
         // ============================================================
-        // 22. 廣播
+        // 25. 廣播
         // ============================================================
         async function sendBroadcast() {
             const msg = broadcastInput.value.trim();
-            if (!msg) { alert('請輸入訊息'); return; }
+            if (!msg) { alert(t('broadcastPlaceholder')); return; }
             await updateDoc(doc(db, 'rooms', STATE.roomId), { broadcastMsg: msg });
             broadcastInput.value = '';
             broadcastModal.classList.remove('show');
-            alert('✅ 廣播已發送！');
+            alert(t('broadcastSent'));
         }
 
         // ============================================================
-        // 23. 鎖定畫面
+        // 26. 鎖定畫面
         // ============================================================
         async function toggleLockScreen() {
-            if (!STATE.roomId) { alert('請先建立教室'); return; }
+            if (!STATE.roomId) { alert(t('errorNoRoom')); return; }
             const roomRef = doc(db, 'rooms', STATE.roomId);
             const snap = await getDoc(roomRef);
             const data = snap.data();
             const isLocked = data?.isLocked || false;
             const newLock = !isLocked;
             await updateDoc(roomRef, { isLocked: newLock });
-            dockLockScreen.innerHTML = newLock ?
-                '<span class="material-symbols-outlined">lock_open</span><span class="label">解鎖</span>' :
-                '<span class="material-symbols-outlined">lock</span><span class="label">鎖定</span>';
-            alert(newLock ? '✅ 學生畫面已鎖定' : '✅ 學生畫面已解鎖');
+            const label = newLock ? t('lockScreen') : t('unlockScreen');
+            const icon = newLock ? 'lock' : 'lock_open';
+            dockLockScreen.innerHTML =
+                `<span class="material-symbols-outlined">${icon}</span><span class="label">${label}</span>`;
+            alert(newLock ? t('lockConfirm') : t('unlockConfirm'));
         }
 
         // ============================================================
-        // 24. 工具：計時器
+        // 27. 工具：計時器
         // ============================================================
         let timerToolInterval = null;
         let timerToolRunning = false;
         let timerToolSeconds = 0;
+        let timerToolMode = 'countdown';
 
         function openTimerTool() {
             let content = `
                         <div class="modal-title">
-                            <span class="material-symbols-outlined">timer</span> 計時器
+                            <span class="material-symbols-outlined">timer</span> <span data-i18n="timerTitle">計時器</span>
                         </div>
-                        <div class="modal-desc">倒數計時或碼表，投影幕全班觀看</div>
+                        <div class="modal-desc" data-i18n="timerDesc">倒數計時或碼表，投影幕全班觀看</div>
                         <div class="timer-display" id="toolTimerDisplay">00:00</div>
                         <div class="timer-presets">
                             <button class="btn btn-ghost btn-sm" data-timer-set="5">5s</button>
@@ -2938,19 +1556,19 @@
                             <button class="btn btn-ghost btn-sm" data-timer-set="300">300s</button>
                         </div>
                         <div class="timer-controls">
-                            <button class="btn btn-success" id="toolTimerStart"><span class="material-symbols-outlined">play_arrow</span> 開始</button>
-                            <button class="btn btn-danger" id="toolTimerStop"><span class="material-symbols-outlined">stop</span> 停止</button>
-                            <button class="btn btn-ghost" id="toolTimerReset"><span class="material-symbols-outlined">refresh</span> 重置</button>
+                            <button class="btn btn-success" id="toolTimerStart"><span class="material-symbols-outlined">play_arrow</span> <span data-i18n="timerStart">開始</span></button>
+                            <button class="btn btn-danger" id="toolTimerStop"><span class="material-symbols-outlined">stop</span> <span data-i18n="timerStop">停止</span></button>
+                            <button class="btn btn-ghost" id="toolTimerReset"><span class="material-symbols-outlined">refresh</span> <span data-i18n="timerReset">重置</span></button>
                         </div>
                         <div style="margin-top:8px; display:flex; gap:10px; justify-content:center;">
-                            <button class="btn btn-ghost btn-sm" id="toolTimerModeCountdown">⏱️ 倒數</button>
-                            <button class="btn btn-ghost btn-sm" id="toolTimerModeStopwatch">⏱️ 碼表</button>
+                            <button class="btn btn-ghost btn-sm" id="toolTimerModeCountdown">⏱️ <span data-i18n="timerModeCountdown">倒數</span></button>
+                            <button class="btn btn-ghost btn-sm" id="toolTimerModeStopwatch">⏱️ <span data-i18n="timerModeStopwatch">碼表</span></button>
                         </div>
                     `;
 
-            showToolModal(content);
+            toolModalContent.innerHTML = content;
+            toolModal.classList.add('show');
 
-            let timerMode = 'countdown';
             let timerValue = 0;
             let timerDisplayEl = document.getElementById('toolTimerDisplay');
             let timerStartBtn = document.getElementById('toolTimerStart');
@@ -2966,7 +1584,7 @@
 
             function updateDisplay() {
                 if (timerDisplayEl) timerDisplayEl.textContent = formatTime(timerValue);
-                if (timerMode === 'countdown' && timerValue <= 5 && timerValue > 0) {
+                if (timerToolMode === 'countdown' && timerValue <= 5 && timerValue > 0) {
                     timerDisplayEl.style.color = 'var(--danger)';
                 } else {
                     timerDisplayEl.style.color = '';
@@ -2975,25 +1593,25 @@
 
             function startTimer() {
                 if (timerToolRunning) return;
-                if (timerMode === 'countdown' && timerValue <= 0) {
-                    alert('請先設定秒數');
+                if (timerToolMode === 'countdown' && timerValue <= 0) {
+                    alert(t('secondsPlaceholder') || '請先設定秒數');
                     return;
                 }
-                if (timerMode === 'stopwatch') {
+                if (timerToolMode === 'stopwatch') {
                     timerValue = 0;
                     updateDisplay();
                 }
                 timerToolRunning = true;
                 timerStartBtn.disabled = true;
                 timerToolInterval = setInterval(() => {
-                    if (timerMode === 'countdown') {
+                    if (timerToolMode === 'countdown') {
                         timerValue--;
                         updateDisplay();
                         if (timerValue <= 0) {
                             clearInterval(timerToolInterval);
                             timerToolRunning = false;
                             timerStartBtn.disabled = false;
-                            timerDisplayEl.textContent = '⏰ 時間到！';
+                            timerDisplayEl.textContent = t('timerTimeUp') || '⏰ 時間到！';
                             timerDisplayEl.style.color = 'var(--danger)';
                         }
                     } else {
@@ -3014,7 +1632,7 @@
 
             function resetTimer() {
                 stopTimer();
-                if (timerMode === 'countdown') {
+                if (timerToolMode === 'countdown') {
                     timerValue = 0;
                 } else {
                     timerValue = 0;
@@ -3023,15 +1641,9 @@
                 timerStartBtn.disabled = false;
             }
 
-            if (timerStartBtn) {
-                timerStartBtn.addEventListener('click', startTimer);
-            }
-            if (timerStopBtn) {
-                timerStopBtn.addEventListener('click', stopTimer);
-            }
-            if (timerResetBtn) {
-                timerResetBtn.addEventListener('click', resetTimer);
-            }
+            if (timerStartBtn) timerStartBtn.addEventListener('click', startTimer);
+            if (timerStopBtn) timerStopBtn.addEventListener('click', stopTimer);
+            if (timerResetBtn) timerResetBtn.addEventListener('click', resetTimer);
 
             timerSetBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -3039,7 +1651,7 @@
                         if (!confirm('計時器正在運行，確定要重設嗎？')) return;
                         stopTimer();
                     }
-                    timerMode = 'countdown';
+                    timerToolMode = 'countdown';
                     timerValue = parseInt(this.dataset.timerSet);
                     updateDisplay();
                     timerStartBtn.disabled = false;
@@ -3053,7 +1665,7 @@
                     if (!confirm('切換模式將停止計時器，確定嗎？')) return;
                     stopTimer();
                 }
-                timerMode = 'countdown';
+                timerToolMode = 'countdown';
                 timerValue = 0;
                 updateDisplay();
                 timerStartBtn.disabled = false;
@@ -3066,7 +1678,7 @@
                     if (!confirm('切換模式將停止計時器，確定嗎？')) return;
                     stopTimer();
                 }
-                timerMode = 'stopwatch';
+                timerToolMode = 'stopwatch';
                 timerValue = 0;
                 updateDisplay();
                 timerStartBtn.disabled = false;
@@ -3076,28 +1688,29 @@
         }
 
         // ============================================================
-        // 25. 工具：骰子
+        // 28. 工具：骰子
         // ============================================================
         function openDiceTool() {
             let diceHistory = [];
             let content = `
                         <div class="modal-title">
-                            <span class="material-symbols-outlined">casino</span> 骰子
+                            <span class="material-symbols-outlined">casino</span> <span data-i18n="diceTitle">骰子</span>
                         </div>
-                        <div class="modal-desc">點擊擲骰，全班投影觀看結果</div>
+                        <div class="modal-desc" data-i18n="diceDesc">點擊擲骰，全班投影觀看結果</div>
                         <div class="dice-container">
                             <div class="dice-display" id="toolDiceDisplay">🎲</div>
                             <button class="btn btn-primary btn-lg" id="toolDiceRoll">
-                                <span class="material-symbols-outlined">casino</span> 擲骰
+                                <span class="material-symbols-outlined">casino</span> <span data-i18n="diceRoll">擲骰</span>
                             </button>
                             <div class="dice-history" id="toolDiceHistory"></div>
                             <button class="btn btn-ghost btn-sm" id="toolDiceClear">
-                                <span class="material-symbols-outlined">delete</span> 清除紀錄
+                                <span class="material-symbols-outlined">delete</span> <span data-i18n="diceClear">清除紀錄</span>
                             </button>
                         </div>
                     `;
 
-            showToolModal(content);
+            toolModalContent.innerHTML = content;
+            toolModal.classList.add('show');
 
             const diceDisplay = document.getElementById('toolDiceDisplay');
             const diceRollBtn = document.getElementById('toolDiceRoll');
@@ -3123,10 +1736,7 @@
                 }
             }
 
-            if (diceRollBtn) {
-                diceRollBtn.addEventListener('click', rollDice);
-            }
-
+            if (diceRollBtn) diceRollBtn.addEventListener('click', rollDice);
             if (diceClearBtn) {
                 diceClearBtn.addEventListener('click', () => {
                     diceHistory = [];
@@ -3135,7 +1745,7 @@
                 });
             }
 
-            // 鍵盤快捷鍵：空白鍵擲骰
+            // 快捷鍵：空白鍵
             const keyHandler = (e) => {
                 if (e.key === ' ' && !toolModal.classList.contains('show')) return;
                 if (e.key === ' ' || e.key === 'Enter') {
@@ -3148,7 +1758,7 @@
         }
 
         // ============================================================
-        // 26. 工具：隨機點名器
+        // 29. 工具：隨機點名器
         // ============================================================
         function openPickerTool() {
             const available = STATE.allStudents.filter(s => {
@@ -3158,31 +1768,31 @@
 
             let content = `
                         <div class="modal-title">
-                            <span class="material-symbols-outlined">person_add</span> 隨機點名器
+                            <span class="material-symbols-outlined">person_add</span> <span data-i18n="pickerTitle">隨機點名器</span>
                         </div>
-                        <div class="modal-desc">從全班隨機抽選，可切換排除已點名者</div>
+                        <div class="modal-desc" data-i18n="pickerDesc">從全班隨機抽選，可切換排除已點名者</div>
                         <div class="picker-display" id="toolPickerDisplay">
-                            <span style="color:var(--text-muted);">點擊抽選</span>
+                            <span style="color:var(--text-muted);" data-i18n="pickerPick">點擊抽選</span>
                         </div>
                         <div class="picker-controls">
                             <button class="btn btn-primary btn-lg" id="toolPickerPick">
-                                <span class="material-symbols-outlined">casino</span> 抽選
+                                <span class="material-symbols-outlined">casino</span> <span data-i18n="pickerPick">抽選</span>
                             </button>
                             <button class="btn btn-ghost" id="toolPickerReset">
-                                <span class="material-symbols-outlined">refresh</span> 重置
+                                <span class="material-symbols-outlined">refresh</span> <span data-i18n="pickerReset">重置</span>
                             </button>
                         </div>
                         <div style="margin-top:8px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap;">
                             <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:var(--text-secondary);">
                                 <input type="checkbox" id="toolPickerExclude" ${STATE.pickerExcluded.length > 0 ? 'checked' : ''} />
-                                排除已選名單 (${STATE.pickerExcluded.length} 人)
+                                <span data-i18n="pickerExclude">排除已選名單</span> (${STATE.pickerExcluded.length} 人)
                             </label>
-                            <span style="font-size:13px; color:var(--text-muted);">剩餘 ${available.length} 人</span>
+                            <span style="font-size:13px; color:var(--text-muted);" id="toolPickerStatus">${t('pickerRemaining').replace('{n}', available.length)}</span>
                         </div>
-                        <div style="margin-top:8px; font-size:13px; color:var(--text-muted); text-align:center;" id="toolPickerStatus"></div>
                     `;
 
-            showToolModal(content);
+            toolModalContent.innerHTML = content;
+            toolModal.classList.add('show');
 
             const display = document.getElementById('toolPickerDisplay');
             const pickBtn = document.getElementById('toolPickerPick');
@@ -3203,7 +1813,7 @@
             function pickStudent() {
                 const available = getAvailable();
                 if (available.length === 0) {
-                    display.innerHTML = '<span style="color:var(--danger);">所有人都已點過！請重置</span>';
+                    display.innerHTML = `<span style="color:var(--danger);" data-i18n="pickerAllPicked">所有人都已點過！請重置</span>`;
                     return;
                 }
                 const picked = available[Math.floor(Math.random() * available.length)];
@@ -3221,25 +1831,21 @@
 
                 if (statusEl) {
                     const remaining = getAvailable().length;
-                    statusEl.textContent = `已點 ${STATE.pickerExcluded.length} 人，剩餘 ${remaining} 人`;
+                    statusEl.textContent = `${t('pickerExcludedCount').replace('{n}', STATE.pickerExcluded.length)}，${t('pickerRemaining').replace('{n}', remaining)}`;
                 }
             }
 
-            if (pickBtn) {
-                pickBtn.addEventListener('click', pickStudent);
-            }
-
+            if (pickBtn) pickBtn.addEventListener('click', pickStudent);
             if (resetBtn) {
                 resetBtn.addEventListener('click', () => {
                     STATE.pickerExcluded = [];
-                    display.innerHTML = '<span style="color:var(--text-muted);">已重置，請抽選</span>';
+                    display.innerHTML = `<span style="color:var(--text-muted);" data-i18n="pickerReset">已重置，請抽選</span>`;
                     display.classList.remove('spinning');
                     if (statusEl) {
-                        statusEl.textContent = `已重置，共 ${STATE.allStudents.length} 人`;
+                        statusEl.textContent = t('pickerRemaining').replace('{n}', STATE.allStudents.length);
                     }
                 });
             }
-
             if (excludeCheck) {
                 excludeCheck.addEventListener('change', function() {
                     if (!this.checked) {
@@ -3248,20 +1854,19 @@
                     if (statusEl) {
                         const available = getAvailable().length;
                         statusEl.textContent = this.checked ?
-                            `排除已選模式，剩餘 ${available} 人` :
-                            `全部 ${STATE.allStudents.length} 人`;
+                            `${t('pickerExclude')}，${t('pickerRemaining').replace('{n}', available)}` :
+                            t('pickerRemaining').replace('{n}', STATE.allStudents.length);
                     }
                 });
-                // 初始化狀態
+                // 初始化
                 if (statusEl) {
                     const available = getAvailable().length;
                     statusEl.textContent = excludeCheck.checked ?
-                        `排除已選模式，剩餘 ${available} 人` :
-                        `全部 ${STATE.allStudents.length} 人`;
+                        `${t('pickerExclude')}，${t('pickerRemaining').replace('{n}', available)}` :
+                        t('pickerRemaining').replace('{n}', STATE.allStudents.length);
                 }
             }
 
-            // 鍵盤快捷鍵：空白鍵抽選
             const keyHandler = (e) => {
                 if (e.key === ' ' && !toolModal.classList.contains('show')) return;
                 if (e.key === ' ' || e.key === 'Enter') {
@@ -3274,27 +1879,28 @@
         }
 
         // ============================================================
-        // 27. 工具：投票
+        // 30. 工具：投票
         // ============================================================
         function openVoteTool() {
             let content = `
                         <div class="modal-title">
-                            <span class="material-symbols-outlined">how_to_vote</span> 即時投票
+                            <span class="material-symbols-outlined">how_to_vote</span> <span data-i18n="voteTitle">即時投票</span>
                         </div>
-                        <div class="modal-desc">建立投票選項，學生端即時同步</div>
+                        <div class="modal-desc" data-i18n="voteDesc">建立投票選項，學生端即時同步</div>
                         <div style="display:flex; gap:8px; margin-bottom:10px;">
-                            <input type="text" id="toolVoteOptionInput" placeholder="輸入選項" style="flex:1; padding:8px 14px; border:1px solid rgba(0,0,0,0.06); border-radius:var(--radius-full); background:rgba(255,255,255,0.6); font-size:15px;" />
-                            <button class="btn btn-primary btn-sm" id="toolVoteAddOption"><span class="material-symbols-outlined">add</span> 加入</button>
+                            <input type="text" id="toolVoteOptionInput" placeholder="${t('voteOptionPlaceholder')}" style="flex:1; padding:8px 14px; border:1px solid rgba(0,0,0,0.06); border-radius:var(--radius-full); background:rgba(255,255,255,0.6); font-size:15px;" />
+                            <button class="btn btn-primary btn-sm" id="toolVoteAddOption"><span class="material-symbols-outlined">add</span> ${t('voteAddOption')}</button>
                         </div>
                         <div id="toolVoteOptions" class="vote-options"></div>
                         <div style="display:flex; gap:10px; margin-top:8px;">
-                            <button class="btn btn-success" id="toolVoteStart"><span class="material-symbols-outlined">play_arrow</span> 開始投票</button>
-                            <button class="btn btn-danger" id="toolVoteStop"><span class="material-symbols-outlined">stop</span> 結束投票</button>
-                            <button class="btn btn-ghost" id="toolVoteClear"><span class="material-symbols-outlined">delete</span> 清除</button>
+                            <button class="btn btn-success" id="toolVoteStart"><span class="material-symbols-outlined">play_arrow</span> ${t('voteStart')}</button>
+                            <button class="btn btn-danger" id="toolVoteStop"><span class="material-symbols-outlined">stop</span> ${t('voteStop')}</button>
+                            <button class="btn btn-ghost" id="toolVoteClear"><span class="material-symbols-outlined">delete</span> ${t('voteClear')}</button>
                         </div>
                     `;
 
-            showToolModal(content);
+            toolModalContent.innerHTML = content;
+            toolModal.classList.add('show');
 
             let voteOptions = [];
             let voteResults = {};
@@ -3324,7 +1930,8 @@
                                 </div>
                             `;
                 }
-                optionsContainer.innerHTML = html || '<div style="color:var(--text-muted); text-align:center; padding:12px;">尚無選項，請加入投票選項</div>';
+                optionsContainer.innerHTML = html ||
+                    `<div style="color:var(--text-muted); text-align:center; padding:12px;" data-i18n="voteNoOptions">尚無選項，請加入投票選項</div>`;
             }
 
             function addOption() {
@@ -3342,15 +1949,13 @@
 
             function startVote() {
                 if (voteOptions.length < 2) {
-                    alert('至少需要 2 個選項');
+                    alert(t('voteNeedOptions'));
                     return;
                 }
                 voteActive = true;
-                // 重置結果
                 for (const opt of voteOptions) {
                     voteResults[opt] = 0;
                 }
-                // 寫入 Firebase
                 if (STATE.roomId) {
                     updateDoc(doc(db, 'rooms', STATE.roomId), {
                         voteActive: true,
@@ -3359,18 +1964,16 @@
                     }).catch(() => {});
                 }
                 renderOptions();
-                alert('✅ 投票已開始，學生端可投票');
+                alert(t('voteStarted'));
             }
 
             function stopVote() {
                 voteActive = false;
                 if (STATE.roomId) {
-                    updateDoc(doc(db, 'rooms', STATE.roomId), {
-                        voteActive: false,
-                    }).catch(() => {});
+                    updateDoc(doc(db, 'rooms', STATE.roomId), { voteActive: false }).catch(() => {});
                 }
                 renderOptions();
-                alert('⏹️ 投票已結束');
+                alert(t('voteStopped'));
             }
 
             function clearVote() {
@@ -3397,7 +2000,6 @@
             if (stopBtn) stopBtn.addEventListener('click', stopVote);
             if (clearBtn) clearBtn.addEventListener('click', clearVote);
 
-            // 監聽 Firebase 投票結果更新
             if (STATE.roomId) {
                 const roomRef = doc(db, 'rooms', STATE.roomId);
                 const unsub = onSnapshot(roomRef, (snapshot) => {
@@ -3415,42 +2017,64 @@
         }
 
         // ============================================================
-        // 28. 工具：小組評分
+        // 31. 工具：小組評分
         // ============================================================
         function openGroupTool() {
             let content = `
                         <div class="modal-title">
-                            <span class="material-symbols-outlined">group</span> 小組評分
+                            <span class="material-symbols-outlined">group</span> <span data-i18n="groupTitle">小組評分</span>
                         </div>
-                        <div class="modal-desc">建立小組，即時加減分，排行榜同步</div>
+                        <div class="modal-desc" data-i18n="groupDesc">建立小組，即時加減分，排行榜同步</div>
                         <div style="display:flex; gap:8px; margin-bottom:10px;">
-                            <input type="text" id="toolGroupInput" placeholder="輸入小組名稱" style="flex:1; padding:8px 14px; border:1px solid rgba(0,0,0,0.06); border-radius:var(--radius-full); background:rgba(255,255,255,0.6); font-size:15px;" />
-                            <button class="btn btn-primary btn-sm" id="toolGroupAdd"><span class="material-symbols-outlined">add</span> 加入</button>
+                            <input type="text" id="toolGroupInput" placeholder="${t('groupNamePlaceholder')}" style="flex:1; padding:8px 14px; border:1px solid rgba(0,0,0,0.06); border-radius:var(--radius-full); background:rgba(255,255,255,0.6); font-size:15px;" />
+                            <button class="btn btn-primary btn-sm" id="toolGroupAdd"><span class="material-symbols-outlined">add</span> ${t('groupAdd')}</button>
+                            <button class="btn btn-danger btn-sm" id="toolGroupDeleteAll"><span class="material-symbols-outlined">delete</span></button>
                         </div>
                         <div id="toolGroupList" class="group-grid"></div>
                         <div style="margin-top:8px;">
-                            <button class="btn btn-danger" id="toolGroupReset"><span class="material-symbols-outlined">refresh</span> 重置所有分數</button>
+                            <button class="btn btn-ghost" id="toolGroupReset"><span class="material-symbols-outlined">refresh</span> ${t('groupReset')}</button>
+                            <button class="btn btn-primary btn-sm" id="toolGroupMinimize"><span class="material-symbols-outlined">remove</span> ${t('timerStart')}</button>
                         </div>
                     `;
 
-            showToolModal(content);
+            toolModalContent.innerHTML = content;
+            toolModal.classList.add('show');
 
             let groups = STATE.groups || [];
             let groupScores = STATE.groupScores || {};
 
             const groupInput = document.getElementById('toolGroupInput');
             const addBtn = document.getElementById('toolGroupAdd');
+            const deleteAllBtn = document.getElementById('toolGroupDeleteAll');
             const groupList = document.getElementById('toolGroupList');
             const resetBtn = document.getElementById('toolGroupReset');
+            const minimizeBtn = document.getElementById('toolGroupMinimize');
+
+            // 找出最高分組（用於皇冠）
+            function getTopGroup() {
+                if (groups.length === 0) return null;
+                let top = groups[0];
+                let topScore = groupScores[top] || 0;
+                for (const g of groups) {
+                    const s = groupScores[g] || 0;
+                    if (s > topScore) {
+                        topScore = s;
+                        top = g;
+                    }
+                }
+                return top;
+            }
 
             function renderGroups() {
                 if (!groupList) return;
-                const sorted = [...groups].sort((a, b) => (groupScores[b] || 0) - (groupScores[a] || 0));
+                const topGroup = getTopGroup();
                 let html = '';
-                for (const g of sorted) {
+                for (const g of groups) {
                     const score = groupScores[g] || 0;
+                    const isTop = (g === topGroup && score > 0);
                     html += `
-                                <div class="group-card">
+                                <div class="group-card" data-group="${g}">
+                                    <div class="group-crown ${isTop ? 'show' : ''}">👑</div>
                                     <div class="group-name">${g}</div>
                                     <div class="group-score">${score}</div>
                                     <div class="group-controls">
@@ -3461,16 +2085,17 @@
                                 </div>
                             `;
                 }
-                groupList.innerHTML = html || '<div style="color:var(--text-muted); text-align:center; padding:12px;">尚無小組，請加入</div>';
+                groupList.innerHTML = html ||
+                    `<div style="color:var(--text-muted); text-align:center; padding:12px;" data-i18n="groupNoGroups">尚無小組，請加入</div>`;
 
                 // 綁定事件
                 groupList.querySelectorAll('[data-group]').forEach(btn => {
-                    btn.addEventListener('click', function() {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
                         const group = this.dataset.group;
                         const delta = parseInt(this.dataset.delta);
                         const current = groupScores[group] || 0;
                         groupScores[group] = Math.max(0, current + delta);
-                        // 存到 Firebase
                         if (STATE.roomId) {
                             updateDoc(doc(db, 'rooms', STATE.roomId), {
                                 groups: groups,
@@ -3480,8 +2105,65 @@
                         STATE.groups = groups;
                         STATE.groupScores = groupScores;
                         renderGroups();
+                        updateGroupFloat();
                     });
                 });
+
+                // 點擊卡片本身：展開/縮小（切換浮動視窗）
+                groupList.querySelectorAll('.group-card').forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        if (e.target.closest('.group-controls')) return;
+                        toggleGroupFloat();
+                    });
+                });
+
+                // 更新浮動視窗
+                updateGroupFloat();
+            }
+
+            function updateGroupFloat() {
+                let floatEl = document.getElementById('groupFloat');
+                if (!floatEl) {
+                    floatEl = document.createElement('div');
+                    floatEl.id = 'groupFloat';
+                    floatEl.className = 'group-float';
+                    floatEl.addEventListener('click', () => {
+                        // 點擊浮動視窗回到主視窗
+                        if (toolModal.classList.contains('show')) {
+                            // 如果已經開啟，就關掉再開
+                            toolModal.classList.remove('show');
+                            setTimeout(openGroupTool, 300);
+                        } else {
+                            openGroupTool();
+                        }
+                    });
+                    document.body.appendChild(floatEl);
+                }
+
+                const topGroup = getTopGroup();
+                if (groups.length === 0 || STATE.groupFloatVisible === false) {
+                    floatEl.classList.remove('show');
+                    return;
+                }
+
+                let html = '';
+                for (const g of groups) {
+                    const score = groupScores[g] || 0;
+                    const isTop = (g === topGroup && score > 0);
+                    html += `<span class="float-item">${g} ${score}${isTop ? ' 👑' : ''}</span>`;
+                }
+                floatEl.innerHTML = html;
+                floatEl.classList.add('show');
+            }
+
+            function toggleGroupFloat() {
+                STATE.groupFloatVisible = !STATE.groupFloatVisible;
+                if (STATE.groupFloatVisible) {
+                    updateGroupFloat();
+                } else {
+                    const floatEl = document.getElementById('groupFloat');
+                    if (floatEl) floatEl.classList.remove('show');
+                }
             }
 
             function addGroup() {
@@ -3502,11 +2184,30 @@
                 }
                 STATE.groups = groups;
                 STATE.groupScores = groupScores;
+                STATE.groupFloatVisible = true;
+                renderGroups();
+            }
+
+            function deleteAllGroups() {
+                if (!confirm(t('groupDeleteConfirm') || '確定要刪除所有小組嗎？')) return;
+                groups = [];
+                groupScores = {};
+                if (STATE.roomId) {
+                    updateDoc(doc(db, 'rooms', STATE.roomId), {
+                        groups: [],
+                        groupScores: {},
+                    }).catch(() => {});
+                }
+                STATE.groups = groups;
+                STATE.groupScores = groupScores;
+                STATE.groupFloatVisible = false;
+                const floatEl = document.getElementById('groupFloat');
+                if (floatEl) floatEl.classList.remove('show');
                 renderGroups();
             }
 
             function resetGroups() {
-                if (!confirm('確定要重置所有小組分數嗎？')) return;
+                if (!confirm(t('groupConfirmReset') || '確定要重置所有小組分數嗎？')) return;
                 for (const g of groups) {
                     groupScores[g] = 0;
                 }
@@ -3526,8 +2227,9 @@
                 });
             }
             if (resetBtn) resetBtn.addEventListener('click', resetGroups);
+            if (deleteAllBtn) deleteAllBtn.addEventListener('click', deleteAllGroups);
+            if (minimizeBtn) minimizeBtn.addEventListener('click', toggleGroupFloat);
 
-            // 監聽 Firebase 小組數據
             if (STATE.roomId) {
                 const roomRef = doc(db, 'rooms', STATE.roomId);
                 const unsub = onSnapshot(roomRef, (snapshot) => {
@@ -3543,19 +2245,16 @@
                 toolModal._groupUnsub = unsub;
             }
 
+            // 如果已有組別且浮動視窗開啟，直接顯示
+            if (groups.length > 0 && STATE.groupFloatVisible) {
+                updateGroupFloat();
+            }
+
             renderGroups();
         }
 
         // ============================================================
-        // 29. 工具 Modal 輔助
-        // ============================================================
-        function showToolModal(content) {
-            toolModalContent.innerHTML = content;
-            toolModal.classList.add('show');
-        }
-
-        // ============================================================
-        // 30. 管理後台
+        // 32. 管理後台
         // ============================================================
         let clickCount = 0,
             clickTimer = null;
@@ -3599,7 +2298,7 @@
         }
 
         // ============================================================
-        // 31. 自動清理過期房間
+        // 33. 自動清理過期房間
         // ============================================================
         async function autoCleanExpiredRooms() {
             try {
@@ -3631,7 +2330,7 @@
         }
 
         // ============================================================
-        // 32. 更新選擇題結果卡牌
+        // 34. 更新選擇題結果卡牌
         // ============================================================
         function updateChoiceResultCards() {
             const filtered = [];
@@ -3641,7 +2340,7 @@
             }
             if (filtered.length === 0) {
                 choiceResultCards.innerHTML =
-                    '<div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;">無學生資料</div>';
+                    '<div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;" data-i18n="noStudents">無學生資料</div>';
                 return;
             }
             let html = '';
@@ -3671,11 +2370,12 @@
                 }
                 html += `<div class="${cls}"><div>${label}</div><span class="sub-label">${sub}</span></div>`;
             }
-            choiceResultCards.innerHTML = html || '<div style="color:var(--text-muted); padding:10px; text-align:center;">尚無作答資料</div>';
+            choiceResultCards.innerHTML = html ||
+                '<div style="color:var(--text-muted); padding:10px; text-align:center;">尚無作答資料</div>';
         }
 
         // ============================================================
-        // 33. 事件綁定
+        // 35. 事件綁定
         // ============================================================
         gotoPage2Btn.addEventListener('click', () => goToPage(2));
         gotoPage3Btn.addEventListener('click', () => goToPage(3));
@@ -3695,12 +2395,12 @@
             if (STATE.questionType === 'text') {
                 choiceRevealArea.classList.add('hidden');
                 textGradingArea.classList.remove('hidden');
-                page4Subtitle.textContent = '📝 勾選答對的學生，即時加分';
+                page4Subtitle.textContent = t('resultRevealDescText');
                 renderTextGrading();
             } else {
                 choiceRevealArea.classList.remove('hidden');
                 textGradingArea.classList.add('hidden');
-                page4Subtitle.textContent = '✅ 公布正確答案，學生端會顯示對錯';
+                page4Subtitle.textContent = t('resultRevealDescChoice');
                 updateChoiceResultCards();
                 if (STATE.isRevealed && STATE.correctAnswer) {
                     document.querySelectorAll('[data-answer]').forEach(btn => {
@@ -3751,7 +2451,8 @@
         let rankSortAsc = false;
         rankSortBtn.addEventListener('click', () => {
             rankSortAsc = !rankSortAsc;
-            rankSortBtn.textContent = rankSortAsc ? '📋 依座號' : '📋 依分數';
+            rankSortBtn.innerHTML =
+                `<span class="material-symbols-outlined" style="font-size:16px;">sort</span> ${rankSortAsc ? t('sortBySeat') : t('sortByScore')}`;
             updateRankList();
         });
 
@@ -3768,38 +2469,38 @@
 
         dockQR.addEventListener('click', () => {
             if (STATE.roomId) { showQRCode(STATE.roomId);
-                qrModal.classList.add('show'); } else { alert('請先建立教室'); }
+                qrModal.classList.add('show'); } else { alert(t('errorNoRoom')); }
         });
 
         dockBroadcast.addEventListener('click', () => {
             if (STATE.roomId) { broadcastModal.classList.add('show');
-                broadcastInput.focus(); } else { alert('請先建立教室'); }
+                broadcastInput.focus(); } else { alert(t('errorNoRoom')); }
         });
 
         dockLockScreen.addEventListener('click', toggleLockScreen);
 
         dockTimer.addEventListener('click', () => {
-            if (!STATE.roomId) { alert('請先建立教室'); return; }
+            if (!STATE.roomId) { alert(t('errorNoRoom')); return; }
             openTimerTool();
         });
 
         dockDice.addEventListener('click', () => {
-            if (!STATE.roomId) { alert('請先建立教室'); return; }
+            if (!STATE.roomId) { alert(t('errorNoRoom')); return; }
             openDiceTool();
         });
 
         dockPicker.addEventListener('click', () => {
-            if (!STATE.roomId) { alert('請先建立教室'); return; }
+            if (!STATE.roomId) { alert(t('errorNoRoom')); return; }
             openPickerTool();
         });
 
         dockVote.addEventListener('click', () => {
-            if (!STATE.roomId) { alert('請先建立教室'); return; }
+            if (!STATE.roomId) { alert(t('errorNoRoom')); return; }
             openVoteTool();
         });
 
         dockGroup.addEventListener('click', () => {
-            if (!STATE.roomId) { alert('請先建立教室'); return; }
+            if (!STATE.roomId) { alert(t('errorNoRoom')); return; }
             openGroupTool();
         });
 
@@ -3832,7 +2533,6 @@
                     document.removeEventListener('keydown', toolModal._diceKeyHandler);
                     toolModal._diceKeyHandler = null;
                 }
-                // 停止計時器
                 if (timerToolInterval) {
                     clearInterval(timerToolInterval);
                     timerToolInterval = null;
@@ -3850,12 +2550,12 @@
         if (broadcastBtn3) {
             broadcastBtn3.addEventListener('click', () => {
                 if (STATE.roomId) { broadcastModal.classList.add('show');
-                    broadcastInput.focus(); } else { alert('請先建立教室'); }
+                    broadcastInput.focus(); } else { alert(t('errorNoRoom')); }
             });
         }
 
         // ============================================================
-        // 34. 初始化
+        // 36. 初始化
         // ============================================================
         async function init() {
             await loadRosterFromSheet();
@@ -3869,7 +2569,10 @@
             // 初始化 Dock 為收合狀態
             floatingDock.classList.add('collapsed');
 
-            console.log('🚀 霧臺國小教室Q&A 教師端 v3.0 (毛玻璃 + 完整工具) 已啟動！');
+            // 初始化語言
+            updateAllTexts();
+
+            console.log('🚀 霧臺國小教室Q&A 教師端 v3.0 (毛玻璃 + 完整工具 + 雙語) 已啟動！');
         }
 
         init();
