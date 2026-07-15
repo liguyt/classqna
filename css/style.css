@@ -227,3 +227,19 @@ body {
 .group-name { font-weight: 700; margin-bottom: 6px; }
 .group-score { font-size: 24px; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
 .hidden { display: none !important; }
+/* 修復第二頁消失 */
+.pages-track {
+    will-change: transform;
+}
+.page {
+    position: relative;
+    z-index: 1;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateZ(0); /* 啟用硬體加速 */
+}
+.page[data-page="2"] .card-panel {
+    /* 確保第二頁內容不被意外隱藏 */
+    display: flex;
+    flex-direction: column;
+}
