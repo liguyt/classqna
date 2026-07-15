@@ -913,7 +913,17 @@
                 updateCards();
                 updateCharts();
                 gotoPage2Btn.disabled = false;
-                setTimeout(() => goToPage(2), 50);
+                // 先關閉 transition 避免動畫衝突
+pagesTrack.classList.add('no-transition');
+// 直接跳到第二頁（無動畫）
+goToPage(2);
+// 顯示 QR Code
+showQRCode(STATE.roomId);
+qrModal.classList.add('show');
+// 短暫延遲後恢復 transition 功能
+setTimeout(() => {
+    pagesTrack.classList.remove('no-transition');
+}, 100);
                 showQRCode(STATE.roomId);
                 qrModal.classList.add('show');
                 updateFlowButtons();
