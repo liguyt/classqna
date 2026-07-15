@@ -26,19 +26,78 @@
     <link rel="stylesheet" href="css/style.css" />
 
     <style>
-        /* ===== 頁面特定微調（覆蓋 style.css） ===== */
-        /* 此處保留少量頁面專屬樣式，不影響整體主題 */
-        .lang-toggle button[data-lang="zh"]:hover,
-        .lang-toggle button[data-lang="en"]:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-        .lang-toggle button[data-lang="zh"].active,
-        .lang-toggle button[data-lang="en"].active {
-            background: white;
-            color: var(--primary);
-            box-shadow: var(--shadow-sm);
-        }
-    </style>
+    /* 頁面特定微調 */
+    .lang-toggle button[data-lang="zh"]:hover,
+    .lang-toggle button[data-lang="en"]:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+    .lang-toggle button[data-lang="zh"].active,
+    .lang-toggle button[data-lang="en"].active {
+        background: white;
+        color: var(--primary);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Logo 不淡化，高度與文字一致 */
+    #schoolLogo {
+        filter: none !important;
+        opacity: 1 !important;
+        height: 1.4em;
+        vertical-align: middle;
+    }
+
+    /* 校名統一黑色 */
+    .brand, .brand span {
+        color: #000000 !important;
+    }
+
+    /* 擲骰動畫 */
+    @keyframes diceRoll {
+        0% { transform: rotate(0deg); }
+        25% { transform: rotate(90deg); }
+        50% { transform: rotate(180deg); }
+        75% { transform: rotate(270deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .dice-display.rolling {
+        animation: diceRoll 0.6s ease-out;
+    }
+
+    /* 小組卡片皇冠絕對定位（不影響佈局） */
+    .group-card {
+        position: relative;
+        background: rgba(255,255,255,0.6);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.5);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        text-align: center;
+        min-width: 100px;
+        flex: 1;
+    }
+    .group-crown {
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        display: inline-block;
+        transform: rotate(-15deg);
+        font-size: 20px;
+        z-index: 1;
+    }
+    .group-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        align-items: center;
+        margin-top: 8px;
+    }
+
+    /* QR Code 容器置中 */
+    #qrcodeDisplay {
+        display: flex;
+        justify-content: center;
+    }
+</style>
 </head>
 <body>
 
@@ -445,37 +504,47 @@
         }
 
         function updateAllTexts() {
-            // 頂部
-            document.getElementById('appBrand').innerHTML = t('appName').replace('霧臺<span>國小</span>', '霧臺<span>國小</span>');
-            // 頁面標題與按鈕 - 透過 data-i18n 屬性逐一更新
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.dataset.i18n;
-                const text = t(key);
-                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-                    el.placeholder = text;
-                } else {
-                    el.textContent = text;
-                }
-            });
-            // 特殊處理：帶 HTML 的標題
-            const brandEl = document.querySelector('.brand');
-            if (brandEl) {
-                const name = t('appName');
-                if (currentLang === 'zh') {
-                    brandEl.innerHTML = '霧臺<span>國小</span>';
-                } else {
-                    brandEl.textContent = 'Wutai Elementary';
-                }
-            }
-            // 更新步驟文字
-            const stepNum = STATE.currentPage || 1;
-            document.getElementById('stepText').textContent = t(`step${stepNum}`);
-
-            // 更新語言切換按鈕狀態
-            document.getElementById('langZh').className = currentLang === 'zh' ? 'active' : '';
-            document.getElementById('langEn').className = currentLang === 'en' ? 'active' : '';
+    // 更新所有帶 data-i18n 屬性的元素
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        const text = t(key);
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.placeholder = text;
+        } else {
+            el.textContent = text;
         }
+    });
+    // 處理 data-i18n-placeholder（例如輸入框提示）
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        el.placeholder = t(el.dataset.i18nPlaceholder);
+    });
+    // 品牌名稱
+    const brandEl = document.querySelector('.brand');
+    if (brandEl) brandEl.textContent = currentLang === 'zh' ? '霧臺國小' : 'Wutai Elementary';
+    // 步驟文字 (右上角)
+    const stepNum = STATE.currentPage || 1;
+    const stepTextEl = document.getElementById('stepText');
+    if (stepTextEl) stepTextEl.textContent = t(`step${stepNum}`);
+    // 頁面標題與 badge
+    for (let i = 1; i <= 5; i++) {
+        const badge = document.getElementById(`page${i}Badge`);
+        if (badge) badge.textContent = t(`step${i}`);
+        const titleSpan = document.querySelector(`#page${i}Title span[data-i18n]`);
+        if (titleSpan) titleSpan.textContent = t(`page${i}Title`);
+        const subtitle = document.getElementById(`page${i}Subtitle`);
+        if (subtitle) subtitle.textContent = t(`page${i}Subtitle`);
+    }
+    // 語言按鈕 active 狀態
+    document.getElementById('langZh').className = currentLang === 'zh' ? 'active' : '';
+    document.getElementById('langEn').className = currentLang === 'en' ? 'active' : '';
 
+    // 如果工具彈窗開啟中，更新其內部文字
+    if (toolModal.classList.contains('show')) {
+        toolModalContent.querySelectorAll('[data-i18n]').forEach(el => {
+            el.textContent = t(el.dataset.i18n);
+        });
+    }
+}
         // 語言切換事件
         document.getElementById('langZh').addEventListener('click', () => {
             currentLang = 'zh';
@@ -1718,16 +1787,17 @@
             const diceClearBtn = document.getElementById('toolDiceClear');
 
             function rollDice() {
-                const result = Math.floor(Math.random() * 6) + 1;
-                const emojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-                diceDisplay.textContent = emojis[result - 1];
-                diceDisplay.classList.remove('rolling');
-                void diceDisplay.offsetWidth;
-                diceDisplay.classList.add('rolling');
-                diceHistory.push(result);
-                if (diceHistory.length > 20) diceHistory.shift();
-                updateHistory();
-            }
+    diceDisplay.classList.add('rolling');
+    const result = Math.floor(Math.random() * 6) + 1;
+    const emojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+    setTimeout(() => {
+        diceDisplay.textContent = emojis[result - 1];
+        diceDisplay.classList.remove('rolling');
+    }, 600);
+    diceHistory.push(result);
+    if (diceHistory.length > 20) diceHistory.shift();
+    updateHistory();
+}
 
             function updateHistory() {
                 if (diceHistoryEl) {
@@ -1801,14 +1871,19 @@
             const statusEl = document.getElementById('toolPickerStatus');
 
             function getAvailable() {
-                if (excludeCheck && excludeCheck.checked) {
-                    return STATE.allStudents.filter(s => {
-                        const id = getStudentId(s);
-                        return !STATE.pickerExcluded.includes(id);
-                    });
-                }
-                return [...STATE.allStudents];
-            }
+    let pool = [];
+    if (STATE.customClassEnabled) {
+        return [];
+    }
+    for (const cls of STATE.selectedClasses) {
+        const roster = STATE.rosterData[cls] || [];
+        pool = pool.concat(roster.map(s => ({ ...s, className: cls })));
+    }
+    if (excludeCheck && excludeCheck.checked) {
+        pool = pool.filter(s => !STATE.pickerExcluded.includes(getStudentId(s)));
+    }
+    return pool;
+}
 
             function pickStudent() {
                 const available = getAvailable();
@@ -2020,239 +2095,189 @@
         // 31. 工具：小組評分
         // ============================================================
         function openGroupTool() {
-            let content = `
-                        <div class="modal-title">
-                            <span class="material-symbols-outlined">group</span> <span data-i18n="groupTitle">小組評分</span>
-                        </div>
-                        <div class="modal-desc" data-i18n="groupDesc">建立小組，即時加減分，排行榜同步</div>
-                        <div style="display:flex; gap:8px; margin-bottom:10px;">
-                            <input type="text" id="toolGroupInput" placeholder="${t('groupNamePlaceholder')}" style="flex:1; padding:8px 14px; border:1px solid rgba(0,0,0,0.06); border-radius:var(--radius-full); background:rgba(255,255,255,0.6); font-size:15px;" />
-                            <button class="btn btn-primary btn-sm" id="toolGroupAdd"><span class="material-symbols-outlined">add</span> ${t('groupAdd')}</button>
-                            <button class="btn btn-danger btn-sm" id="toolGroupDeleteAll"><span class="material-symbols-outlined">delete</span></button>
-                        </div>
-                        <div id="toolGroupList" class="group-grid"></div>
-                        <div style="margin-top:8px;">
-                            <button class="btn btn-ghost" id="toolGroupReset"><span class="material-symbols-outlined">refresh</span> ${t('groupReset')}</button>
-                            <button class="btn btn-primary btn-sm" id="toolGroupMinimize"><span class="material-symbols-outlined">remove</span> ${t('timerStart')}</button>
-                        </div>
-                    `;
+    const oldFloat = document.getElementById('groupFloat');
+    if (oldFloat) oldFloat.remove();
 
-            toolModalContent.innerHTML = content;
-            toolModal.classList.add('show');
+    let groups = [...(STATE.groups || [])];
+    let groupScores = { ...(STATE.groupScores || {}) };
+    let groupActive = STATE.groupFloatVisible || false;
 
-            let groups = STATE.groups || [];
-            let groupScores = STATE.groupScores || {};
+    function getTopGroups() {
+        if (groups.length === 0) return [];
+        const scores = groups.map(g => groupScores[g] || 0);
+        const maxScore = Math.max(...scores, 0);
+        if (maxScore === 0) return [];
+        return groups.filter(g => (groupScores[g] || 0) === maxScore);
+    }
 
-            const groupInput = document.getElementById('toolGroupInput');
-            const addBtn = document.getElementById('toolGroupAdd');
-            const deleteAllBtn = document.getElementById('toolGroupDeleteAll');
-            const groupList = document.getElementById('toolGroupList');
-            const resetBtn = document.getElementById('toolGroupReset');
-            const minimizeBtn = document.getElementById('toolGroupMinimize');
+    function renderGroups() {
+        const list = document.getElementById('toolGroupList');
+        if (!list) return;
+        const topGroups = getTopGroups();
+        list.innerHTML = groups.map(g => {
+            const score = groupScores[g] || 0;
+            const isTop = topGroups.includes(g);
+            return `
+                <div class="group-card" data-group="${g}">
+                    ${isTop ? '<span class="group-crown">👑</span>' : ''}
+                    <div class="group-name">${g}</div>
+                    <div class="group-score">${score}</div>
+                    <div class="group-controls">
+                        <button class="btn btn-success btn-sm" data-group="${g}" data-delta="1">＋</button>
+                        <button class="btn btn-danger btn-sm" data-group="${g}" data-delta="-1">−</button>
+                    </div>
+                </div>`;
+        }).join('') || `<div style="color:var(--text-muted);text-align:center;padding:12px;" data-i18n="groupNoGroups">${t('groupNoGroups')}</div>`;
 
-            // 找出最高分組（用於皇冠）
-            function getTopGroup() {
-                if (groups.length === 0) return null;
-                let top = groups[0];
-                let topScore = groupScores[top] || 0;
-                for (const g of groups) {
-                    const s = groupScores[g] || 0;
-                    if (s > topScore) {
-                        topScore = s;
-                        top = g;
-                    }
+        list.querySelectorAll('[data-delta]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const g = btn.dataset.group;
+                const delta = parseInt(btn.dataset.delta);
+                groupScores[g] = Math.max(0, (groupScores[g] || 0) + delta);
+                STATE.groups = groups;
+                STATE.groupScores = groupScores;
+                if (STATE.roomId) {
+                    clearTimeout(window._groupSyncTimer);
+                    window._groupSyncTimer = setTimeout(() => {
+                        updateDoc(doc(db, 'rooms', STATE.roomId), { groups, groupScores }).catch(() => {});
+                    }, 500);
                 }
-                return top;
-            }
+                renderGroups();
+                updateGroupMiniView();
+            });
+        });
 
-            function renderGroups() {
-                if (!groupList) return;
-                const topGroup = getTopGroup();
-                let html = '';
-                for (const g of groups) {
-                    const score = groupScores[g] || 0;
-                    const isTop = (g === topGroup && score > 0);
-                    html += `
-                                <div class="group-card" data-group="${g}">
-                                    <div class="group-crown ${isTop ? 'show' : ''}">👑</div>
-                                    <div class="group-name">${g}</div>
-                                    <div class="group-score">${score}</div>
-                                    <div class="group-controls">
-                                        <button class="btn btn-success btn-sm" data-group="${g}" data-delta="1"><span class="material-symbols-outlined" style="font-size:14px;">add</span></button>
-                                        <button class="btn btn-danger btn-sm" data-group="${g}" data-delta="-1"><span class="material-symbols-outlined" style="font-size:14px;">remove</span></button>
-                                        <button class="btn btn-ghost btn-sm" data-group="${g}" data-delta="5"><span class="material-symbols-outlined" style="font-size:14px;">add</span>+5</button>
-                                    </div>
-                                </div>
-                            `;
-                }
-                groupList.innerHTML = html ||
-                    `<div style="color:var(--text-muted); text-align:center; padding:12px;" data-i18n="groupNoGroups">尚無小組，請加入</div>`;
+        updateGroupMiniView();
+        updateGroupToggleButton();
+    }
 
-                // 綁定事件
-                groupList.querySelectorAll('[data-group]').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const group = this.dataset.group;
-                        const delta = parseInt(this.dataset.delta);
-                        const current = groupScores[group] || 0;
-                        groupScores[group] = Math.max(0, current + delta);
-                        if (STATE.roomId) {
-                            updateDoc(doc(db, 'rooms', STATE.roomId), {
-                                groups: groups,
-                                groupScores: groupScores,
-                            }).catch(() => {});
-                        }
-                        STATE.groups = groups;
-                        STATE.groupScores = groupScores;
-                        renderGroups();
-                        updateGroupFloat();
-                    });
-                });
-
-                // 點擊卡片本身：展開/縮小（切換浮動視窗）
-                groupList.querySelectorAll('.group-card').forEach(card => {
-                    card.addEventListener('click', function(e) {
-                        if (e.target.closest('.group-controls')) return;
-                        toggleGroupFloat();
-                    });
-                });
-
-                // 更新浮動視窗
-                updateGroupFloat();
-            }
-
-            function updateGroupFloat() {
-                let floatEl = document.getElementById('groupFloat');
-                if (!floatEl) {
-                    floatEl = document.createElement('div');
-                    floatEl.id = 'groupFloat';
-                    floatEl.className = 'group-float';
-                    floatEl.addEventListener('click', () => {
-                        // 點擊浮動視窗回到主視窗
-                        if (toolModal.classList.contains('show')) {
-                            // 如果已經開啟，就關掉再開
-                            toolModal.classList.remove('show');
-                            setTimeout(openGroupTool, 300);
-                        } else {
-                            openGroupTool();
-                        }
-                    });
-                    document.body.appendChild(floatEl);
-                }
-
-                const topGroup = getTopGroup();
-                if (groups.length === 0 || STATE.groupFloatVisible === false) {
-                    floatEl.classList.remove('show');
-                    return;
-                }
-
-                let html = '';
-                for (const g of groups) {
-                    const score = groupScores[g] || 0;
-                    const isTop = (g === topGroup && score > 0);
-                    html += `<span class="float-item">${g} ${score}${isTop ? ' 👑' : ''}</span>`;
-                }
-                floatEl.innerHTML = html;
-                floatEl.classList.add('show');
-            }
-
-            function toggleGroupFloat() {
-                STATE.groupFloatVisible = !STATE.groupFloatVisible;
-                if (STATE.groupFloatVisible) {
-                    updateGroupFloat();
+    function updateGroupMiniView() {
+        let floatEl = document.getElementById('groupFloat');
+        if (!floatEl) {
+            floatEl = document.createElement('div');
+            floatEl.id = 'groupFloat';
+            floatEl.className = 'group-float';
+            floatEl.addEventListener('click', () => {
+                if (toolModal.classList.contains('show')) {
+                    toolModal.classList.remove('show');
+                    setTimeout(() => openGroupTool(), 300);
                 } else {
-                    const floatEl = document.getElementById('groupFloat');
-                    if (floatEl) floatEl.classList.remove('show');
+                    openGroupTool();
                 }
-            }
-
-            function addGroup() {
-                const val = groupInput.value.trim();
-                if (!val) return;
-                if (groups.includes(val)) {
-                    alert('小組已存在');
-                    return;
-                }
-                groups.push(val);
-                groupScores[val] = 0;
-                groupInput.value = '';
-                if (STATE.roomId) {
-                    updateDoc(doc(db, 'rooms', STATE.roomId), {
-                        groups: groups,
-                        groupScores: groupScores,
-                    }).catch(() => {});
-                }
-                STATE.groups = groups;
-                STATE.groupScores = groupScores;
-                STATE.groupFloatVisible = true;
-                renderGroups();
-            }
-
-            function deleteAllGroups() {
-                if (!confirm(t('groupDeleteConfirm') || '確定要刪除所有小組嗎？')) return;
-                groups = [];
-                groupScores = {};
-                if (STATE.roomId) {
-                    updateDoc(doc(db, 'rooms', STATE.roomId), {
-                        groups: [],
-                        groupScores: {},
-                    }).catch(() => {});
-                }
-                STATE.groups = groups;
-                STATE.groupScores = groupScores;
-                STATE.groupFloatVisible = false;
-                const floatEl = document.getElementById('groupFloat');
-                if (floatEl) floatEl.classList.remove('show');
-                renderGroups();
-            }
-
-            function resetGroups() {
-                if (!confirm(t('groupConfirmReset') || '確定要重置所有小組分數嗎？')) return;
-                for (const g of groups) {
-                    groupScores[g] = 0;
-                }
-                if (STATE.roomId) {
-                    updateDoc(doc(db, 'rooms', STATE.roomId), {
-                        groupScores: groupScores,
-                    }).catch(() => {});
-                }
-                STATE.groupScores = groupScores;
-                renderGroups();
-            }
-
-            if (addBtn) addBtn.addEventListener('click', addGroup);
-            if (groupInput) {
-                groupInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') addGroup();
-                });
-            }
-            if (resetBtn) resetBtn.addEventListener('click', resetGroups);
-            if (deleteAllBtn) deleteAllBtn.addEventListener('click', deleteAllGroups);
-            if (minimizeBtn) minimizeBtn.addEventListener('click', toggleGroupFloat);
-
-            if (STATE.roomId) {
-                const roomRef = doc(db, 'rooms', STATE.roomId);
-                const unsub = onSnapshot(roomRef, (snapshot) => {
-                    const data = snapshot.data();
-                    if (data) {
-                        if (data.groups) groups = data.groups;
-                        if (data.groupScores) groupScores = data.groupScores;
-                        STATE.groups = groups;
-                        STATE.groupScores = groupScores;
-                        renderGroups();
-                    }
-                });
-                toolModal._groupUnsub = unsub;
-            }
-
-            // 如果已有組別且浮動視窗開啟，直接顯示
-            if (groups.length > 0 && STATE.groupFloatVisible) {
-                updateGroupFloat();
-            }
-
-            renderGroups();
+            });
+            document.body.appendChild(floatEl);
         }
+        if (!groupActive || groups.length === 0) {
+            floatEl.classList.remove('show');
+            return;
+        }
+        const topGroups = getTopGroups();
+        floatEl.innerHTML = groups.map(g => {
+            const score = groupScores[g] || 0;
+            const isTop = topGroups.includes(g);
+            return `<span class="float-item">${g} ${score}${isTop ? ' 👑' : ''}</span>`;
+        }).join(' | ');
+        floatEl.classList.add('show');
+    }
 
+    function updateGroupToggleButton() {
+        const btn = document.getElementById('toolGroupToggleBtn');
+        if (btn) {
+            btn.textContent = groupActive ? t('minimize') : t('start');
+        }
+    }
+
+    toolModalContent.innerHTML = `
+        <div class="modal-title"><span class="material-symbols-outlined">group</span> <span data-i18n="groupTitle">${t('groupTitle')}</span></div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <input type="text" id="toolGroupInput" placeholder="${t('groupNamePlaceholder')}" style="flex:1;padding:8px 14px;border:1px solid rgba(0,0,0,0.06);border-radius:var(--radius-full);background:rgba(255,255,255,0.6);font-size:15px;" />
+            <button class="btn btn-primary btn-sm" id="toolGroupAdd"><span class="material-symbols-outlined">add</span> ${t('groupAdd')}</button>
+        </div>
+        <div id="toolGroupList" class="group-grid"></div>
+        <div style="display:flex;gap:10px;margin-top:8px;justify-content:space-between;align-items:center;">
+            <div>
+                <button class="btn btn-ghost btn-sm" id="toolGroupReset"><span class="material-symbols-outlined">refresh</span> ${t('groupReset')}</button>
+                <button class="btn btn-danger btn-sm" id="toolGroupDeleteAll"><span class="material-symbols-outlined">delete</span></button>
+            </div>
+            <button class="btn btn-primary" id="toolGroupToggleBtn">${groupActive ? t('minimize') : t('start')}</button>
+        </div>`;
+    toolModal.classList.add('show');
+
+    document.getElementById('toolGroupAdd').addEventListener('click', () => {
+        const val = document.getElementById('toolGroupInput').value.trim();
+        if (!val || groups.includes(val)) return;
+        groups.push(val);
+        groupScores[val] = 0;
+        document.getElementById('toolGroupInput').value = '';
+        STATE.groups = groups;
+        STATE.groupScores = groupScores;
+        if (STATE.roomId) {
+            updateDoc(doc(db, 'rooms', STATE.roomId), { groups, groupScores }).catch(() => {});
+        }
+        renderGroups();
+    });
+    document.getElementById('toolGroupToggleBtn').addEventListener('click', () => {
+        if (!groupActive) {
+            groupActive = true;
+            STATE.groupFloatVisible = true;
+            toolModal.classList.remove('show');
+            updateGroupMiniView();
+        } else {
+            toolModal.classList.remove('show');
+        }
+        STATE.groups = groups;
+        STATE.groupScores = groupScores;
+        if (STATE.roomId) {
+            updateDoc(doc(db, 'rooms', STATE.roomId), { groups, groupScores }).catch(() => {});
+        }
+    });
+    document.getElementById('toolGroupReset').addEventListener('click', () => {
+        if (!confirm(t('groupConfirmReset'))) return;
+        for (const g of groups) groupScores[g] = 0;
+        STATE.groupScores = groupScores;
+        if (STATE.roomId) {
+            updateDoc(doc(db, 'rooms', STATE.roomId), { groupScores }).catch(() => {});
+        }
+        renderGroups();
+    });
+    document.getElementById('toolGroupDeleteAll').addEventListener('click', () => {
+        if (!confirm(t('groupDeleteConfirm'))) return;
+        groups = [];
+        groupScores = {};
+        STATE.groups = [];
+        STATE.groupScores = {};
+        STATE.groupFloatVisible = false;
+        groupActive = false;
+        const floatEl = document.getElementById('groupFloat');
+        if (floatEl) floatEl.classList.remove('show');
+        if (STATE.roomId) {
+            updateDoc(doc(db, 'rooms', STATE.roomId), { groups: [], groupScores: {} }).catch(() => {});
+        }
+        renderGroups();
+    });
+    document.getElementById('toolGroupInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('toolGroupAdd').click();
+    });
+
+    if (STATE.roomId) {
+        const unsub = onSnapshot(doc(db, 'rooms', STATE.roomId), (snap) => {
+            const d = snap.data();
+            if (d) {
+                if (d.groups) groups = d.groups;
+                if (d.groupScores) groupScores = d.groupScores;
+                STATE.groups = groups;
+                STATE.groupScores = groupScores;
+                renderGroups();
+            }
+        });
+        toolModal._groupUnsub = unsub;
+    }
+
+    updateAllTexts();
+    renderGroups();
+    if (groupActive) updateGroupMiniView();
+}
         // ============================================================
         // 32. 管理後台
         // ============================================================
