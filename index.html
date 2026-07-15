@@ -844,7 +844,7 @@
             }
         }
 
-        async function enterRoom() {
+               async function enterRoom() {
             const name = teacherNameInput.value.trim() || '教師';
             STATE.teacherName = name;
             const selected = STATE.selectedClasses;
@@ -913,26 +913,27 @@
                 updateCards();
                 updateCharts();
                 gotoPage2Btn.disabled = false;
-                // 先關閉 transition 避免動畫衝突
-pagesTrack.classList.add('no-transition');
-// 直接跳到第二頁（無動畫）
-goToPage(2);
-// 顯示 QR Code
-showQRCode(STATE.roomId);
-qrModal.classList.add('show');
-// 短暫延遲後恢復 transition 功能
-setTimeout(() => {
-    pagesTrack.classList.remove('no-transition');
-}, 100);
+
+                // === 關鍵修復：防止第二頁飛走 ===
+                // 先關閉所有 transition，瞬間跳轉到第二頁
+                pagesTrack.style.transition = 'none';
+                goToPage(2);
+                // 強制瀏覽器重新計算佈局，確保 transform 生效
+                void pagesTrack.offsetHeight;
+                // 顯示 QR Code
                 showQRCode(STATE.roomId);
                 qrModal.classList.add('show');
+                // 短暫延遲後恢復原本的 transition 設定
+                setTimeout(() => {
+                    pagesTrack.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1)';
+                }, 200);
+
                 updateFlowButtons();
                 alert(t('successRoomCreated').replace('{code}', STATE.roomId));
             } catch (e) {
                 alert(t('errorCreateRoom') + '\n' + e.message);
             }
         }
-
         // ============================================================
         // 11. QR Code
         // ============================================================
