@@ -51,48 +51,46 @@
             color: #000000 !important;
         }
 
-        /* 小組評分浮動標籤（Mini View） */
-        .group-float {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255,255,255,0.7);
-            border-radius: 20px;
-            padding: 10px 18px;
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-primary);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-            cursor: pointer;
-            z-index: 300;
-            display: none;
-            gap: 10px;
-            flex-wrap: wrap;
-            transition: all 0.3s ease;
+        /* 擲骰動畫 */
+        @keyframes diceRoll {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            100% { transform: rotate(360deg); }
         }
-        .group-float.show {
-            display: flex;
-        }
-        .group-float .float-item {
-            white-space: nowrap;
+        .dice-display.rolling {
+            animation: diceRoll 0.6s ease-out;
         }
 
-        /* 小組卡片內加減鈕上下排列 */
+        /* 小組卡片皇冠絕對定位 */
+        .group-card {
+            position: relative;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            text-align: center;
+            min-width: 100px;
+            flex: 1;
+        }
+        .group-crown {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            display: inline-block;
+            transform: rotate(-15deg);
+            font-size: 20px;
+            z-index: 1;
+        }
+        /* 確保加減按鈕垂直排列 */
         .group-controls {
             display: flex;
             flex-direction: column;
             gap: 4px;
             align-items: center;
-        }
-
-        /* 皇冠旋轉 */
-        .group-crown {
-            display: inline-block;
-            transform: rotate(-15deg);
-            font-size: 20px;
+            margin-top: 8px;
         }
     </style>
 </head>
@@ -432,7 +430,7 @@
             <div class="modal-box">
                 <h3><span class="material-symbols-outlined" style="font-size:28px;">qr_code</span> <span id="qrTitle">掃描 QR Code 加入教室</span></h3>
                 <p id="qrModalRoomCode">教室代碼：----</p>
-                <div id="qrcodeDisplay"></div>
+                <div id="qrcodeDisplay" style="display: flex; justify-content: center;"></div>
                 <button class="btn btn-ghost close-btn" id="qrModalClose"><span class="material-symbols-outlined" style="font-size:16px;">close</span> <span id="qrClose">關閉</span></button>
             </div>
         </div>
@@ -525,24 +523,26 @@
             document.getElementById('langZh').className = currentLang === 'zh' ? 'active' : '';
             document.getElementById('langEn').className = currentLang === 'en' ? 'active' : '';
 
-            // 更新頁面標題（PAGE 1~5 的 title/subtitle）
-            const pageTitles = {
-                1: { title: 'page1Title', subtitle: 'page1Subtitle' },
-                2: { title: 'page2Title', subtitle: 'page2Subtitle' },
-                3: { title: 'page3Title', subtitle: 'page3Subtitle' },
-                4: { title: 'page4Title', subtitle: 'page4Subtitle' },
-                5: { title: 'page5Title', subtitle: 'page5Subtitle' },
-            };
-            for (const [page, ids] of Object.entries(pageTitles)) {
-                const titleEl = document.getElementById(ids.title);
-                const subtitleEl = document.getElementById(ids.subtitle);
-                if (titleEl) {
-                    const text = t(ids.title);
-                    // 保留 emoji 和 badge
-                    titleEl.innerHTML = text.replace(/^(.*?)\s*<span/, '$1 <span');
+            // 更新頁面標題 (不破壞原本 HTML 結構)
+            const pageIds = ['page1Title', 'page2Title', 'page3Title', 'page4Title', 'page5Title'];
+            pageIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const text = t(id);
+                    // 保留 badge span 和 emoji
+                    const badge = el.querySelector('.badge');
+                    if (badge) {
+                        el.innerHTML = text.replace(/\s*<span.*/, '') + ' ' + badge.outerHTML;
+                    } else {
+                        el.textContent = text;
+                    }
                 }
-                if (subtitleEl) subtitleEl.textContent = t(ids.subtitle);
-            }
+            });
+            const subtitleIds = ['page1Subtitle', 'page2Subtitle', 'page3Subtitle', 'page4Subtitle', 'page5Subtitle'];
+            subtitleIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = t(id);
+            });
 
             // 如果工具彈窗開啟中，更新其內部文字
             if (toolModal.classList.contains('show')) {
@@ -1770,7 +1770,7 @@
         }
 
         // ============================================================
-        // 28. 工具：骰子
+        // 28. 工具：骰子 (加入動畫)
         // ============================================================
         function openDiceTool() {
             let diceHistory = [];
@@ -1800,12 +1800,14 @@
             const diceClearBtn = document.getElementById('toolDiceClear');
 
             function rollDice() {
+                // 加入動畫
+                diceDisplay.classList.add('rolling');
                 const result = Math.floor(Math.random() * 6) + 1;
                 const emojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-                diceDisplay.textContent = emojis[result - 1];
-                diceDisplay.classList.remove('rolling');
-                void diceDisplay.offsetWidth;
-                diceDisplay.classList.add('rolling');
+                setTimeout(() => {
+                    diceDisplay.textContent = emojis[result - 1];
+                    diceDisplay.classList.remove('rolling');
+                }, 600);
                 diceHistory.push(result);
                 if (diceHistory.length > 20) diceHistory.shift();
                 updateHistory();
@@ -1840,10 +1842,22 @@
         }
 
         // ============================================================
-        // 29. 工具：隨機點名器
+        // 29. 工具：隨機點名器 (僅抽選當前班級)
         // ============================================================
         function openPickerTool() {
-            const available = STATE.allStudents.filter(s => {
+            // 僅從已選班級中取得可用學生
+            let available = [];
+            if (STATE.customClassEnabled) {
+                // 無班級模式，使用自訂人數暫時不做抽選 (或可抽臨時ID)
+                available = [];
+            } else {
+                for (const cls of STATE.selectedClasses) {
+                    const roster = STATE.rosterData[cls] || [];
+                    available = available.concat(roster.map(s => ({ ...s, className: cls })));
+                }
+            }
+            // 排除已點名者
+            available = available.filter(s => {
                 const id = getStudentId(s);
                 return !STATE.pickerExcluded.includes(id);
             });
@@ -1852,7 +1866,7 @@
                         <div class="modal-title">
                             <span class="material-symbols-outlined">person_add</span> <span data-i18n="pickerTitle">隨機點名器</span>
                         </div>
-                        <div class="modal-desc" data-i18n="pickerDesc">從全班隨機抽選，可切換排除已點名者</div>
+                        <div class="modal-desc" data-i18n="pickerDesc">從本班隨機抽選，可切換排除已點名者</div>
                         <div class="picker-display" id="toolPickerDisplay">
                             <span style="color:var(--text-muted);" data-i18n="pickerPick">點擊抽選</span>
                         </div>
@@ -1883,13 +1897,19 @@
             const statusEl = document.getElementById('toolPickerStatus');
 
             function getAvailable() {
-                if (excludeCheck && excludeCheck.checked) {
-                    return STATE.allStudents.filter(s => {
-                        const id = getStudentId(s);
-                        return !STATE.pickerExcluded.includes(id);
-                    });
+                let pool = [];
+                if (STATE.customClassEnabled) {
+                    // 無班級模式暫不支援
+                    return [];
                 }
-                return [...STATE.allStudents];
+                for (const cls of STATE.selectedClasses) {
+                    const roster = STATE.rosterData[cls] || [];
+                    pool = pool.concat(roster.map(s => ({ ...s, className: cls })));
+                }
+                if (excludeCheck && excludeCheck.checked) {
+                    pool = pool.filter(s => !STATE.pickerExcluded.includes(getStudentId(s)));
+                }
+                return pool;
             }
 
             function pickStudent() {
@@ -1924,7 +1944,8 @@
                     display.innerHTML = `<span style="color:var(--text-muted);" data-i18n="pickerReset">已重置，請抽選</span>`;
                     display.classList.remove('spinning');
                     if (statusEl) {
-                        statusEl.textContent = t('pickerRemaining').replace('{n}', STATE.allStudents.length);
+                        const available = getAvailable().length;
+                        statusEl.textContent = t('pickerRemaining').replace('{n}', available);
                     }
                 });
             }
@@ -1937,14 +1958,14 @@
                         const available = getAvailable().length;
                         statusEl.textContent = this.checked ?
                             `${t('pickerExclude')}，${t('pickerRemaining').replace('{n}', available)}` :
-                            t('pickerRemaining').replace('{n}', STATE.allStudents.length);
+                            t('pickerRemaining').replace('{n}', available);
                     }
                 });
                 if (statusEl) {
                     const available = getAvailable().length;
                     statusEl.textContent = excludeCheck.checked ?
                         `${t('pickerExclude')}，${t('pickerRemaining').replace('{n}', available)}` :
-                        t('pickerRemaining').replace('{n}', STATE.allStudents.length);
+                        t('pickerRemaining').replace('{n}', available);
                 }
             }
 
@@ -2098,16 +2119,15 @@
         }
 
         // ============================================================
-        // 31. 工具：小組評分 (v2 多皇冠 + Mini View)
+        // 31. 工具：小組評分 (修復布局 + 雙語按鈕)
         // ============================================================
         function openGroupTool() {
-            // 先清理舊的浮動視窗
             const oldFloat = document.getElementById('groupFloat');
             if (oldFloat) oldFloat.remove();
 
             let groups = [...(STATE.groups || [])];
             let groupScores = { ...(STATE.groupScores || {}) };
-            let groupActive = STATE.groupFloatVisible || false; // 是否已啟動（開始後隱藏主視窗）
+            let groupActive = STATE.groupFloatVisible || false;
 
             function getTopGroups() {
                 if (groups.length === 0) return [];
@@ -2136,7 +2156,6 @@
                         </div>`;
                 }).join('') || `<div style="color:var(--text-muted);text-align:center;padding:12px;" data-i18n="groupNoGroups">${t('groupNoGroups')}</div>`;
 
-                // 綁定加減分事件
                 list.querySelectorAll('[data-delta]').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -2145,7 +2164,6 @@
                         groupScores[g] = Math.max(0, (groupScores[g] || 0) + delta);
                         STATE.groups = groups;
                         STATE.groupScores = groupScores;
-                        // Firebase 寫入（debounce）
                         if (STATE.roomId) {
                             clearTimeout(window._groupSyncTimer);
                             window._groupSyncTimer = setTimeout(() => {
@@ -2193,11 +2211,10 @@
             function updateGroupToggleButton() {
                 const btn = document.getElementById('toolGroupToggleBtn');
                 if (btn) {
-                    btn.textContent = groupActive ? t('minimize') : t('start');
+                    btn.innerHTML = groupActive ? t('minimize') : t('start');
                 }
             }
 
-            // 建立彈窗 HTML
             toolModalContent.innerHTML = `
                 <div class="modal-title"><span class="material-symbols-outlined">group</span> <span data-i18n="groupTitle">${t('groupTitle')}</span></div>
                 <div style="display:flex;gap:8px;margin-bottom:10px;">
@@ -2214,7 +2231,6 @@
                 </div>`;
             toolModal.classList.add('show');
 
-            // 事件綁定
             document.getElementById('toolGroupAdd').addEventListener('click', () => {
                 const val = document.getElementById('toolGroupInput').value.trim();
                 if (!val || groups.includes(val)) return;
@@ -2271,7 +2287,6 @@
                 if (e.key === 'Enter') document.getElementById('toolGroupAdd').click();
             });
 
-            // 監聽 Firestore 同步
             if (STATE.roomId) {
                 const unsub = onSnapshot(doc(db, 'rooms', STATE.roomId), (snap) => {
                     const d = snap.data();
@@ -2286,7 +2301,6 @@
                 toolModal._groupUnsub = unsub;
             }
 
-            // 初始化渲染
             updateAllTexts();
             renderGroups();
             if (groupActive) updateGroupMiniView();
@@ -2551,7 +2565,7 @@
         broadcastModal.addEventListener('click', (e) => { if (e.target === broadcastModal) broadcastModal.classList.remove(
                 'show'); });
 
-        // 關閉工具 Modal（點擊外部）
+        // 關閉工具 Modal
         toolModal.addEventListener('click', (e) => {
             if (e.target === toolModal) {
                 toolModal.classList.remove('show');
@@ -2607,7 +2621,7 @@
             floatingDock.classList.add('collapsed');
             updateAllTexts();
 
-            console.log('🚀 霧臺國小教室Q&A 教師端 v3.2 (完整保留所有互動 + 小組評分優化 + 雙語強化) 已啟動！');
+            console.log('🚀 霧臺國小教室Q&A 教師端 v3.3 (修復所有問題) 已啟動！');
         }
 
         init();
