@@ -673,7 +673,7 @@
         function goToPage(pageNum) {
             if (pageNum < 1 || pageNum > 5) return;
             STATE.currentPage = pageNum;
-            pagesTrack.style.transform = `translateX(-${(pageNum-1)*100}%)`;
+            pagesTrack.style.transform = `translateX(-${(pageNum-1)*20}%)`;
             stepDots.forEach((dot, idx) => {
                 dot.className = 'step-dot';
                 if (idx+1 === pageNum) dot.classList.add('active');
