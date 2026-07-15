@@ -26,78 +26,78 @@
     <link rel="stylesheet" href="css/style.css" />
 
     <style>
-    /* 頁面特定微調 */
-    .lang-toggle button[data-lang="zh"]:hover,
-    .lang-toggle button[data-lang="en"]:hover {
-        background: rgba(255, 255, 255, 0.5);
-    }
-    .lang-toggle button[data-lang="zh"].active,
-    .lang-toggle button[data-lang="en"].active {
-        background: white;
-        color: var(--primary);
-        box-shadow: var(--shadow-sm);
-    }
+        /* 頁面特定微調 */
+        .lang-toggle button[data-lang="zh"]:hover,
+        .lang-toggle button[data-lang="en"]:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .lang-toggle button[data-lang="zh"].active,
+        .lang-toggle button[data-lang="en"].active {
+            background: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
 
-    /* Logo 不淡化，高度與文字一致 */
-    #schoolLogo {
-        filter: none !important;
-        opacity: 1 !important;
-        height: 1.4em;
-        vertical-align: middle;
-    }
+        /* Logo 不淡化，高度與文字一致 */
+        #schoolLogo {
+            filter: none !important;
+            opacity: 1 !important;
+            height: 1.4em;
+            vertical-align: middle;
+        }
 
-    /* 校名統一黑色 */
-    .brand, .brand span {
-        color: #000000 !important;
-    }
+        /* 校名統一黑色 */
+        .brand, .brand span {
+            color: #000000 !important;
+        }
 
-    /* 擲骰動畫 */
-    @keyframes diceRoll {
-        0% { transform: rotate(0deg); }
-        25% { transform: rotate(90deg); }
-        50% { transform: rotate(180deg); }
-        75% { transform: rotate(270deg); }
-        100% { transform: rotate(360deg); }
-    }
-    .dice-display.rolling {
-        animation: diceRoll 0.6s ease-out;
-    }
+        /* 擲骰動畫 */
+        @keyframes diceRoll {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .dice-display.rolling {
+            animation: diceRoll 0.6s ease-out;
+        }
 
-    /* 小組卡片皇冠絕對定位（不影響佈局） */
-    .group-card {
-        position: relative;
-        background: rgba(255,255,255,0.6);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255,255,255,0.5);
-        border-radius: var(--radius-md);
-        padding: 16px;
-        text-align: center;
-        min-width: 100px;
-        flex: 1;
-    }
-    .group-crown {
-        position: absolute;
-        top: -8px;
-        left: -8px;
-        display: inline-block;
-        transform: rotate(-15deg);
-        font-size: 20px;
-        z-index: 1;
-    }
-    .group-controls {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        align-items: center;
-        margin-top: 8px;
-    }
+        /* 小組卡片皇冠絕對定位（不影響佈局） */
+        .group-card {
+            position: relative;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            text-align: center;
+            min-width: 100px;
+            flex: 1;
+        }
+        .group-crown {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            display: inline-block;
+            transform: rotate(-15deg);
+            font-size: 20px;
+            z-index: 1;
+        }
+        .group-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+            margin-top: 8px;
+        }
 
-    /* QR Code 容器置中 */
-    #qrcodeDisplay {
-        display: flex;
-        justify-content: center;
-    }
-</style>
+        /* QR Code 容器置中 */
+        #qrcodeDisplay {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
 </head>
 <body>
 
@@ -109,7 +109,7 @@
         <header class="top-bar" id="topBar">
             <div class="logo-area">
                 <img src="logo.jpg" alt="校徽" id="schoolLogo" onerror="this.style.display='none'" />
-                <span class="brand" id="appBrand">霧臺<span>國小</span></span>
+                <span class="brand" id="appBrand">霧臺國小</span>
             </div>
             <span class="room-id-display" id="roomIdDisplay">----</span>
             <div class="spacer"></div>
@@ -138,40 +138,40 @@
                 <!-- PAGE 1 -->
                 <section class="page" data-page="1">
                     <div class="page-title" id="page1Title">
-                        📚 教室設定
-                        <span class="badge" id="page1Badge">步驟 1 / 5</span>
+                        📚 <span data-i18n="page1Title">教室設定</span>
+                        <span class="badge" id="page1Badge" data-i18n="step1">步驟 1 / 5</span>
                     </div>
-                    <div class="page-subtitle" id="page1Subtitle">設定教師姓名與上課班級，建立你的虛擬教室</div>
+                    <div class="page-subtitle" id="page1Subtitle" data-i18n="page1Subtitle">設定教師姓名與上課班級，建立你的虛擬教室</div>
 
                     <div class="card-panel" style="flex:1;">
                         <div class="form-row">
-                            <label><span class="material-symbols-outlined">person</span> <span id="labelTeacherName">教師姓名</span></label>
-                            <input type="text" id="teacherNameInput" placeholder="請輸入姓名（可跳過）" value="陳老師" />
+                            <label><span class="material-symbols-outlined">person</span> <span id="labelTeacherName" data-i18n="teacherName">教師姓名</span></label>
+                            <input type="text" id="teacherNameInput" placeholder="請輸入姓名（可跳過）" data-i18n-placeholder="teacherNamePlaceholder" />
                         </div>
                         <div class="form-row" style="align-items:flex-start;">
-                            <label><span class="material-symbols-outlined">groups</span> <span id="labelClassSelect">上課班級</span></label>
+                            <label><span class="material-symbols-outlined">groups</span> <span id="labelClassSelect" data-i18n="classSelect">上課班級</span></label>
                             <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
                                 <div id="classCheckboxContainer" class="checkbox-group"></div>
                                 <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:4px;">
                                     <label style="display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.5); padding:4px 14px; border-radius:30px; font-size:14px; cursor:pointer; backdrop-filter:blur(4px); border:1px solid rgba(0,0,0,0.04);">
-                                        <input type="checkbox" id="customClassCheckbox" /> <span id="labelCustomClass">無班級（自訂人數）</span>
+                                        <input type="checkbox" id="customClassCheckbox" /> <span id="labelCustomClass" data-i18n="customClass">無班級（自訂人數）</span>
                                     </label>
                                     <input type="number" id="customStudentCount" min="1" max="50" value="20" style="width:80px; padding:6px 12px; border:1px solid rgba(0,0,0,0.06); border-radius:30px; font-size:14px; background:rgba(255,255,255,0.6);" disabled />
-                                    <span style="font-size:13px; color:var(--text-muted);">人</span>
+                                    <span style="font-size:13px; color:var(--text-muted);" data-i18n="people">人</span>
                                 </div>
                             </div>
                         </div>
 
                         <div style="margin-top:16px;">
                             <button class="btn btn-primary btn-lg btn-block btn-glow" id="enterRoomBtn">
-                                <span class="material-symbols-outlined">door_open</span> <span id="btnCreateRoom">建立教室</span>
+                                <span class="material-symbols-outlined">door_open</span> <span id="btnCreateRoom" data-i18n="createRoom">建立教室</span>
                             </button>
                         </div>
 
                         <div id="roomInfo" class="hidden" style="margin-top:16px; background:rgba(255,255,255,0.4); backdrop-filter:blur(4px); border-radius:30px; padding:10px 20px; display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center; border:1px solid rgba(255,255,255,0.2);">
-                            <span><span class="material-symbols-outlined" style="font-size:16px;">hashtag</span> <span id="labelRoomCode">教室代碼</span>：<strong id="roomIdDisplay2">----</strong></span>
-                            <span><span class="material-symbols-outlined" style="font-size:16px;">person</span> <span id="labelOnlineCount">線上人數</span>：<strong id="onlineCount">0</strong></span>
-                            <span><span class="material-symbols-outlined" style="font-size:16px;">description</span> <span id="labelCurrentQuestion">目前題號</span>：<strong id="currentQuestionDisplay">第 0 題</strong></span>
+                            <span><span class="material-symbols-outlined" style="font-size:16px;">hashtag</span> <span data-i18n="roomCodeLabel">教室代碼</span>：<strong id="roomIdDisplay2">----</strong></span>
+                            <span><span class="material-symbols-outlined" style="font-size:16px;">person</span> <span data-i18n="onlineCount">線上人數</span>：<strong id="onlineCount">0</strong></span>
+                            <span><span class="material-symbols-outlined" style="font-size:16px;">description</span> <span data-i18n="currentQuestion">目前題號</span>：<strong id="currentQuestionDisplay">第 0 題</strong></span>
                         </div>
                     </div>
 
@@ -179,7 +179,7 @@
                         <div class="nav-left"></div>
                         <div class="nav-right">
                             <button class="btn btn-primary btn-lg" id="gotoPage2Btn" disabled>
-                                <span id="btnNext1">下一步</span> <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+                                <span data-i18n="nextStep">下一步</span> <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
                             </button>
                         </div>
                     </div>
@@ -188,25 +188,25 @@
                 <!-- PAGE 2 -->
                 <section class="page" data-page="2">
                     <div class="page-title" id="page2Title">
-                        ✏️ 命題與發布
-                        <span class="badge" id="page2Badge">步驟 2 / 5</span>
+                        ✏️ <span data-i18n="page2Title">命題與發布</span>
+                        <span class="badge" id="page2Badge" data-i18n="step2">步驟 2 / 5</span>
                     </div>
-                    <div class="page-subtitle" id="page2Subtitle">輸入題目內容，選擇題型、配分與作答時間</div>
+                    <div class="page-subtitle" id="page2Subtitle" data-i18n="page2Subtitle">輸入題目內容，選擇題型、配分與作答時間</div>
 
                     <div class="card-panel glow" style="flex:1;">
                         <div class="form-row">
-                            <label><span class="material-symbols-outlined">edit_note</span> <span id="labelQuestionNote">題目批註</span></label>
-                            <input type="text" id="questionNoteInput" placeholder="請輸入本題題目" style="font-size:17px;" />
+                            <label><span class="material-symbols-outlined">edit_note</span> <span data-i18n="questionNote">題目批註</span></label>
+                            <input type="text" id="questionNoteInput" placeholder="請輸入本題題目" data-i18n-placeholder="questionPlaceholder" style="font-size:17px;" />
                         </div>
                         <div class="form-row">
-                            <label><span class="material-symbols-outlined">list</span> <span id="labelQuestionType">題型</span></label>
+                            <label><span class="material-symbols-outlined">list</span> <span data-i18n="questionType">題型</span></label>
                             <select id="questionTypeSelect">
-                                <option value="choice"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> <span id="optChoice">選擇題 (A/B/C/D)</span></option>
-                                <option value="text"><span class="material-symbols-outlined" style="font-size:16px;">edit</span> <span id="optText">文字題 (自由輸入)</span></option>
+                                <option value="choice" data-i18n="choiceType">選擇題 (A/B/C/D)</option>
+                                <option value="text" data-i18n="textType">文字題 (自由輸入)</option>
                             </select>
-                            <label><span class="material-symbols-outlined">star</span> <span id="labelScore">配分</span></label>
+                            <label><span class="material-symbols-outlined">star</span> <span data-i18n="score">配分</span></label>
                             <input type="number" id="questionScoreInput" min="1" max="10" value="1" style="width:70px; min-width:60px; text-align:center;" />
-                            <label><span class="material-symbols-outlined">timer</span> <span id="labelSeconds">秒數</span></label>
+                            <label><span class="material-symbols-outlined">timer</span> <span data-i18n="seconds">秒數</span></label>
                             <input type="number" id="customSeconds" placeholder="秒" style="width:80px;min-width:60px;" value="20" />
                             <button class="btn btn-ghost btn-sm" data-seconds="10">10s</button>
                             <button class="btn btn-ghost btn-sm" data-seconds="30">30s</button>
@@ -215,58 +215,57 @@
 
                         <div style="margin-top:12px;">
                             <button class="btn btn-success btn-lg btn-block btn-glow" id="publishBtn">
-                                <span class="material-symbols-outlined">send</span> <span id="btnPublish">發布第 1 題</span>
+                                <span class="material-symbols-outlined">send</span> <span data-i18n="publish">發布第 1 題</span>
                             </button>
                         </div>
 
                         <div id="publishStatus" style="margin-top:10px; text-align:center; font-size:14px; color:var(--text-secondary);">
-                            <span id="statusNotPublished">尚未發布</span>
+                            <span data-i18n="notPublished">尚未發布</span>
                         </div>
                     </div>
 
                     <div class="page-footer">
                         <div class="nav-left">
                             <button class="btn btn-ghost" id="backToPage1">
-                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> <span id="btnBack1">上一頁</span>
+                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> <span data-i18n="back">上一頁</span>
                             </button>
                         </div>
                         <div class="nav-right">
                             <button class="btn btn-primary btn-lg" id="gotoPage3Btn" disabled>
-                                <span id="btnNext2">下一步</span> <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+                                <span data-i18n="nextStep">下一步</span> <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
                             </button>
                         </div>
                     </div>
                 </section>
-
-                <!-- PAGE 3 -->
+                                <!-- PAGE 3 -->
                 <section class="page" data-page="3">
                     <div class="page-title" id="page3Title">
-                        📊 即時監控
-                        <span class="badge" id="page3Badge">步驟 3 / 5</span>
+                        📊 <span data-i18n="page3Title">即時監控</span>
+                        <span class="badge" id="page3Badge" data-i18n="step3">步驟 3 / 5</span>
                     </div>
-                    <div class="page-subtitle" id="page3Subtitle">觀察學生作答情況，管理作答流程</div>
+                    <div class="page-subtitle" id="page3Subtitle" data-i18n="page3Subtitle">觀察學生作答情況，管理作答流程</div>
 
                     <div class="card-panel" style="flex:1; display:flex; flex-direction:column;">
                         <div id="timerLargeContainer" style="text-align:center; padding:4px 0;">
                             <div class="timer-large" id="timerLargeDisplay">--</div>
-                            <div style="font-size:14px; color:var(--text-secondary);" id="timerLabel"><span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span id="labelTimerWaiting">等待開始</span></div>
+                            <div style="font-size:14px; color:var(--text-secondary);" id="timerLabel"><span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="waitingStart">等待開始</span></div>
                         </div>
 
                         <div id="cardContainer" class="card-pool" style="min-height:60px; flex:1;">
-                            <div style="color:var(--text-muted); padding:20px; text-align:center; width:100%;" id="noClassMsg">尚未建立教室或發布題目</div>
+                            <div style="color:var(--text-muted); padding:20px; text-align:center; width:100%;" data-i18n="noClassMsg">尚未建立教室或發布題目</div>
                         </div>
 
                         <div id="textListContainer" class="text-list hidden"></div>
 
                         <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; justify-content:center;">
                             <button class="btn btn-primary btn-lg" id="startStopBtn" style="min-width:160px;" disabled>
-                                <span class="material-symbols-outlined">play_arrow</span> <span id="btnStartStop">開始作答</span>
+                                <span class="material-symbols-outlined">play_arrow</span> <span data-i18n="startAnswering">開始作答</span>
                             </button>
                             <button class="btn btn-ghost" id="broadcastBtn3" style="display:inline-flex;">
-                                <span class="material-symbols-outlined">campaign</span> <span id="btnBroadcast3">廣播</span>
+                                <span class="material-symbols-outlined">campaign</span> <span data-i18n="broadcast">廣播</span>
                             </button>
                             <button class="btn btn-ghost" id="viewTextAnswersBtn" style="display:none;">
-                                <span class="material-symbols-outlined">visibility</span> <span id="btnViewAll">觀看所有回答</span>
+                                <span class="material-symbols-outlined">visibility</span> <span data-i18n="viewAll">觀看所有回答</span>
                             </button>
                         </div>
                     </div>
@@ -274,12 +273,12 @@
                     <div class="page-footer">
                         <div class="nav-left">
                             <button class="btn btn-ghost" id="backToPage2">
-                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> <span id="btnBack2">上一頁</span>
+                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> <span data-i18n="back">上一頁</span>
                             </button>
                         </div>
                         <div class="nav-right">
                             <button class="btn btn-primary btn-lg" id="gotoPage4Btn" disabled>
-                                <span id="btnNext3">下一步</span> <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+                                <span data-i18n="nextStep">下一步</span> <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
                             </button>
                         </div>
                     </div>
@@ -288,34 +287,34 @@
                 <!-- PAGE 4 -->
                 <section class="page" data-page="4">
                     <div class="page-title" id="page4Title">
-                        🎯 結果公布
-                        <span class="badge" id="page4Badge">步驟 4 / 5</span>
+                        🎯 <span data-i18n="page4Title">結果公布</span>
+                        <span class="badge" id="page4Badge" data-i18n="step4">步驟 4 / 5</span>
                     </div>
-                    <div class="page-subtitle" id="page4Subtitle">公布答案或檢視學生文字回答</div>
+                    <div class="page-subtitle" id="page4Subtitle" data-i18n="page4Subtitle">公布答案或檢視學生文字回答</div>
 
                     <div class="card-panel" style="flex:1; display:flex; flex-direction:column;">
                         <div id="choiceRevealArea">
                             <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px;">
-                                <span style="font-weight:600; color:var(--text-primary);"><span class="material-symbols-outlined">check_circle</span> <span id="labelRevealAnswer">公布正確答案：</span></span>
+                                <span style="font-weight:600; color:var(--text-primary);"><span class="material-symbols-outlined">check_circle</span> <span data-i18n="revealAnswerLabel">公布正確答案：</span></span>
                                 <button class="btn btn-warning" data-answer="A">A</button>
                                 <button class="btn btn-warning" data-answer="B">B</button>
                                 <button class="btn btn-warning" data-answer="C">C</button>
                                 <button class="btn btn-warning" data-answer="D">D</button>
-                                <button class="btn btn-ghost btn-sm" id="hideAnswerBtn"><span class="material-symbols-outlined" style="font-size:16px;">visibility_off</span> <span id="btnHide">隱藏</span></button>
+                                <button class="btn btn-ghost btn-sm" id="hideAnswerBtn"><span class="material-symbols-outlined" style="font-size:16px;">visibility_off</span> <span data-i18n="hide">隱藏</span></button>
                             </div>
                             <div id="choiceResultCards" class="card-pool" style="min-height:50px;">
-                                <div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;" id="revealPlaceholder">請公布答案</div>
+                                <div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;" data-i18n="revealPlaceholder">請公布答案</div>
                             </div>
                         </div>
 
                         <div id="textGradingArea" class="hidden" style="flex:1; display:flex; flex-direction:column;">
                             <div style="font-weight:600; color:var(--text-primary); margin-bottom:8px;">
-                                <span class="material-symbols-outlined">edit</span> <span id="labelGradingHint">勾選答對的學生（點擊即加分）</span>
+                                <span class="material-symbols-outlined">edit</span> <span data-i18n="gradingHint">勾選答對的學生（點擊即加分）</span>
                             </div>
                             <div id="textGradingList" class="text-list" style="flex:1;">
-                                <div style="color:var(--text-muted); padding:10px; text-align:center;" id="gradingEmpty">尚無作答資料</div>
+                                <div style="color:var(--text-muted); padding:10px; text-align:center;" data-i18n="noAnswers">尚無作答資料</div>
                             </div>
-                            <div style="margin-top:8px; font-size:14px; color:var(--text-secondary); text-align:center;" id="gradingSubHint">
+                            <div style="margin-top:8px; font-size:14px; color:var(--text-secondary); text-align:center;" data-i18n="gradingSubHint">
                                 勾選即時加分，取消即時扣分
                             </div>
                         </div>
@@ -324,12 +323,12 @@
                     <div class="page-footer">
                         <div class="nav-left">
                             <button class="btn btn-ghost" id="backToPage3">
-                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> <span id="btnBack3">上一頁</span>
+                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> <span data-i18n="back">上一頁</span>
                             </button>
                         </div>
                         <div class="nav-right">
                             <button class="btn btn-primary btn-lg" id="gotoPage5Btn" disabled>
-                                <span id="btnNext4">下一步</span> <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
+                                <span data-i18n="nextStep">下一步</span> <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
                             </button>
                         </div>
                     </div>
@@ -338,28 +337,28 @@
                 <!-- PAGE 5 -->
                 <section class="page" data-page="5">
                     <div class="page-title" id="page5Title">
-                        🏆 結算與排行榜
-                        <span class="badge" id="page5Badge">步驟 5 / 5</span>
+                        🏆 <span data-i18n="page5Title">結算與排行榜</span>
+                        <span class="badge" id="page5Badge" data-i18n="step5">步驟 5 / 5</span>
                     </div>
-                    <div class="page-subtitle" id="page5Subtitle">檢視累計得分榜，匯出記錄或進入下一題</div>
+                    <div class="page-subtitle" id="page5Subtitle" data-i18n="page5Subtitle">檢視累計得分榜，匯出記錄或進入下一題</div>
 
                     <div class="card-panel" style="flex:1; display:flex; flex-direction:column;">
                         <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <span style="font-weight:600; color:var(--text-primary);"><span class="material-symbols-outlined">emoji_events</span> <span id="labelScoreboard">累計得分榜</span></span>
+                            <span style="font-weight:600; color:var(--text-primary);"><span class="material-symbols-outlined">emoji_events</span> <span data-i18n="scoreboard">累計得分榜</span></span>
                             <div style="display:flex; gap:8px;">
-                                <button class="btn btn-ghost btn-sm" id="rankSortBtn"><span class="material-symbols-outlined" style="font-size:16px;">sort</span> <span id="btnSortScore">依分數排序</span></button>
+                                <button class="btn btn-ghost btn-sm" id="rankSortBtn"><span class="material-symbols-outlined" style="font-size:16px;">sort</span> <span data-i18n="sortByScore">依分數排序</span></button>
                             </div>
                         </div>
                         <div id="rankList" class="rank-list" style="flex:1;">
-                            <div style="color:var(--text-muted); padding:20px; text-align:center;" id="rankEmpty">尚無得分記錄</div>
+                            <div style="color:var(--text-muted); padding:20px; text-align:center;" data-i18n="noScore">尚無得分記錄</div>
                         </div>
 
                         <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; justify-content:center;">
                             <button class="btn btn-danger btn-lg" id="clearAllBtn" style="flex:1; min-width:180px;">
-                                <span class="material-symbols-outlined">delete</span> <span id="btnClearNext">清除本題 · 進入下一題</span>
+                                <span class="material-symbols-outlined">delete</span> <span data-i18n="clearNext">清除本題 · 進入下一題</span>
                             </button>
                             <button class="btn btn-success btn-lg" id="exportExcelBtn" style="flex:1; min-width:180px;">
-                                <span class="material-symbols-outlined">table_rows</span> <span id="btnDownloadExcel">下載 Excel</span>
+                                <span class="material-symbols-outlined">table_rows</span> <span data-i18n="downloadExcel">下載 Excel</span>
                             </button>
                         </div>
                     </div>
@@ -367,7 +366,7 @@
                     <div class="page-footer">
                         <div class="nav-left">
                             <button class="btn btn-ghost" id="backToPage4">
-                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> <span id="btnBack4">上一頁</span>
+                                <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span> <span data-i18n="back">上一頁</span>
                             </button>
                         </div>
                         <div class="nav-right"></div>
@@ -381,50 +380,39 @@
            底部收合 Dock 工具列
            ============================================================ -->
         <div class="floating-dock collapsed" id="floatingDock">
-            <!-- 工具按鈕 -->
             <button class="dock-item" id="dockQR" title="QR Code">
                 <span class="material-symbols-outlined">qr_code</span>
-                <span class="label" id="dockLabelQR">QR碼</span>
+                <span class="label" data-i18n="dockQR">QR碼</span>
             </button>
-
             <button class="dock-item" id="dockBroadcast" title="廣播">
                 <span class="material-symbols-outlined">campaign</span>
-                <span class="label" id="dockLabelBroadcast">廣播</span>
+                <span class="label" data-i18n="dockBroadcast">廣播</span>
             </button>
-
             <button class="dock-item" id="dockLockScreen" title="鎖定畫面">
                 <span class="material-symbols-outlined">lock</span>
-                <span class="label" id="dockLabelLock">鎖定</span>
+                <span class="label" data-i18n="dockLock">鎖定</span>
             </button>
-
             <div class="dock-divider"></div>
-
             <button class="dock-item" id="dockTimer" title="計時器">
                 <span class="material-symbols-outlined">timer</span>
-                <span class="label" id="dockLabelTimer">計時</span>
+                <span class="label" data-i18n="dockTimer">計時</span>
             </button>
-
             <button class="dock-item" id="dockDice" title="骰子">
                 <span class="material-symbols-outlined">casino</span>
-                <span class="label" id="dockLabelDice">骰子</span>
+                <span class="label" data-i18n="dockDice">骰子</span>
             </button>
-
             <button class="dock-item" id="dockPicker" title="隨機點名">
                 <span class="material-symbols-outlined">person_add</span>
-                <span class="label" id="dockLabelPicker">點名</span>
+                <span class="label" data-i18n="dockPicker">點名</span>
             </button>
-
             <button class="dock-item" id="dockVote" title="投票">
                 <span class="material-symbols-outlined">how_to_vote</span>
-                <span class="label" id="dockLabelVote">投票</span>
+                <span class="label" data-i18n="dockVote">投票</span>
             </button>
-
             <button class="dock-item" id="dockGroup" title="小組評分">
                 <span class="material-symbols-outlined">group</span>
-                <span class="label" id="dockLabelGroup">小組</span>
+                <span class="label" data-i18n="dockGroup">小組</span>
             </button>
-
-            <!-- 展開/收合按鈕 -->
             <button class="dock-toggle" id="dockToggle" title="展開/收合工具">
                 <span class="material-symbols-outlined">more_horiz</span>
             </button>
@@ -433,22 +421,22 @@
         <!-- ===== QR Code 彈窗 ===== -->
         <div class="modal-overlay" id="qrModal">
             <div class="modal-box">
-                <h3><span class="material-symbols-outlined" style="font-size:28px;">qr_code</span> <span id="qrTitle">掃描 QR Code 加入教室</span></h3>
-                <p id="qrModalRoomCode">教室代碼：----</p>
+                <h3><span class="material-symbols-outlined" style="font-size:28px;">qr_code</span> <span data-i18n="qrTitle">掃描 QR Code 加入教室</span></h3>
+                <p id="qrModalRoomCode" data-i18n="qrRoomCode">教室代碼：----</p>
                 <div id="qrcodeDisplay"></div>
-                <button class="btn btn-ghost close-btn" id="qrModalClose"><span class="material-symbols-outlined" style="font-size:16px;">close</span> <span id="qrClose">關閉</span></button>
+                <button class="btn btn-ghost close-btn" id="qrModalClose"><span class="material-symbols-outlined" style="font-size:16px;">close</span> <span data-i18n="close">關閉</span></button>
             </div>
         </div>
 
         <!-- ===== 廣播彈窗 ===== -->
         <div class="modal-overlay" id="broadcastModal">
             <div class="modal-box">
-                <h3><span class="material-symbols-outlined" style="font-size:28px;">campaign</span> <span id="broadcastTitle">廣播訊息</span></h3>
-                <p style="font-size:14px; color:var(--text-secondary);" id="broadcastDesc">訊息將以跑馬燈方式顯示在學生端</p>
-                <textarea id="broadcastInput" placeholder="請輸入要廣播的訊息..."></textarea>
+                <h3><span class="material-symbols-outlined" style="font-size:28px;">campaign</span> <span data-i18n="broadcastTitle">廣播訊息</span></h3>
+                <p style="font-size:14px; color:var(--text-secondary);" data-i18n="broadcastDesc">訊息將以跑馬燈方式顯示在學生端</p>
+                <textarea id="broadcastInput" placeholder="請輸入要廣播的訊息..." data-i18n-placeholder="broadcastPlaceholder"></textarea>
                 <div class="btn-row">
-                    <button class="btn btn-ghost" id="broadcastCancel"><span class="material-symbols-outlined" style="font-size:16px;">close</span> <span id="broadcastCancelBtn">取消</span></button>
-                    <button class="btn btn-primary" id="broadcastSend"><span class="material-symbols-outlined" style="font-size:16px;">send</span> <span id="broadcastSendBtn">發送</span></button>
+                    <button class="btn btn-ghost" id="broadcastCancel"><span class="material-symbols-outlined" style="font-size:16px;">close</span> <span data-i18n="cancel">取消</span></button>
+                    <button class="btn btn-primary" id="broadcastSend"><span class="material-symbols-outlined" style="font-size:16px;">send</span> <span data-i18n="send">發送</span></button>
                 </div>
             </div>
         </div>
@@ -461,8 +449,7 @@
         </div>
 
     </div><!-- /app-container -->
-
-    <script type="module">
+        <script type="module">
         // ============================================================
         // 1. 匯入 Firebase
         // ============================================================
@@ -504,56 +491,42 @@
         }
 
         function updateAllTexts() {
-    // 更新所有帶 data-i18n 屬性的元素
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.dataset.i18n;
-        const text = t(key);
-        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-            el.placeholder = text;
-        } else {
-            el.textContent = text;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                const text = t(key);
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    el.placeholder = text;
+                } else {
+                    el.textContent = text;
+                }
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                el.placeholder = t(el.dataset.i18nPlaceholder);
+            });
+            const brandEl = document.querySelector('.brand');
+            if (brandEl) brandEl.textContent = currentLang === 'zh' ? '霧臺國小' : 'Wutai Elementary';
+            const stepNum = STATE.currentPage || 1;
+            const stepTextEl = document.getElementById('stepText');
+            if (stepTextEl) stepTextEl.textContent = t(`step${stepNum}`);
+            for (let i = 1; i <= 5; i++) {
+                const badge = document.getElementById(`page${i}Badge`);
+                if (badge) badge.textContent = t(`step${i}`);
+                const titleSpan = document.querySelector(`#page${i}Title span[data-i18n]`);
+                if (titleSpan) titleSpan.textContent = t(`page${i}Title`);
+                const subtitle = document.getElementById(`page${i}Subtitle`);
+                if (subtitle) subtitle.textContent = t(`page${i}Subtitle`);
+            }
+            document.getElementById('langZh').className = currentLang === 'zh' ? 'active' : '';
+            document.getElementById('langEn').className = currentLang === 'en' ? 'active' : '';
+            if (toolModal.classList.contains('show')) {
+                toolModalContent.querySelectorAll('[data-i18n]').forEach(el => {
+                    el.textContent = t(el.dataset.i18n);
+                });
+            }
         }
-    });
-    // 處理 data-i18n-placeholder（例如輸入框提示）
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-        el.placeholder = t(el.dataset.i18nPlaceholder);
-    });
-    // 品牌名稱
-    const brandEl = document.querySelector('.brand');
-    if (brandEl) brandEl.textContent = currentLang === 'zh' ? '霧臺國小' : 'Wutai Elementary';
-    // 步驟文字 (右上角)
-    const stepNum = STATE.currentPage || 1;
-    const stepTextEl = document.getElementById('stepText');
-    if (stepTextEl) stepTextEl.textContent = t(`step${stepNum}`);
-    // 頁面標題與 badge
-    for (let i = 1; i <= 5; i++) {
-        const badge = document.getElementById(`page${i}Badge`);
-        if (badge) badge.textContent = t(`step${i}`);
-        const titleSpan = document.querySelector(`#page${i}Title span[data-i18n]`);
-        if (titleSpan) titleSpan.textContent = t(`page${i}Title`);
-        const subtitle = document.getElementById(`page${i}Subtitle`);
-        if (subtitle) subtitle.textContent = t(`page${i}Subtitle`);
-    }
-    // 語言按鈕 active 狀態
-    document.getElementById('langZh').className = currentLang === 'zh' ? 'active' : '';
-    document.getElementById('langEn').className = currentLang === 'en' ? 'active' : '';
 
-    // 如果工具彈窗開啟中，更新其內部文字
-    if (toolModal.classList.contains('show')) {
-        toolModalContent.querySelectorAll('[data-i18n]').forEach(el => {
-            el.textContent = t(el.dataset.i18n);
-        });
-    }
-}
-        // 語言切換事件
-        document.getElementById('langZh').addEventListener('click', () => {
-            currentLang = 'zh';
-            updateAllTexts();
-        });
-        document.getElementById('langEn').addEventListener('click', () => {
-            currentLang = 'en';
-            updateAllTexts();
-        });
+        document.getElementById('langZh').addEventListener('click', () => { currentLang = 'zh'; updateAllTexts(); });
+        document.getElementById('langEn').addEventListener('click', () => { currentLang = 'en'; updateAllTexts(); });
 
         // ============================================================
         // 5. 全域狀態
@@ -584,7 +557,6 @@
             isPublished: false,
             isStopped: false,
             flowState: 'idle',
-            // 工具狀態
             pickerExcluded: [],
             voteActive: false,
             voteOptions: [],
@@ -595,7 +567,7 @@
         };
 
         // ============================================================
-        // 6. DOM 參照（簡化版）
+        // 6. DOM 參照
         // ============================================================
         const $ = (s) => document.querySelector(s);
         const $$ = (s) => document.querySelectorAll(s);
@@ -635,7 +607,6 @@
         const timerLargeDisplay = $('#timerLargeDisplay');
         const timerLabel = $('#timerLabel');
         const cardContainer = $('#cardContainer');
-        const textListContainer = $('#textListContainer');
         const startStopBtn = $('#startStopBtn');
         const viewTextAnswersBtn = $('#viewTextAnswersBtn');
         const page3Subtitle = $('#page3Subtitle');
@@ -652,7 +623,6 @@
         const clearAllBtn = $('#clearAllBtn');
         const exportExcelBtn = $('#exportExcelBtn');
 
-        // Dock 工具列
         const floatingDock = $('#floatingDock');
         const dockToggle = $('#dockToggle');
         const dockQR = $('#dockQR');
@@ -664,7 +634,6 @@
         const dockVote = $('#dockVote');
         const dockGroup = $('#dockGroup');
 
-        // Modal
         const qrModal = $('#qrModal');
         const qrcodeDisplay = $('#qrcodeDisplay');
         const qrModalRoomCode = $('#qrModalRoomCode');
@@ -680,41 +649,25 @@
         // 7. 輔助函式
         // ============================================================
         function generateRoomId() { return String(Math.floor(1000 + Math.random() * 9000)); }
-
         function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
         function getStudentId(student) { return `${student.grade}-${student.class}-${String(student.number).padStart(2, '0')}`; }
-
-        function getChineseGrade(num) { const map = { '1': '一', '2': '二', '3': '三', '4': '四', '5': '五', '6': '六' }; return map[
-                num] || num; }
-
-        function getChineseClass(num) { const map = { '1': '甲', '2': '乙' }; return map[num] || num; }
-
+        function getChineseGrade(num) { const map = {'1':'一','2':'二','3':'三','4':'四','5':'五','6':'六'}; return map[num] || num; }
+        function getChineseClass(num) { const map = {'1':'甲','2':'乙'}; return map[num] || num; }
         function formatClassName(grade, cls) { return `${getChineseGrade(grade)}年${getChineseClass(cls)}班`; }
-
-        function generateRoundId(qNum) {
-            const ts = Date.now().toString(36).toUpperCase();
-            return `R${String(qNum).padStart(3, '0')}_${ts}`;
-        }
-
-        function getStudentName(id) {
-            const student = STATE.allStudents.find(s => getStudentId(s) === id);
-            return student?.name || id;
-        }
+        function generateRoundId(qNum) { return `R${String(qNum).padStart(3,'0')}_${Date.now().toString(36).toUpperCase()}`; }
+        function getStudentName(id) { const student = STATE.allStudents.find(s => getStudentId(s) === id); return student?.name || id; }
 
         // ============================================================
         // 8. 頁面導航
         // ============================================================
         function goToPage(pageNum) {
-            const totalPages = 5;
-            if (pageNum < 1 || pageNum > totalPages) return;
+            if (pageNum < 1 || pageNum > 5) return;
             STATE.currentPage = pageNum;
-            const offset = (pageNum - 1) * 100;
-            pagesTrack.style.transform = `translateX(-${offset}%)`;
+            pagesTrack.style.transform = `translateX(-${(pageNum-1)*100}%)`;
             stepDots.forEach((dot, idx) => {
                 dot.className = 'step-dot';
-                if (idx + 1 === pageNum) dot.classList.add('active');
-                else if (idx + 1 < pageNum) dot.classList.add('done');
+                if (idx+1 === pageNum) dot.classList.add('active');
+                else if (idx+1 < pageNum) dot.classList.add('done');
             });
             stepText.textContent = t(`step${pageNum}`);
             if (STATE.roomId && pageNum >= 2) {
@@ -730,41 +683,36 @@
         }
 
         function updateNavButtons() {
-            const page = STATE.currentPage;
-            gotoPage2Btn.disabled = page !== 1;
-            gotoPage3Btn.disabled = page !== 2 || !STATE.isPublished;
-            gotoPage4Btn.disabled = page !== 3 || !STATE.isStopped;
-            gotoPage5Btn.disabled = page !== 4;
+            gotoPage2Btn.disabled = STATE.currentPage !== 1;
+            gotoPage3Btn.disabled = STATE.currentPage !== 2 || !STATE.isPublished;
+            gotoPage4Btn.disabled = STATE.currentPage !== 3 || !STATE.isStopped;
+            gotoPage5Btn.disabled = STATE.currentPage !== 4;
         }
 
         function updateFlowButtons() {
-            const state = STATE.flowState;
-            publishBtn.disabled = !(state === 'idle' || state === 'stopped');
-            if (state === 'published' || state === 'idle') {
+            const s = STATE.flowState;
+            publishBtn.disabled = !(s === 'idle' || s === 'stopped');
+            if (s === 'published' || s === 'idle') {
                 startStopBtn.disabled = false;
-                startStopBtn.innerHTML =
-                    `<span class="material-symbols-outlined">play_arrow</span> <span data-i18n="startAnswering">開始作答</span>`;
+                startStopBtn.innerHTML = `<span class="material-symbols-outlined">play_arrow</span> <span data-i18n="startAnswering">${t('startAnswering')}</span>`;
                 startStopBtn.className = 'btn btn-primary btn-lg';
-            } else if (state === 'answering') {
+            } else if (s === 'answering') {
                 startStopBtn.disabled = false;
-                startStopBtn.innerHTML =
-                    `<span class="material-symbols-outlined">stop</span> <span data-i18n="stopAnswering">停止作答</span>`;
+                startStopBtn.innerHTML = `<span class="material-symbols-outlined">stop</span> <span data-i18n="stopAnswering">${t('stopAnswering')}</span>`;
                 startStopBtn.className = 'btn btn-danger btn-lg';
-            } else if (state === 'stopped') {
+            } else if (s === 'stopped') {
                 startStopBtn.disabled = true;
-                startStopBtn.innerHTML =
-                    `<span class="material-symbols-outlined">pause</span> <span data-i18n="stopped">已停止</span>`;
+                startStopBtn.innerHTML = `<span class="material-symbols-outlined">pause</span> <span data-i18n="stopped">${t('stopped')}</span>`;
                 startStopBtn.className = 'btn btn-ghost btn-lg';
             }
-            gotoPage4Btn.disabled = state !== 'stopped';
+            gotoPage4Btn.disabled = s !== 'stopped';
         }
 
         // ============================================================
         // 9. 載入名單
         // ============================================================
         async function loadRosterFromSheet() {
-            const url =
-                'https://script.google.com/macros/s/AKfycbyTN6NbWdLc-OfKoa_3iyX5uHCwpDuEeIYSRSVgFcE4aM3RHHfgJthaAMXoiul2YTkH6A/exec';
+            const url = 'https://script.google.com/macros/s/AKfycbyTN6NbWdLc-OfKoa_3iyX5uHCwpDuEeIYSRSVgFcE4aM3RHHfgJthaAMXoiul2YTkH6A/exec';
             try {
                 const resp = await fetch(url);
                 if (!resp.ok) throw new Error('網路請求失敗');
@@ -784,8 +732,7 @@
                 alert('沒有取得任何學生資料');
                 return;
             }
-            const roster = {};
-            const all = [];
+            const roster = {}, all = [];
             for (const row of data) {
                 const grade = row.grade?.toString().trim();
                 const cls = row.class?.toString().trim();
@@ -798,31 +745,23 @@
                 roster[className].push(student);
                 all.push({ ...student, className });
             }
-            if (Object.keys(roster).length === 0) {
-                alert('無法解析任何學生資料，請檢查試算表欄位名稱是否為 grade, class, number, name');
-                return;
-            }
-            for (const cls in roster) {
-                roster[cls].sort((a, b) => parseInt(a.number) - parseInt(b.number));
-            }
+            for (const cls in roster) roster[cls].sort((a,b) => parseInt(a.number)-parseInt(b.number));
             STATE.rosterData = roster;
             STATE.allStudents = all;
             renderClassCheckboxes();
-            console.log(`✅ 成功載入 ${all.length} 位學生，${Object.keys(roster).length} 個班級`);
         }
 
         function renderClassCheckboxes() {
             const container = classCheckboxContainer;
+            if (!container) return;
             container.innerHTML = '';
-            const sorted = Object.keys(STATE.rosterData).sort((a, b) => {
-                const [g1, c1] = a.split('-').map(Number);
-                const [g2, c2] = b.split('-').map(Number);
-                if (g1 !== g2) return g1 - g2;
-                return c1 - c2;
+            const sorted = Object.keys(STATE.rosterData).sort((a,b) => {
+                const [g1,c1]=a.split('-').map(Number); const [g2,c2]=b.split('-').map(Number);
+                return g1!==g2 ? g1-g2 : c1-c2;
             });
             for (const cls of sorted) {
-                const [g, c] = cls.split('-');
-                const label = formatClassName(g, c);
+                const [g,c] = cls.split('-');
+                const label = formatClassName(g,c);
                 const div = document.createElement('label');
                 div.innerHTML = `<input type="checkbox" value="${cls}" /> ${label}`;
                 container.appendChild(div);
@@ -832,18 +771,15 @@
         }
 
         function updateSelectedClasses() {
-            const container = classCheckboxContainer;
-            if (!container) return;
             const checked = [];
-            container.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-                checked.push(cb.value);
-            });
+            classCheckboxContainer.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => checked.push(cb.value));
             STATE.selectedClasses = checked;
         }
 
         customClassCheckbox.addEventListener('change', function() {
             customStudentCount.disabled = !this.checked;
             if (this.checked) customStudentCount.focus();
+            STATE.customClassEnabled = this.checked;
         });
 
         // ============================================================
@@ -937,7 +873,6 @@
                     customStudentCount: custom ? STATE.customStudentCount : 0,
                     expireAt: new Date(Date.now() + 6 * 3600 * 1000).toISOString(),
                     isLocked: false,
-                    // 工具狀態
                     voteActive: false,
                     voteOptions: [],
                     voteResults: {},
@@ -956,9 +891,8 @@
                 STATE.isPublished = false;
                 STATE.isStopped = false;
                 STATE.flowState = 'idle';
-                publishBtn.innerHTML =
-                    `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', '1')}`;
-                publishStatus.innerHTML = `<span data-i18n="publishStatus">尚未發布</span>`;
+                publishBtn.innerHTML = `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', '1')}`;
+                publishStatus.innerHTML = `<span data-i18n="notPublished">${t('notPublished')}</span>`;
                 updateCards();
                 updateCharts();
                 gotoPage2Btn.disabled = false;
@@ -984,16 +918,14 @@
                 if (typeof QRCode === 'undefined') {
                     await new Promise((resolve, reject) => {
                         const script = document.createElement('script');
-                        script.src =
-                            'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
                         script.onload = resolve;
                         script.onerror = reject;
                         document.head.appendChild(script);
                     });
                 }
                 qrcodeDisplay.innerHTML = '';
-                new QRCode(qrcodeDisplay, { text: url, width: 180, height: 180, colorDark: '#1e293b',
-                    colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+                new QRCode(qrcodeDisplay, { text: url, width: 180, height: 180, colorDark: '#1e293b', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
             } catch (e) {
                 qrcodeDisplay.innerHTML = `<p style="color:#888;">⚠️ 載入中...</p>`;
             }
@@ -1020,10 +952,7 @@
         // ============================================================
         async function publishQuestion() {
             if (!STATE.roomId) { alert(t('errorNoRoom')); return; }
-            if (STATE.flowState === 'answering') {
-                alert(t('errorPublish'));
-                return;
-            }
+            if (STATE.flowState === 'answering') { alert(t('errorPublish')); return; }
 
             const metaRef = doc(db, 'rooms', STATE.roomId, 'meta', 'info');
             const metaSnap = await getDoc(metaRef);
@@ -1039,10 +968,8 @@
             const sec = parseInt(customSeconds.value) || 20;
 
             currentQuestionDisplay.textContent = `${t('currentQuestion')} 第 ${qNum} 題`;
-            publishBtn.innerHTML =
-                `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', qNum + 1)}`;
-            publishStatus.innerHTML =
-                `${t('published').replace('{n}', qNum).replace('{score}', STATE.questionScore)}`;
+            publishBtn.innerHTML = `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', qNum + 1)}`;
+            publishStatus.innerHTML = `${t('published').replace('{n}', qNum).replace('{score}', STATE.questionScore)}`;
 
             STATE.correctAnswer = null;
             STATE.isRevealed = false;
@@ -1071,16 +998,13 @@
             STATE.flowState = 'published';
 
             timerLargeDisplay.textContent = sec;
-            timerLabel.innerHTML =
-                `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="waitingStart">等待開始</span>`;
+            timerLabel.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="waitingStart">${t('waitingStart')}</span>`;
             timerLargeContainer.style.display = 'block';
 
-            startStopBtn.innerHTML =
-                `<span class="material-symbols-outlined">play_arrow</span> <span data-i18n="startAnswering">開始作答</span>`;
+            startStopBtn.innerHTML = `<span class="material-symbols-outlined">play_arrow</span> <span data-i18n="startAnswering">${t('startAnswering')}</span>`;
             startStopBtn.className = 'btn btn-primary btn-lg';
 
-            choiceResultCards.innerHTML =
-                `<div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;" data-i18n="revealPlaceholder">請公布答案</div>`;
+            choiceResultCards.innerHTML = `<div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;" data-i18n="revealPlaceholder">${t('revealPlaceholder')}</div>`;
 
             updateCards();
             updateCharts();
@@ -1107,12 +1031,10 @@
                 await updateDoc(doc(db, 'rooms', STATE.roomId), { isAnswering: true, timerSeconds: sec });
                 STATE.isAnswering = true;
                 STATE.flowState = 'answering';
-                startStopBtn.innerHTML =
-                    `<span class="material-symbols-outlined">stop</span> <span data-i18n="stopAnswering">停止作答</span>`;
+                startStopBtn.innerHTML = `<span class="material-symbols-outlined">stop</span> <span data-i18n="stopAnswering">${t('stopAnswering')}</span>`;
                 startStopBtn.className = 'btn btn-danger btn-lg';
                 startTeacherTimer(sec);
-                timerLabel.innerHTML =
-                    `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="answering">作答中...</span>`;
+                timerLabel.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="answering">${t('answering')}</span>`;
                 updateFlowButtons();
             } else if (STATE.flowState === 'answering') {
                 await stopRound();
@@ -1123,15 +1045,13 @@
 
         async function stopRound() {
             clearTeacherTimer();
-            timerLabel.innerHTML =
-                `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="stopped">已停止</span>`;
+            timerLabel.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="stopped">${t('stopped')}</span>`;
             timerLargeDisplay.textContent = '⏹️';
             await updateDoc(doc(db, 'rooms', STATE.roomId), { isAnswering: false });
             STATE.isAnswering = false;
             STATE.isStopped = true;
             STATE.flowState = 'stopped';
-            startStopBtn.innerHTML =
-                `<span class="material-symbols-outlined">pause</span> <span data-i18n="stopped">已停止</span>`;
+            startStopBtn.innerHTML = `<span class="material-symbols-outlined">pause</span> <span data-i18n="stopped">${t('stopped')}</span>`;
             startStopBtn.className = 'btn btn-ghost btn-lg';
             await collectAnswers();
             updateCards();
@@ -1162,8 +1082,7 @@
                     clearTeacherTimer();
                     timerLargeDisplay.textContent = '⏰';
                     timerLargeDisplay.className = 'timer-large urgent';
-                    timerLabel.innerHTML =
-                        `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="timeUp">時間到！</span>`;
+                    timerLabel.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="timeUp">${t('timeUp')}</span>`;
                     await stopRound();
                 }
             }, 1000);
@@ -1277,32 +1196,18 @@
                     html += `<div class="${cls}"><div>${label}</div><span class="sub-label">${sub}</span></div>`;
                 }
                 cardContainer.innerHTML = html ||
-                    '<div style="color:var(--text-muted); padding:20px; text-align:center; width:100%;" data-i18n="noStudents">尚無臨時學生作答</div>';
+                    `<div style="color:var(--text-muted); padding:20px; text-align:center; width:100%;" data-i18n="noStudents">${t('noStudents')}</div>`;
                 return;
             }
 
             if (filtered.length === 0) {
                 cardContainer.innerHTML =
-                    '<div style="color:var(--text-muted); padding:20px; text-align:center; width:100%;" data-i18n="noClassSelected">請勾選班級</div>';
+                    `<div style="color:var(--text-muted); padding:20px; text-align:center; width:100%;" data-i18n="noClassSelected">${t('noClassSelected')}</div>`;
                 return;
             }
 
             let sorted = [...filtered];
-            if (STATE.sortByTime) {
-                sorted.sort((a, b) => {
-                    const aId = getStudentId(a);
-                    const bId = getStudentId(b);
-                    const aAns = STATE.currentAnswers[aId];
-                    const bAns = STATE.currentAnswers[bId];
-                    const aTime = aAns?.timestamp?.getTime?.() || 0;
-                    const bTime = bAns?.timestamp?.getTime?.() || 0;
-                    if (aTime && !bTime) return -1;
-                    if (!aTime && bTime) return 1;
-                    return aTime - bTime;
-                });
-            } else {
-                sorted.sort((a, b) => parseInt(a.number) - parseInt(b.number));
-            }
+            sorted.sort((a, b) => parseInt(a.number) - parseInt(b.number));
 
             let html = '';
             for (const s of sorted) {
@@ -1396,8 +1301,7 @@
         function updateRankList() {
             const sorted = Object.entries(STATE.cumulativeScores).sort((a, b) => b[1] - a[1]).slice(0, 20);
             if (sorted.length === 0) {
-                rankList.innerHTML =
-                    '<div style="color:var(--text-muted); padding:20px; text-align:center;" data-i18n="noScore">尚無得分記錄</div>';
+                rankList.innerHTML = `<div style="color:var(--text-muted); padding:20px; text-align:center;" data-i18n="noScore">${t('noScore')}</div>`;
                 return;
             }
             let html = '';
@@ -1423,8 +1327,7 @@
                 filtered.push(...roster.map(s => ({ ...s, className: cls })));
             }
             if (filtered.length === 0) {
-                textGradingList.innerHTML =
-                    '<div style="color:var(--text-muted); padding:10px; text-align:center;" data-i18n="noStudents">無學生資料</div>';
+                textGradingList.innerHTML = `<div style="color:var(--text-muted); padding:10px; text-align:center;" data-i18n="noStudents">${t('noStudents')}</div>`;
                 return;
             }
             const score = STATE.questionScore || 1;
@@ -1452,8 +1355,7 @@
                     if (this.checked) {
                         STATE.cumulativeScores[studentId] = (STATE.cumulativeScores[studentId] || 0) + s;
                     } else {
-                        STATE.cumulativeScores[studentId] = Math.max(0, (STATE.cumulativeScores[
-                            studentId] || 0) - s);
+                        STATE.cumulativeScores[studentId] = Math.max(0, (STATE.cumulativeScores[studentId] || 0) - s);
                     }
                     updateRankList();
                     const parent = this.closest('.text-list-item');
@@ -1496,9 +1398,8 @@
             STATE.flowState = 'idle';
 
             currentQuestionDisplay.textContent = `${t('currentQuestion')} 第 0 題`;
-            publishBtn.innerHTML =
-                `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', nextQNum)}`;
-            publishStatus.innerHTML = `<span data-i18n="publishStatus">尚未發布</span>`;
+            publishBtn.innerHTML = `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', nextQNum)}`;
+            publishStatus.innerHTML = `<span data-i18n="notPublished">${t('notPublished')}</span>`;
 
             updateCards();
             updateCharts();
@@ -1513,11 +1414,9 @@
             gotoPage5Btn.disabled = true;
 
             timerLargeDisplay.textContent = '--';
-            timerLabel.innerHTML =
-                `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="waitingStart">等待開始</span>`;
+            timerLabel.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="waitingStart">${t('waitingStart')}</span>`;
             timerLargeContainer.style.display = 'block';
-            choiceResultCards.innerHTML =
-                `<div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;" data-i18n="revealPlaceholder">請公布答案</div>`;
+            choiceResultCards.innerHTML = `<div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;" data-i18n="revealPlaceholder">${t('revealPlaceholder')}</div>`;
 
             updateFlowButtons();
             alert(t('successCleared'));
@@ -1565,8 +1464,7 @@
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet(rows);
             XLSX.utils.book_append_sheet(wb, ws, '課堂記錄');
-            const fileName =
-                `霧臺國小_課堂記錄_${STATE.roomId || 'class'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            const fileName = `霧臺國小_課堂記錄_${STATE.roomId || 'class'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
             XLSX.writeFile(wb, fileName);
             alert(t('successExcelDownloaded'));
         }
@@ -1596,226 +1494,137 @@
             await updateDoc(roomRef, { isLocked: newLock });
             const label = newLock ? t('lockScreen') : t('unlockScreen');
             const icon = newLock ? 'lock' : 'lock_open';
-            dockLockScreen.innerHTML =
-                `<span class="material-symbols-outlined">${icon}</span><span class="label">${label}</span>`;
+            dockLockScreen.innerHTML = `<span class="material-symbols-outlined">${icon}</span><span class="label">${label}</span>`;
             alert(newLock ? t('lockConfirm') : t('unlockConfirm'));
         }
-
-        // ============================================================
+                    // ============================================================
         // 27. 工具：計時器
         // ============================================================
         let timerToolInterval = null;
         let timerToolRunning = false;
-        let timerToolSeconds = 0;
+        let timerToolValue = 0;
         let timerToolMode = 'countdown';
 
         function openTimerTool() {
-            let content = `
-                        <div class="modal-title">
-                            <span class="material-symbols-outlined">timer</span> <span data-i18n="timerTitle">計時器</span>
-                        </div>
-                        <div class="modal-desc" data-i18n="timerDesc">倒數計時或碼表，投影幕全班觀看</div>
-                        <div class="timer-display" id="toolTimerDisplay">00:00</div>
-                        <div class="timer-presets">
-                            <button class="btn btn-ghost btn-sm" data-timer-set="5">5s</button>
-                            <button class="btn btn-ghost btn-sm" data-timer-set="10">10s</button>
-                            <button class="btn btn-ghost btn-sm" data-timer-set="30">30s</button>
-                            <button class="btn btn-ghost btn-sm" data-timer-set="60">60s</button>
-                            <button class="btn btn-ghost btn-sm" data-timer-set="120">120s</button>
-                            <button class="btn btn-ghost btn-sm" data-timer-set="300">300s</button>
-                        </div>
-                        <div class="timer-controls">
-                            <button class="btn btn-success" id="toolTimerStart"><span class="material-symbols-outlined">play_arrow</span> <span data-i18n="timerStart">開始</span></button>
-                            <button class="btn btn-danger" id="toolTimerStop"><span class="material-symbols-outlined">stop</span> <span data-i18n="timerStop">停止</span></button>
-                            <button class="btn btn-ghost" id="toolTimerReset"><span class="material-symbols-outlined">refresh</span> <span data-i18n="timerReset">重置</span></button>
-                        </div>
-                        <div style="margin-top:8px; display:flex; gap:10px; justify-content:center;">
-                            <button class="btn btn-ghost btn-sm" id="toolTimerModeCountdown">⏱️ <span data-i18n="timerModeCountdown">倒數</span></button>
-                            <button class="btn btn-ghost btn-sm" id="toolTimerModeStopwatch">⏱️ <span data-i18n="timerModeStopwatch">碼表</span></button>
-                        </div>
-                    `;
-
-            toolModalContent.innerHTML = content;
+            toolModalContent.innerHTML = `
+                <div class="modal-title">
+                    <span class="material-symbols-outlined">timer</span> <span data-i18n="timerTitle">${t('timerTitle')}</span>
+                </div>
+                <div class="timer-display" id="toolTimerDisplay">00:00</div>
+                <div class="timer-presets">
+                    <button class="btn btn-ghost btn-sm" data-timer-set="5">5s</button>
+                    <button class="btn btn-ghost btn-sm" data-timer-set="10">10s</button>
+                    <button class="btn btn-ghost btn-sm" data-timer-set="30">30s</button>
+                    <button class="btn btn-ghost btn-sm" data-timer-set="60">60s</button>
+                    <button class="btn btn-ghost btn-sm" data-timer-set="120">120s</button>
+                    <button class="btn btn-ghost btn-sm" data-timer-set="300">300s</button>
+                </div>
+                <div class="timer-controls">
+                    <button class="btn btn-success" id="toolTimerStart"><span class="material-symbols-outlined">play_arrow</span> <span data-i18n="timerStart">${t('timerStart')}</span></button>
+                    <button class="btn btn-danger" id="toolTimerStop"><span class="material-symbols-outlined">stop</span> <span data-i18n="timerStop">${t('timerStop')}</span></button>
+                    <button class="btn btn-ghost" id="toolTimerReset"><span class="material-symbols-outlined">refresh</span> <span data-i18n="timerReset">${t('timerReset')}</span></button>
+                </div>
+                <div style="margin-top:8px; display:flex; gap:10px; justify-content:center;">
+                    <button class="btn btn-ghost btn-sm" id="toolTimerModeCountdown">⏱️ <span data-i18n="timerModeCountdown">${t('timerModeCountdown')}</span></button>
+                    <button class="btn btn-ghost btn-sm" id="toolTimerModeStopwatch">⏱️ <span data-i18n="timerModeStopwatch">${t('timerModeStopwatch')}</span></button>
+                </div>`;
             toolModal.classList.add('show');
 
-            let timerValue = 0;
-            let timerDisplayEl = document.getElementById('toolTimerDisplay');
-            let timerStartBtn = document.getElementById('toolTimerStart');
-            let timerStopBtn = document.getElementById('toolTimerStop');
-            let timerResetBtn = document.getElementById('toolTimerReset');
-            let timerSetBtns = document.querySelectorAll('[data-timer-set]');
+            let display = document.getElementById('toolTimerDisplay');
+            function fmt(s) { const m=Math.floor(s/60), sec=Math.floor(s%60); return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
+            function upd() { display.textContent = fmt(timerToolValue); display.style.color = timerToolMode==='countdown' && timerToolValue<=5 && timerToolValue>0 ? 'var(--danger)' : ''; }
+            upd();
 
-            function formatTime(seconds) {
-                const m = Math.floor(seconds / 60);
-                const s = Math.floor(seconds % 60);
-                return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-            }
-
-            function updateDisplay() {
-                if (timerDisplayEl) timerDisplayEl.textContent = formatTime(timerValue);
-                if (timerToolMode === 'countdown' && timerValue <= 5 && timerValue > 0) {
-                    timerDisplayEl.style.color = 'var(--danger)';
-                } else {
-                    timerDisplayEl.style.color = '';
-                }
-            }
-
-            function startTimer() {
+            document.getElementById('toolTimerStart').onclick = () => {
                 if (timerToolRunning) return;
-                if (timerToolMode === 'countdown' && timerValue <= 0) {
-                    alert(t('secondsPlaceholder') || '請先設定秒數');
-                    return;
-                }
-                if (timerToolMode === 'stopwatch') {
-                    timerValue = 0;
-                    updateDisplay();
-                }
+                if (timerToolMode==='countdown' && timerToolValue<=0) { alert('請先設定秒數'); return; }
                 timerToolRunning = true;
-                timerStartBtn.disabled = true;
                 timerToolInterval = setInterval(() => {
-                    if (timerToolMode === 'countdown') {
-                        timerValue--;
-                        updateDisplay();
-                        if (timerValue <= 0) {
-                            clearInterval(timerToolInterval);
-                            timerToolRunning = false;
-                            timerStartBtn.disabled = false;
-                            timerDisplayEl.textContent = t('timerTimeUp') || '⏰ 時間到！';
-                            timerDisplayEl.style.color = 'var(--danger)';
-                        }
-                    } else {
-                        timerValue++;
-                        updateDisplay();
+                    timerToolValue += timerToolMode==='countdown' ? -1 : 1;
+                    upd();
+                    if (timerToolMode==='countdown' && timerToolValue<=0) {
+                        clearInterval(timerToolInterval);
+                        timerToolRunning = false;
+                        display.textContent = t('timerTimeUp');
+                        display.style.color = 'var(--danger)';
                     }
                 }, 1000);
-            }
-
-            function stopTimer() {
-                if (timerToolInterval) {
-                    clearInterval(timerToolInterval);
-                    timerToolInterval = null;
-                }
-                timerToolRunning = false;
-                timerStartBtn.disabled = false;
-            }
-
-            function resetTimer() {
-                stopTimer();
-                if (timerToolMode === 'countdown') {
-                    timerValue = 0;
-                } else {
-                    timerValue = 0;
-                }
-                updateDisplay();
-                timerStartBtn.disabled = false;
-            }
-
-            if (timerStartBtn) timerStartBtn.addEventListener('click', startTimer);
-            if (timerStopBtn) timerStopBtn.addEventListener('click', stopTimer);
-            if (timerResetBtn) timerResetBtn.addEventListener('click', resetTimer);
-
-            timerSetBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    if (timerToolRunning) {
-                        if (!confirm('計時器正在運行，確定要重設嗎？')) return;
-                        stopTimer();
-                    }
-                    timerToolMode = 'countdown';
-                    timerValue = parseInt(this.dataset.timerSet);
-                    updateDisplay();
-                    timerStartBtn.disabled = false;
-                    document.getElementById('toolTimerModeCountdown').style.background = 'rgba(79,70,229,0.1)';
-                    document.getElementById('toolTimerModeStopwatch').style.background = '';
-                });
-            });
-
-            document.getElementById('toolTimerModeCountdown').addEventListener('click', function() {
-                if (timerToolRunning) {
-                    if (!confirm('切換模式將停止計時器，確定嗎？')) return;
-                    stopTimer();
-                }
-                timerToolMode = 'countdown';
-                timerValue = 0;
-                updateDisplay();
-                timerStartBtn.disabled = false;
-                this.style.background = 'rgba(79,70,229,0.1)';
+            };
+            document.getElementById('toolTimerStop').onclick = () => { clearInterval(timerToolInterval); timerToolRunning = false; };
+            document.getElementById('toolTimerReset').onclick = () => { clearInterval(timerToolInterval); timerToolRunning = false; timerToolValue = 0; upd(); };
+            document.querySelectorAll('[data-timer-set]').forEach(b => b.onclick = () => {
+                if (timerToolRunning && !confirm('計時器正在運行，確定要重設嗎？')) return;
+                clearInterval(timerToolInterval); timerToolRunning = false;
+                timerToolMode = 'countdown'; timerToolValue = parseInt(b.dataset.timerSet); upd();
+                document.getElementById('toolTimerModeCountdown').style.background = 'rgba(79,70,229,0.1)';
                 document.getElementById('toolTimerModeStopwatch').style.background = '';
             });
-
-            document.getElementById('toolTimerModeStopwatch').addEventListener('click', function() {
-                if (timerToolRunning) {
-                    if (!confirm('切換模式將停止計時器，確定嗎？')) return;
-                    stopTimer();
-                }
-                timerToolMode = 'stopwatch';
-                timerValue = 0;
-                updateDisplay();
-                timerStartBtn.disabled = false;
-                this.style.background = 'rgba(79,70,229,0.1)';
+            document.getElementById('toolTimerModeCountdown').onclick = () => {
+                if (timerToolRunning && !confirm('切換模式將停止計時器，確定嗎？')) return;
+                clearInterval(timerToolInterval); timerToolRunning = false;
+                timerToolMode = 'countdown'; timerToolValue = 0; upd();
+                document.getElementById('toolTimerModeCountdown').style.background = 'rgba(79,70,229,0.1)';
+                document.getElementById('toolTimerModeStopwatch').style.background = '';
+            };
+            document.getElementById('toolTimerModeStopwatch').onclick = () => {
+                if (timerToolRunning && !confirm('切換模式將停止計時器，確定嗎？')) return;
+                clearInterval(timerToolInterval); timerToolRunning = false;
+                timerToolMode = 'stopwatch'; timerToolValue = 0; upd();
+                document.getElementById('toolTimerModeStopwatch').style.background = 'rgba(79,70,229,0.1)';
                 document.getElementById('toolTimerModeCountdown').style.background = '';
-            });
+            };
         }
 
         // ============================================================
-        // 28. 工具：骰子
+        // 28. 工具：骰子（含動畫）
         // ============================================================
         function openDiceTool() {
             let diceHistory = [];
-            let content = `
-                        <div class="modal-title">
-                            <span class="material-symbols-outlined">casino</span> <span data-i18n="diceTitle">骰子</span>
-                        </div>
-                        <div class="modal-desc" data-i18n="diceDesc">點擊擲骰，全班投影觀看結果</div>
-                        <div class="dice-container">
-                            <div class="dice-display" id="toolDiceDisplay">🎲</div>
-                            <button class="btn btn-primary btn-lg" id="toolDiceRoll">
-                                <span class="material-symbols-outlined">casino</span> <span data-i18n="diceRoll">擲骰</span>
-                            </button>
-                            <div class="dice-history" id="toolDiceHistory"></div>
-                            <button class="btn btn-ghost btn-sm" id="toolDiceClear">
-                                <span class="material-symbols-outlined">delete</span> <span data-i18n="diceClear">清除紀錄</span>
-                            </button>
-                        </div>
-                    `;
-
-            toolModalContent.innerHTML = content;
+            toolModalContent.innerHTML = `
+                <div class="modal-title">
+                    <span class="material-symbols-outlined">casino</span> <span data-i18n="diceTitle">${t('diceTitle')}</span>
+                </div>
+                <div class="dice-container">
+                    <div class="dice-display" id="toolDiceDisplay">🎲</div>
+                    <button class="btn btn-primary btn-lg" id="toolDiceRoll">
+                        <span class="material-symbols-outlined">casino</span> <span data-i18n="diceRoll">${t('diceRoll')}</span>
+                    </button>
+                    <div class="dice-history" id="toolDiceHistory"></div>
+                    <button class="btn btn-ghost btn-sm" id="toolDiceClear">
+                        <span class="material-symbols-outlined">delete</span> <span data-i18n="diceClear">${t('diceClear')}</span>
+                    </button>
+                </div>`;
             toolModal.classList.add('show');
 
             const diceDisplay = document.getElementById('toolDiceDisplay');
-            const diceRollBtn = document.getElementById('toolDiceRoll');
             const diceHistoryEl = document.getElementById('toolDiceHistory');
-            const diceClearBtn = document.getElementById('toolDiceClear');
+            const emojis = ['⚀','⚁','⚂','⚃','⚄','⚅'];
 
             function rollDice() {
-    diceDisplay.classList.add('rolling');
-    const result = Math.floor(Math.random() * 6) + 1;
-    const emojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-    setTimeout(() => {
-        diceDisplay.textContent = emojis[result - 1];
-        diceDisplay.classList.remove('rolling');
-    }, 600);
-    diceHistory.push(result);
-    if (diceHistory.length > 20) diceHistory.shift();
-    updateHistory();
-}
+                diceDisplay.classList.add('rolling');
+                const result = Math.floor(Math.random() * 6) + 1;
+                setTimeout(() => {
+                    diceDisplay.textContent = emojis[result - 1];
+                    diceDisplay.classList.remove('rolling');
+                }, 600);
+                diceHistory.push(result);
+                if (diceHistory.length > 20) diceHistory.shift();
+                updateHistory();
+            }
 
             function updateHistory() {
                 if (diceHistoryEl) {
-                    const emojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
                     diceHistoryEl.innerHTML = diceHistory.map(n => emojis[n - 1]).join(' ');
                 }
             }
 
-            if (diceRollBtn) diceRollBtn.addEventListener('click', rollDice);
-            if (diceClearBtn) {
-                diceClearBtn.addEventListener('click', () => {
-                    diceHistory = [];
-                    updateHistory();
-                    diceDisplay.textContent = '🎲';
-                });
-            }
+            document.getElementById('toolDiceRoll').onclick = rollDice;
+            document.getElementById('toolDiceClear').onclick = () => {
+                diceHistory = [];
+                updateHistory();
+                diceDisplay.textContent = '🎲';
+            };
 
-            // 快捷鍵：空白鍵
             const keyHandler = (e) => {
                 if (e.key === ' ' && !toolModal.classList.contains('show')) return;
                 if (e.key === ' ' || e.key === 'Enter') {
@@ -1828,67 +1637,56 @@
         }
 
         // ============================================================
-        // 29. 工具：隨機點名器
+        // 29. 工具：隨機點名器（僅抽選當前班級）
         // ============================================================
         function openPickerTool() {
-            const available = STATE.allStudents.filter(s => {
-                const id = getStudentId(s);
-                return !STATE.pickerExcluded.includes(id);
-            });
-
-            let content = `
-                        <div class="modal-title">
-                            <span class="material-symbols-outlined">person_add</span> <span data-i18n="pickerTitle">隨機點名器</span>
-                        </div>
-                        <div class="modal-desc" data-i18n="pickerDesc">從全班隨機抽選，可切換排除已點名者</div>
-                        <div class="picker-display" id="toolPickerDisplay">
-                            <span style="color:var(--text-muted);" data-i18n="pickerPick">點擊抽選</span>
-                        </div>
-                        <div class="picker-controls">
-                            <button class="btn btn-primary btn-lg" id="toolPickerPick">
-                                <span class="material-symbols-outlined">casino</span> <span data-i18n="pickerPick">抽選</span>
-                            </button>
-                            <button class="btn btn-ghost" id="toolPickerReset">
-                                <span class="material-symbols-outlined">refresh</span> <span data-i18n="pickerReset">重置</span>
-                            </button>
-                        </div>
-                        <div style="margin-top:8px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap;">
-                            <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:var(--text-secondary);">
-                                <input type="checkbox" id="toolPickerExclude" ${STATE.pickerExcluded.length > 0 ? 'checked' : ''} />
-                                <span data-i18n="pickerExclude">排除已選名單</span> (${STATE.pickerExcluded.length} 人)
-                            </label>
-                            <span style="font-size:13px; color:var(--text-muted);" id="toolPickerStatus">${t('pickerRemaining').replace('{n}', available.length)}</span>
-                        </div>
-                    `;
-
-            toolModalContent.innerHTML = content;
+            toolModalContent.innerHTML = `
+                <div class="modal-title">
+                    <span class="material-symbols-outlined">person_add</span> <span data-i18n="pickerTitle">${t('pickerTitle')}</span>
+                </div>
+                <div class="picker-display" id="toolPickerDisplay">
+                    <span style="color:var(--text-muted);" data-i18n="pickerPick">${t('pickerPick')}</span>
+                </div>
+                <div class="picker-controls">
+                    <button class="btn btn-primary btn-lg" id="toolPickerPick">
+                        <span class="material-symbols-outlined">casino</span> <span data-i18n="pickerPick">${t('pickerPick')}</span>
+                    </button>
+                    <button class="btn btn-ghost" id="toolPickerReset">
+                        <span class="material-symbols-outlined">refresh</span> <span data-i18n="pickerReset">${t('pickerReset')}</span>
+                    </button>
+                </div>
+                <div style="margin-top:8px; display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap;">
+                    <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:var(--text-secondary);">
+                        <input type="checkbox" id="toolPickerExclude" ${STATE.pickerExcluded.length > 0 ? 'checked' : ''} />
+                        <span data-i18n="pickerExclude">${t('pickerExclude')}</span> (${STATE.pickerExcluded.length} 人)
+                    </label>
+                    <span style="font-size:13px; color:var(--text-muted);" id="toolPickerStatus"></span>
+                </div>`;
             toolModal.classList.add('show');
 
             const display = document.getElementById('toolPickerDisplay');
-            const pickBtn = document.getElementById('toolPickerPick');
-            const resetBtn = document.getElementById('toolPickerReset');
             const excludeCheck = document.getElementById('toolPickerExclude');
             const statusEl = document.getElementById('toolPickerStatus');
 
             function getAvailable() {
-    let pool = [];
-    if (STATE.customClassEnabled) {
-        return [];
-    }
-    for (const cls of STATE.selectedClasses) {
-        const roster = STATE.rosterData[cls] || [];
-        pool = pool.concat(roster.map(s => ({ ...s, className: cls })));
-    }
-    if (excludeCheck && excludeCheck.checked) {
-        pool = pool.filter(s => !STATE.pickerExcluded.includes(getStudentId(s)));
-    }
-    return pool;
-}
+                let pool = [];
+                if (STATE.customClassEnabled) {
+                    return [];
+                }
+                for (const cls of STATE.selectedClasses) {
+                    const roster = STATE.rosterData[cls] || [];
+                    pool = pool.concat(roster.map(s => ({ ...s, className: cls })));
+                }
+                if (excludeCheck && excludeCheck.checked) {
+                    pool = pool.filter(s => !STATE.pickerExcluded.includes(getStudentId(s)));
+                }
+                return pool;
+            }
 
             function pickStudent() {
                 const available = getAvailable();
                 if (available.length === 0) {
-                    display.innerHTML = `<span style="color:var(--danger);" data-i18n="pickerAllPicked">所有人都已點過！請重置</span>`;
+                    display.innerHTML = `<span style="color:var(--danger);" data-i18n="pickerAllPicked">${t('pickerAllPicked')}</span>`;
                     return;
                 }
                 const picked = available[Math.floor(Math.random() * available.length)];
@@ -1904,43 +1702,30 @@
                     }
                 }
 
-                if (statusEl) {
-                    const remaining = getAvailable().length;
-                    statusEl.textContent = `${t('pickerExcludedCount').replace('{n}', STATE.pickerExcluded.length)}，${t('pickerRemaining').replace('{n}', remaining)}`;
-                }
+                const remaining = getAvailable().length;
+                statusEl.textContent = `${t('pickerExcludedCount').replace('{n}', STATE.pickerExcluded.length)}，${t('pickerRemaining').replace('{n}', remaining)}`;
             }
 
-            if (pickBtn) pickBtn.addEventListener('click', pickStudent);
-            if (resetBtn) {
-                resetBtn.addEventListener('click', () => {
-                    STATE.pickerExcluded = [];
-                    display.innerHTML = `<span style="color:var(--text-muted);" data-i18n="pickerReset">已重置，請抽選</span>`;
-                    display.classList.remove('spinning');
-                    if (statusEl) {
-                        statusEl.textContent = t('pickerRemaining').replace('{n}', STATE.allStudents.length);
-                    }
-                });
-            }
-            if (excludeCheck) {
-                excludeCheck.addEventListener('change', function() {
-                    if (!this.checked) {
-                        STATE.pickerExcluded = [];
-                    }
-                    if (statusEl) {
-                        const available = getAvailable().length;
-                        statusEl.textContent = this.checked ?
-                            `${t('pickerExclude')}，${t('pickerRemaining').replace('{n}', available)}` :
-                            t('pickerRemaining').replace('{n}', STATE.allStudents.length);
-                    }
-                });
-                // 初始化
-                if (statusEl) {
-                    const available = getAvailable().length;
-                    statusEl.textContent = excludeCheck.checked ?
-                        `${t('pickerExclude')}，${t('pickerRemaining').replace('{n}', available)}` :
-                        t('pickerRemaining').replace('{n}', STATE.allStudents.length);
-                }
-            }
+            document.getElementById('toolPickerPick').onclick = pickStudent;
+            document.getElementById('toolPickerReset').onclick = () => {
+                STATE.pickerExcluded = [];
+                display.innerHTML = `<span style="color:var(--text-muted);" data-i18n="pickerReset">${t('pickerReset')}</span>`;
+                display.classList.remove('spinning');
+                const available = getAvailable().length;
+                statusEl.textContent = t('pickerRemaining').replace('{n}', available);
+            };
+            excludeCheck.addEventListener('change', function() {
+                if (!this.checked) STATE.pickerExcluded = [];
+                const available = getAvailable().length;
+                statusEl.textContent = this.checked ?
+                    `${t('pickerExclude')}，${t('pickerRemaining').replace('{n}', available)}` :
+                    t('pickerRemaining').replace('{n}', available);
+            });
+
+            const availableInitial = getAvailable().length;
+            statusEl.textContent = excludeCheck.checked ?
+                `${t('pickerExclude')}，${t('pickerRemaining').replace('{n}', availableInitial)}` :
+                t('pickerRemaining').replace('{n}', availableInitial);
 
             const keyHandler = (e) => {
                 if (e.key === ' ' && !toolModal.classList.contains('show')) return;
@@ -1957,332 +1742,259 @@
         // 30. 工具：投票
         // ============================================================
         function openVoteTool() {
-            let content = `
-                        <div class="modal-title">
-                            <span class="material-symbols-outlined">how_to_vote</span> <span data-i18n="voteTitle">即時投票</span>
-                        </div>
-                        <div class="modal-desc" data-i18n="voteDesc">建立投票選項，學生端即時同步</div>
-                        <div style="display:flex; gap:8px; margin-bottom:10px;">
-                            <input type="text" id="toolVoteOptionInput" placeholder="${t('voteOptionPlaceholder')}" style="flex:1; padding:8px 14px; border:1px solid rgba(0,0,0,0.06); border-radius:var(--radius-full); background:rgba(255,255,255,0.6); font-size:15px;" />
-                            <button class="btn btn-primary btn-sm" id="toolVoteAddOption"><span class="material-symbols-outlined">add</span> ${t('voteAddOption')}</button>
-                        </div>
-                        <div id="toolVoteOptions" class="vote-options"></div>
-                        <div style="display:flex; gap:10px; margin-top:8px;">
-                            <button class="btn btn-success" id="toolVoteStart"><span class="material-symbols-outlined">play_arrow</span> ${t('voteStart')}</button>
-                            <button class="btn btn-danger" id="toolVoteStop"><span class="material-symbols-outlined">stop</span> ${t('voteStop')}</button>
-                            <button class="btn btn-ghost" id="toolVoteClear"><span class="material-symbols-outlined">delete</span> ${t('voteClear')}</button>
-                        </div>
-                    `;
-
-            toolModalContent.innerHTML = content;
-            toolModal.classList.add('show');
-
             let voteOptions = [];
             let voteResults = {};
             let voteActive = false;
 
-            const optionsContainer = document.getElementById('toolVoteOptions');
-            const optionInput = document.getElementById('toolVoteOptionInput');
-            const addBtn = document.getElementById('toolVoteAddOption');
-            const startBtn = document.getElementById('toolVoteStart');
-            const stopBtn = document.getElementById('toolVoteStop');
-            const clearBtn = document.getElementById('toolVoteClear');
+            toolModalContent.innerHTML = `
+                <div class="modal-title">
+                    <span class="material-symbols-outlined">how_to_vote</span> <span data-i18n="voteTitle">${t('voteTitle')}</span>
+                </div>
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <input type="text" id="toolVoteOptionInput" placeholder="${t('voteOptionPlaceholder')}" style="flex:1; padding:8px 14px; border:1px solid rgba(0,0,0,0.06); border-radius:var(--radius-full); background:rgba(255,255,255,0.6); font-size:15px;" />
+                    <button class="btn btn-primary btn-sm" id="toolVoteAddOption"><span class="material-symbols-outlined">add</span> ${t('voteAddOption')}</button>
+                </div>
+                <div id="toolVoteOptions" class="vote-options"></div>
+                <div style="display:flex; gap:10px; margin-top:8px;">
+                    <button class="btn btn-success" id="toolVoteStart"><span class="material-symbols-outlined">play_arrow</span> ${t('voteStart')}</button>
+                    <button class="btn btn-danger" id="toolVoteStop"><span class="material-symbols-outlined">stop</span> ${t('voteStop')}</button>
+                    <button class="btn btn-ghost" id="toolVoteClear"><span class="material-symbols-outlined">delete</span> ${t('voteClear')}</button>
+                </div>`;
+            toolModal.classList.add('show');
 
-            function renderOptions() {
-                if (!optionsContainer) return;
-                const total = Object.values(voteResults).reduce((a, b) => a + b, 0) || 1;
-                let html = '';
-                for (const opt of voteOptions) {
-                    const count = voteResults[opt] || 0;
-                    const pct = Math.round((count / total) * 100);
-                    html += `
-                                <div class="vote-option" data-option="${opt}">
-                                    <span class="vote-label">${opt}</span>
-                                    <div class="vote-bar">
-                                        <div class="vote-fill" style="width:${pct}%;"></div>
-                                    </div>
-                                    <span class="vote-count">${count}</span>
-                                </div>
-                            `;
-                }
-                optionsContainer.innerHTML = html ||
-                    `<div style="color:var(--text-muted); text-align:center; padding:12px;" data-i18n="voteNoOptions">尚無選項，請加入投票選項</div>`;
+            const optContainer = document.getElementById('toolVoteOptions');
+            function render() {
+                const total = Object.values(voteResults).reduce((a,b)=>a+b,0) || 1;
+                optContainer.innerHTML = voteOptions.map(opt => {
+                    const cnt = voteResults[opt] || 0;
+                    return `<div class="vote-option"><span>${opt}</span><div class="vote-bar"><div class="vote-fill" style="width:${Math.round(cnt/total*100)}%;"></div></div><span>${cnt}</span></div>`;
+                }).join('') || `<div style="color:var(--text-muted);text-align:center;padding:12px;" data-i18n="voteNoOptions">${t('voteNoOptions')}</div>`;
             }
 
-            function addOption() {
-                const val = optionInput.value.trim();
-                if (!val) return;
-                if (voteOptions.includes(val)) {
-                    alert('選項已存在');
-                    return;
-                }
-                voteOptions.push(val);
-                voteResults[val] = 0;
-                optionInput.value = '';
-                renderOptions();
-            }
-
-            function startVote() {
-                if (voteOptions.length < 2) {
-                    alert(t('voteNeedOptions'));
-                    return;
-                }
+            document.getElementById('toolVoteAddOption').onclick = () => {
+                const val = document.getElementById('toolVoteOptionInput').value.trim();
+                if (!val || voteOptions.includes(val)) return;
+                voteOptions.push(val); voteResults[val] = 0;
+                document.getElementById('toolVoteOptionInput').value = '';
+                render();
+            };
+            document.getElementById('toolVoteStart').onclick = async () => {
+                if (voteOptions.length < 2) { alert(t('voteNeedOptions')); return; }
                 voteActive = true;
-                for (const opt of voteOptions) {
-                    voteResults[opt] = 0;
-                }
-                if (STATE.roomId) {
-                    updateDoc(doc(db, 'rooms', STATE.roomId), {
-                        voteActive: true,
-                        voteOptions: voteOptions,
-                        voteResults: voteResults,
-                    }).catch(() => {});
-                }
-                renderOptions();
-                alert(t('voteStarted'));
-            }
-
-            function stopVote() {
+                if (STATE.roomId) await updateDoc(doc(db,'rooms',STATE.roomId), { voteActive:true, voteOptions, voteResults });
+                render();
+            };
+            document.getElementById('toolVoteStop').onclick = async () => {
                 voteActive = false;
-                if (STATE.roomId) {
-                    updateDoc(doc(db, 'rooms', STATE.roomId), { voteActive: false }).catch(() => {});
-                }
-                renderOptions();
-                alert(t('voteStopped'));
-            }
-
-            function clearVote() {
-                voteOptions = [];
-                voteResults = {};
-                voteActive = false;
-                if (STATE.roomId) {
-                    updateDoc(doc(db, 'rooms', STATE.roomId), {
-                        voteActive: false,
-                        voteOptions: [],
-                        voteResults: {},
-                    }).catch(() => {});
-                }
-                renderOptions();
-            }
-
-            if (addBtn) addBtn.addEventListener('click', addOption);
-            if (optionInput) {
-                optionInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') addOption();
-                });
-            }
-            if (startBtn) startBtn.addEventListener('click', startVote);
-            if (stopBtn) stopBtn.addEventListener('click', stopVote);
-            if (clearBtn) clearBtn.addEventListener('click', clearVote);
-
+                if (STATE.roomId) await updateDoc(doc(db,'rooms',STATE.roomId), { voteActive:false });
+            };
+            document.getElementById('toolVoteClear').onclick = async () => {
+                voteOptions = []; voteResults = {}; voteActive = false;
+                if (STATE.roomId) await updateDoc(doc(db,'rooms',STATE.roomId), { voteActive:false, voteOptions:[], voteResults:{} });
+                render();
+            };
             if (STATE.roomId) {
-                const roomRef = doc(db, 'rooms', STATE.roomId);
-                const unsub = onSnapshot(roomRef, (snapshot) => {
-                    const data = snapshot.data();
-                    if (data && data.voteResults) {
-                        voteResults = data.voteResults;
-                        voteActive = data.voteActive || false;
-                        renderOptions();
-                    }
+                const unsub = onSnapshot(doc(db,'rooms',STATE.roomId), (snap) => {
+                    const d = snap.data();
+                    if (d) { voteResults = d.voteResults || {}; voteActive = d.voteActive || false; render(); }
                 });
                 toolModal._voteUnsub = unsub;
             }
-
-            renderOptions();
+            render();
         }
 
         // ============================================================
-        // 31. 工具：小組評分
+        // 31. 工具：小組評分（修復版：多皇冠、Mini View、雙語按鈕）
         // ============================================================
         function openGroupTool() {
-    const oldFloat = document.getElementById('groupFloat');
-    if (oldFloat) oldFloat.remove();
+            const oldFloat = document.getElementById('groupFloat');
+            if (oldFloat) oldFloat.remove();
 
-    let groups = [...(STATE.groups || [])];
-    let groupScores = { ...(STATE.groupScores || {}) };
-    let groupActive = STATE.groupFloatVisible || false;
+            let groups = [...(STATE.groups || [])];
+            let groupScores = { ...(STATE.groupScores || {}) };
+            let groupActive = STATE.groupFloatVisible || false;
 
-    function getTopGroups() {
-        if (groups.length === 0) return [];
-        const scores = groups.map(g => groupScores[g] || 0);
-        const maxScore = Math.max(...scores, 0);
-        if (maxScore === 0) return [];
-        return groups.filter(g => (groupScores[g] || 0) === maxScore);
-    }
+            function getTopGroups() {
+                if (groups.length === 0) return [];
+                const scores = groups.map(g => groupScores[g] || 0);
+                const maxScore = Math.max(...scores, 0);
+                if (maxScore === 0) return [];
+                return groups.filter(g => (groupScores[g] || 0) === maxScore);
+            }
 
-    function renderGroups() {
-        const list = document.getElementById('toolGroupList');
-        if (!list) return;
-        const topGroups = getTopGroups();
-        list.innerHTML = groups.map(g => {
-            const score = groupScores[g] || 0;
-            const isTop = topGroups.includes(g);
-            return `
-                <div class="group-card" data-group="${g}">
-                    ${isTop ? '<span class="group-crown">👑</span>' : ''}
-                    <div class="group-name">${g}</div>
-                    <div class="group-score">${score}</div>
-                    <div class="group-controls">
-                        <button class="btn btn-success btn-sm" data-group="${g}" data-delta="1">＋</button>
-                        <button class="btn btn-danger btn-sm" data-group="${g}" data-delta="-1">−</button>
+            function renderGroups() {
+                const list = document.getElementById('toolGroupList');
+                if (!list) return;
+                const topGroups = getTopGroups();
+                list.innerHTML = groups.map(g => {
+                    const score = groupScores[g] || 0;
+                    const isTop = topGroups.includes(g);
+                    return `
+                        <div class="group-card" data-group="${g}">
+                            ${isTop ? '<span class="group-crown">👑</span>' : ''}
+                            <div class="group-name">${g}</div>
+                            <div class="group-score">${score}</div>
+                            <div class="group-controls">
+                                <button class="btn btn-success btn-sm" data-group="${g}" data-delta="1">＋</button>
+                                <button class="btn btn-danger btn-sm" data-group="${g}" data-delta="-1">−</button>
+                            </div>
+                        </div>`;
+                }).join('') || `<div style="color:var(--text-muted);text-align:center;padding:12px;" data-i18n="groupNoGroups">${t('groupNoGroups')}</div>`;
+
+                list.querySelectorAll('[data-delta]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const g = btn.dataset.group;
+                        const delta = parseInt(btn.dataset.delta);
+                        groupScores[g] = Math.max(0, (groupScores[g] || 0) + delta);
+                        STATE.groups = groups;
+                        STATE.groupScores = groupScores;
+                        if (STATE.roomId) {
+                            clearTimeout(window._groupSyncTimer);
+                            window._groupSyncTimer = setTimeout(() => {
+                                updateDoc(doc(db, 'rooms', STATE.roomId), { groups, groupScores }).catch(() => {});
+                            }, 500);
+                        }
+                        renderGroups();
+                        updateGroupMiniView();
+                    });
+                });
+
+                updateGroupMiniView();
+                updateGroupToggleButton();
+            }
+
+            function updateGroupMiniView() {
+                let floatEl = document.getElementById('groupFloat');
+                if (!floatEl) {
+                    floatEl = document.createElement('div');
+                    floatEl.id = 'groupFloat';
+                    floatEl.className = 'group-float';
+                    floatEl.addEventListener('click', () => {
+                        if (toolModal.classList.contains('show')) {
+                            toolModal.classList.remove('show');
+                            setTimeout(() => openGroupTool(), 300);
+                        } else {
+                            openGroupTool();
+                        }
+                    });
+                    document.body.appendChild(floatEl);
+                }
+                if (!groupActive || groups.length === 0) {
+                    floatEl.classList.remove('show');
+                    return;
+                }
+                const topGroups = getTopGroups();
+                floatEl.innerHTML = groups.map(g => {
+                    const score = groupScores[g] || 0;
+                    const isTop = topGroups.includes(g);
+                    return `<span class="float-item">${g} ${score}${isTop ? ' 👑' : ''}</span>`;
+                }).join(' | ');
+                floatEl.classList.add('show');
+            }
+
+            function updateGroupToggleButton() {
+                const btn = document.getElementById('toolGroupToggleBtn');
+                if (btn) {
+                    btn.textContent = groupActive ? t('minimize') : t('start');
+                }
+            }
+
+            toolModalContent.innerHTML = `
+                <div class="modal-title"><span class="material-symbols-outlined">group</span> <span data-i18n="groupTitle">${t('groupTitle')}</span></div>
+                <div style="display:flex;gap:8px;margin-bottom:10px;">
+                    <input type="text" id="toolGroupInput" placeholder="${t('groupNamePlaceholder')}" style="flex:1;padding:8px 14px;border:1px solid rgba(0,0,0,0.06);border-radius:var(--radius-full);background:rgba(255,255,255,0.6);font-size:15px;" />
+                    <button class="btn btn-primary btn-sm" id="toolGroupAdd"><span class="material-symbols-outlined">add</span> ${t('groupAdd')}</button>
+                </div>
+                <div id="toolGroupList" class="group-grid"></div>
+                <div style="display:flex;gap:10px;margin-top:8px;justify-content:space-between;align-items:center;">
+                    <div>
+                        <button class="btn btn-ghost btn-sm" id="toolGroupReset"><span class="material-symbols-outlined">refresh</span> ${t('groupReset')}</button>
+                        <button class="btn btn-danger btn-sm" id="toolGroupDeleteAll"><span class="material-symbols-outlined">delete</span></button>
                     </div>
+                    <button class="btn btn-primary" id="toolGroupToggleBtn">${groupActive ? t('minimize') : t('start')}</button>
                 </div>`;
-        }).join('') || `<div style="color:var(--text-muted);text-align:center;padding:12px;" data-i18n="groupNoGroups">${t('groupNoGroups')}</div>`;
+            toolModal.classList.add('show');
 
-        list.querySelectorAll('[data-delta]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const g = btn.dataset.group;
-                const delta = parseInt(btn.dataset.delta);
-                groupScores[g] = Math.max(0, (groupScores[g] || 0) + delta);
+            document.getElementById('toolGroupAdd').addEventListener('click', () => {
+                const val = document.getElementById('toolGroupInput').value.trim();
+                if (!val || groups.includes(val)) return;
+                groups.push(val);
+                groupScores[val] = 0;
+                document.getElementById('toolGroupInput').value = '';
                 STATE.groups = groups;
                 STATE.groupScores = groupScores;
                 if (STATE.roomId) {
-                    clearTimeout(window._groupSyncTimer);
-                    window._groupSyncTimer = setTimeout(() => {
-                        updateDoc(doc(db, 'rooms', STATE.roomId), { groups, groupScores }).catch(() => {});
-                    }, 500);
+                    updateDoc(doc(db, 'rooms', STATE.roomId), { groups, groupScores }).catch(() => {});
                 }
                 renderGroups();
-                updateGroupMiniView();
             });
-        });
-
-        updateGroupMiniView();
-        updateGroupToggleButton();
-    }
-
-    function updateGroupMiniView() {
-        let floatEl = document.getElementById('groupFloat');
-        if (!floatEl) {
-            floatEl = document.createElement('div');
-            floatEl.id = 'groupFloat';
-            floatEl.className = 'group-float';
-            floatEl.addEventListener('click', () => {
-                if (toolModal.classList.contains('show')) {
+            document.getElementById('toolGroupToggleBtn').addEventListener('click', () => {
+                if (!groupActive) {
+                    groupActive = true;
+                    STATE.groupFloatVisible = true;
                     toolModal.classList.remove('show');
-                    setTimeout(() => openGroupTool(), 300);
+                    updateGroupMiniView();
                 } else {
-                    openGroupTool();
+                    toolModal.classList.remove('show');
                 }
-            });
-            document.body.appendChild(floatEl);
-        }
-        if (!groupActive || groups.length === 0) {
-            floatEl.classList.remove('show');
-            return;
-        }
-        const topGroups = getTopGroups();
-        floatEl.innerHTML = groups.map(g => {
-            const score = groupScores[g] || 0;
-            const isTop = topGroups.includes(g);
-            return `<span class="float-item">${g} ${score}${isTop ? ' 👑' : ''}</span>`;
-        }).join(' | ');
-        floatEl.classList.add('show');
-    }
-
-    function updateGroupToggleButton() {
-        const btn = document.getElementById('toolGroupToggleBtn');
-        if (btn) {
-            btn.textContent = groupActive ? t('minimize') : t('start');
-        }
-    }
-
-    toolModalContent.innerHTML = `
-        <div class="modal-title"><span class="material-symbols-outlined">group</span> <span data-i18n="groupTitle">${t('groupTitle')}</span></div>
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
-            <input type="text" id="toolGroupInput" placeholder="${t('groupNamePlaceholder')}" style="flex:1;padding:8px 14px;border:1px solid rgba(0,0,0,0.06);border-radius:var(--radius-full);background:rgba(255,255,255,0.6);font-size:15px;" />
-            <button class="btn btn-primary btn-sm" id="toolGroupAdd"><span class="material-symbols-outlined">add</span> ${t('groupAdd')}</button>
-        </div>
-        <div id="toolGroupList" class="group-grid"></div>
-        <div style="display:flex;gap:10px;margin-top:8px;justify-content:space-between;align-items:center;">
-            <div>
-                <button class="btn btn-ghost btn-sm" id="toolGroupReset"><span class="material-symbols-outlined">refresh</span> ${t('groupReset')}</button>
-                <button class="btn btn-danger btn-sm" id="toolGroupDeleteAll"><span class="material-symbols-outlined">delete</span></button>
-            </div>
-            <button class="btn btn-primary" id="toolGroupToggleBtn">${groupActive ? t('minimize') : t('start')}</button>
-        </div>`;
-    toolModal.classList.add('show');
-
-    document.getElementById('toolGroupAdd').addEventListener('click', () => {
-        const val = document.getElementById('toolGroupInput').value.trim();
-        if (!val || groups.includes(val)) return;
-        groups.push(val);
-        groupScores[val] = 0;
-        document.getElementById('toolGroupInput').value = '';
-        STATE.groups = groups;
-        STATE.groupScores = groupScores;
-        if (STATE.roomId) {
-            updateDoc(doc(db, 'rooms', STATE.roomId), { groups, groupScores }).catch(() => {});
-        }
-        renderGroups();
-    });
-    document.getElementById('toolGroupToggleBtn').addEventListener('click', () => {
-        if (!groupActive) {
-            groupActive = true;
-            STATE.groupFloatVisible = true;
-            toolModal.classList.remove('show');
-            updateGroupMiniView();
-        } else {
-            toolModal.classList.remove('show');
-        }
-        STATE.groups = groups;
-        STATE.groupScores = groupScores;
-        if (STATE.roomId) {
-            updateDoc(doc(db, 'rooms', STATE.roomId), { groups, groupScores }).catch(() => {});
-        }
-    });
-    document.getElementById('toolGroupReset').addEventListener('click', () => {
-        if (!confirm(t('groupConfirmReset'))) return;
-        for (const g of groups) groupScores[g] = 0;
-        STATE.groupScores = groupScores;
-        if (STATE.roomId) {
-            updateDoc(doc(db, 'rooms', STATE.roomId), { groupScores }).catch(() => {});
-        }
-        renderGroups();
-    });
-    document.getElementById('toolGroupDeleteAll').addEventListener('click', () => {
-        if (!confirm(t('groupDeleteConfirm'))) return;
-        groups = [];
-        groupScores = {};
-        STATE.groups = [];
-        STATE.groupScores = {};
-        STATE.groupFloatVisible = false;
-        groupActive = false;
-        const floatEl = document.getElementById('groupFloat');
-        if (floatEl) floatEl.classList.remove('show');
-        if (STATE.roomId) {
-            updateDoc(doc(db, 'rooms', STATE.roomId), { groups: [], groupScores: {} }).catch(() => {});
-        }
-        renderGroups();
-    });
-    document.getElementById('toolGroupInput').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') document.getElementById('toolGroupAdd').click();
-    });
-
-    if (STATE.roomId) {
-        const unsub = onSnapshot(doc(db, 'rooms', STATE.roomId), (snap) => {
-            const d = snap.data();
-            if (d) {
-                if (d.groups) groups = d.groups;
-                if (d.groupScores) groupScores = d.groupScores;
                 STATE.groups = groups;
                 STATE.groupScores = groupScores;
+                if (STATE.roomId) {
+                    updateDoc(doc(db, 'rooms', STATE.roomId), { groups, groupScores }).catch(() => {});
+                }
+            });
+            document.getElementById('toolGroupReset').addEventListener('click', () => {
+                if (!confirm(t('groupConfirmReset'))) return;
+                for (const g of groups) groupScores[g] = 0;
+                STATE.groupScores = groupScores;
+                if (STATE.roomId) {
+                    updateDoc(doc(db, 'rooms', STATE.roomId), { groupScores }).catch(() => {});
+                }
                 renderGroups();
-            }
-        });
-        toolModal._groupUnsub = unsub;
-    }
+            });
+            document.getElementById('toolGroupDeleteAll').addEventListener('click', () => {
+                if (!confirm(t('groupDeleteConfirm'))) return;
+                groups = [];
+                groupScores = {};
+                STATE.groups = [];
+                STATE.groupScores = {};
+                STATE.groupFloatVisible = false;
+                groupActive = false;
+                const floatEl = document.getElementById('groupFloat');
+                if (floatEl) floatEl.classList.remove('show');
+                if (STATE.roomId) {
+                    updateDoc(doc(db, 'rooms', STATE.roomId), { groups: [], groupScores: {} }).catch(() => {});
+                }
+                renderGroups();
+            });
+            document.getElementById('toolGroupInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') document.getElementById('toolGroupAdd').click();
+            });
 
-    updateAllTexts();
-    renderGroups();
-    if (groupActive) updateGroupMiniView();
-}
+            if (STATE.roomId) {
+                const unsub = onSnapshot(doc(db, 'rooms', STATE.roomId), (snap) => {
+                    const d = snap.data();
+                    if (d) {
+                        if (d.groups) groups = d.groups;
+                        if (d.groupScores) groupScores = d.groupScores;
+                        STATE.groups = groups;
+                        STATE.groupScores = groupScores;
+                        renderGroups();
+                    }
+                });
+                toolModal._groupUnsub = unsub;
+            }
+
+            updateAllTexts();
+            renderGroups();
+            if (groupActive) updateGroupMiniView();
+        }
+
         // ============================================================
         // 32. 管理後台
         // ============================================================
-        let clickCount = 0,
-            clickTimer = null;
+        let clickCount = 0, clickTimer = null;
         document.querySelector('.brand')?.addEventListener('click', () => {
             clickCount++;
             if (clickTimer) clearTimeout(clickTimer);
@@ -2365,7 +2077,7 @@
             }
             if (filtered.length === 0) {
                 choiceResultCards.innerHTML =
-                    '<div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;" data-i18n="noStudents">無學生資料</div>';
+                    `<div style="color:var(--text-muted); padding:10px; text-align:center; width:100%;" data-i18n="noStudents">${t('noStudents')}</div>`;
                 return;
             }
             let html = '';
@@ -2395,8 +2107,7 @@
                 }
                 html += `<div class="${cls}"><div>${label}</div><span class="sub-label">${sub}</span></div>`;
             }
-            choiceResultCards.innerHTML = html ||
-                '<div style="color:var(--text-muted); padding:10px; text-align:center;">尚無作答資料</div>';
+            choiceResultCards.innerHTML = html;
         }
 
         // ============================================================
@@ -2476,8 +2187,7 @@
         let rankSortAsc = false;
         rankSortBtn.addEventListener('click', () => {
             rankSortAsc = !rankSortAsc;
-            rankSortBtn.innerHTML =
-                `<span class="material-symbols-outlined" style="font-size:16px;">sort</span> ${rankSortAsc ? t('sortBySeat') : t('sortByScore')}`;
+            rankSortBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:16px;">sort</span> ${rankSortAsc ? t('sortBySeat') : t('sortByScore')}`;
             updateRankList();
         });
 
@@ -2493,13 +2203,11 @@
         });
 
         dockQR.addEventListener('click', () => {
-            if (STATE.roomId) { showQRCode(STATE.roomId);
-                qrModal.classList.add('show'); } else { alert(t('errorNoRoom')); }
+            if (STATE.roomId) { showQRCode(STATE.roomId); qrModal.classList.add('show'); } else { alert(t('errorNoRoom')); }
         });
 
         dockBroadcast.addEventListener('click', () => {
-            if (STATE.roomId) { broadcastModal.classList.add('show');
-                broadcastInput.focus(); } else { alert(t('errorNoRoom')); }
+            if (STATE.roomId) { broadcastModal.classList.add('show'); broadcastInput.focus(); } else { alert(t('errorNoRoom')); }
         });
 
         dockLockScreen.addEventListener('click', toggleLockScreen);
@@ -2534,35 +2242,17 @@
 
         broadcastCancel.addEventListener('click', () => broadcastModal.classList.remove('show'));
         broadcastSend.addEventListener('click', sendBroadcast);
-        broadcastModal.addEventListener('click', (e) => { if (e.target === broadcastModal) broadcastModal.classList.remove(
-                'show'); });
+        broadcastModal.addEventListener('click', (e) => { if (e.target === broadcastModal) broadcastModal.classList.remove('show'); });
 
-        // 關閉工具 Modal（點擊外部）
+        // 關閉工具 Modal
         toolModal.addEventListener('click', (e) => {
             if (e.target === toolModal) {
                 toolModal.classList.remove('show');
-                // 清理監聽器
-                if (toolModal._voteUnsub) {
-                    toolModal._voteUnsub();
-                    toolModal._voteUnsub = null;
-                }
-                if (toolModal._groupUnsub) {
-                    toolModal._groupUnsub();
-                    toolModal._groupUnsub = null;
-                }
-                if (toolModal._pickerKeyHandler) {
-                    document.removeEventListener('keydown', toolModal._pickerKeyHandler);
-                    toolModal._pickerKeyHandler = null;
-                }
-                if (toolModal._diceKeyHandler) {
-                    document.removeEventListener('keydown', toolModal._diceKeyHandler);
-                    toolModal._diceKeyHandler = null;
-                }
-                if (timerToolInterval) {
-                    clearInterval(timerToolInterval);
-                    timerToolInterval = null;
-                    timerToolRunning = false;
-                }
+                if (toolModal._voteUnsub) { toolModal._voteUnsub(); toolModal._voteUnsub = null; }
+                if (toolModal._groupUnsub) { toolModal._groupUnsub(); toolModal._groupUnsub = null; }
+                if (toolModal._pickerKeyHandler) { document.removeEventListener('keydown', toolModal._pickerKeyHandler); toolModal._pickerKeyHandler = null; }
+                if (toolModal._diceKeyHandler) { document.removeEventListener('keydown', toolModal._diceKeyHandler); toolModal._diceKeyHandler = null; }
+                if (timerToolInterval) { clearInterval(timerToolInterval); timerToolInterval = null; timerToolRunning = false; }
             }
         });
 
@@ -2574,8 +2264,7 @@
         const broadcastBtn3 = $('#broadcastBtn3');
         if (broadcastBtn3) {
             broadcastBtn3.addEventListener('click', () => {
-                if (STATE.roomId) { broadcastModal.classList.add('show');
-                    broadcastInput.focus(); } else { alert(t('errorNoRoom')); }
+                if (STATE.roomId) { broadcastModal.classList.add('show'); broadcastInput.focus(); } else { alert(t('errorNoRoom')); }
             });
         }
 
@@ -2591,13 +2280,10 @@
             gotoPage5Btn.disabled = true;
             updateFlowButtons();
 
-            // 初始化 Dock 為收合狀態
             floatingDock.classList.add('collapsed');
-
-            // 初始化語言
             updateAllTexts();
 
-            console.log('🚀 霧臺國小教室Q&A 教師端 v3.0 (毛玻璃 + 完整工具 + 雙語) 已啟動！');
+            console.log('🚀 霧臺國小教室Q&A 教師端 v3.4 完整版 已啟動！');
         }
 
         init();
