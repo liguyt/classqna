@@ -51,4 +51,7 @@ export const en = {
     broadcastPlaceholder: 'Type your message...', broadcastSent: 'Broadcast sent', broadcastCancelBtn: 'Cancel',
     lockScreen: 'Lock', unlockScreen: 'Unlock', lockConfirm: 'All student screens locked', unlockConfirm: 'All student screens unlocked',
     errorNoRoom: 'Please create a room first', secondsPlaceholder: 'sec',
+    qrTitle: 'Scan QR Code to Join Classroom',
+    qrRoomCode: 'Room Code: ----',
+    qrClose: 'Close'
 };
