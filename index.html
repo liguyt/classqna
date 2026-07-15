@@ -913,7 +913,7 @@
                 updateCards();
                 updateCharts();
                 gotoPage2Btn.disabled = false;
-                goToPage(2);
+                setTimeout(() => goToPage(2), 50);
                 showQRCode(STATE.roomId);
                 qrModal.classList.add('show');
                 updateFlowButtons();
