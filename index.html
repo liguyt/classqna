@@ -521,9 +521,11 @@
             if (toolModal.classList.contains('show')) {
                 toolModalContent.querySelectorAll('[data-i18n]').forEach(el => {
                     el.textContent = t(el.dataset.i18n);
-                });
-            }
+               });
         }
+        // 重新渲染班級複選框（語言切換後）
+        renderClassCheckboxes();
+    }
 
         document.getElementById('langZh').addEventListener('click', () => { currentLang = 'zh'; updateAllTexts(); });
         document.getElementById('langEn').addEventListener('click', () => { currentLang = 'en'; updateAllTexts(); });
@@ -653,7 +655,15 @@
         function getStudentId(student) { return `${student.grade}-${student.class}-${String(student.number).padStart(2, '0')}`; }
         function getChineseGrade(num) { const map = {'1':'一','2':'二','3':'三','4':'四','5':'五','6':'六'}; return map[num] || num; }
         function getChineseClass(num) { const map = {'1':'甲','2':'乙'}; return map[num] || num; }
-        function formatClassName(grade, cls) { return `${getChineseGrade(grade)}年${getChineseClass(cls)}班`; }
+        function formatClassName(grade, cls) {
+    if (currentLang === 'en') {
+        const gradeMap = {'1':'1st','2':'2nd','3':'3rd','4':'4th','5':'5th','6':'6th'};
+        const classMap = {'1':'A','2':'B','3':'C','4':'D','5':'E','6':'F','7':'G','8':'H'};
+        return `Grade ${grade} Class ${classMap[cls] || cls}`;
+    } else {
+        return `${getChineseGrade(grade)}年${getChineseClass(cls)}班`;
+    }
+}
         function generateRoundId(qNum) { return `R${String(qNum).padStart(3,'0')}_${Date.now().toString(36).toUpperCase()}`; }
         function getStudentName(id) { const student = STATE.allStudents.find(s => getStudentId(s) === id); return student?.name || id; }
 
@@ -752,23 +762,30 @@
         }
 
         function renderClassCheckboxes() {
-            const container = classCheckboxContainer;
-            if (!container) return;
-            container.innerHTML = '';
-            const sorted = Object.keys(STATE.rosterData).sort((a,b) => {
-                const [g1,c1]=a.split('-').map(Number); const [g2,c2]=b.split('-').map(Number);
-                return g1!==g2 ? g1-g2 : c1-c2;
-            });
-            for (const cls of sorted) {
-                const [g,c] = cls.split('-');
-                const label = formatClassName(g,c);
-                const div = document.createElement('label');
-                div.innerHTML = `<input type="checkbox" value="${cls}" /> ${label}`;
-                container.appendChild(div);
-            }
-            container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            updateSelectedClasses();
-        }
+    const container = classCheckboxContainer;
+    if (!container) return;
+    // 記住目前已選取的班級
+    const checkedBefore = [];
+    container.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => checkedBefore.push(cb.value));
+    
+    container.innerHTML = '';
+    const sorted = Object.keys(STATE.rosterData).sort((a,b) => {
+        const [g1,c1]=a.split('-').map(Number); const [g2,c2]=b.split('-').map(Number);
+        return g1!==g2 ? g1-g2 : c1-c2;
+    });
+    for (const cls of sorted) {
+        const [g,c] = cls.split('-');
+        const label = formatClassName(g,c);
+        const div = document.createElement('label');
+        div.innerHTML = `<input type="checkbox" value="${cls}" /> ${label}`;
+        container.appendChild(div);
+    }
+    // 還原選取狀態
+    container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        if (checkedBefore.includes(cb.value)) cb.checked = true;
+    });
+    updateSelectedClasses();
+}
 
         function updateSelectedClasses() {
             const checked = [];
