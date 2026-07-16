@@ -60,5 +60,6 @@ export const zh = {
     buzzStart: '開始搶答',
     buzzCountdown: '搶答倒數中...',
     buzzOver: '搶答結束！',
-    buzzResult: '搶答結果'
+    buzzResult: '搶答結果',
+    buzzReset: '再來一輪'
 };
