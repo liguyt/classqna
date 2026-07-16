@@ -54,5 +54,11 @@ export const zh = {
     errorNoRoom: '請先建立教室', secondsPlaceholder: '秒',
     qrTitle: '掃描 QR Code 加入教室',
     qrRoomCode: '教室代碼：----',
-    qrClose: '關閉'
+    qrClose: '關閉',
+    dockBuzz: '搶答',
+    buzzTitle: '搶答工具',
+    buzzStart: '開始搶答',
+    buzzCountdown: '搶答倒數中...',
+    buzzOver: '搶答結束！',
+    buzzResult: '搶答結果'
 };
