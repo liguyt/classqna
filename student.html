@@ -47,11 +47,15 @@
         }
 
         /* 主容器 */
-        .student-container {
+                .student-container {
             width: 100%;
-            max-width: 520px;
+            /* iPad 橫放最適寬度，同時相容所有裝置 */
+            max-width: 680px;
+            /* 高度優先使用 dvh，fallback vh */
             height: calc(100vh - 24px);
             height: calc(100dvh - 24px);
+            min-height: 400px;
+            max-height: 900px;
             background: var(--student-card);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -96,13 +100,18 @@
         .lang-toggle button.active { background: white; color: var(--primary); box-shadow: var(--shadow-sm); }
 
         /* 跑馬燈 */
-        .stu-marquee {
+                .stu-marquee {
             padding: 8px 16px; font-size: 15px; font-weight: 600; text-align: center;
-            background: rgba(255,200,50,0.2); color: #b45309; min-height: 40px;
+            background: rgba(255,200,50,0.2); color: #b45309;
+            /* 固定高度，避免有/無廣播時畫面跳動 */
+            min-height: 44px; height: 44px; max-height: 44px;
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-            transition: all 0.3s;
+            transition: background 0.3s; overflow: hidden; white-space: nowrap;
         }
-        .stu-marquee:empty { display: none; }
+        .stu-marquee:empty {
+            background: rgba(255,200,50,0.05); /* 無訊息時仍有淡淡底色 */
+            color: transparent;
+        }
 
         /* 題目區 */
         .stu-question {
@@ -204,11 +213,37 @@
         .hidden { display: none !important; }
 
         /* 手機優化 */
-        @media (max-width: 480px) {
-            .student-container { height: calc(100vh - 8px); height: calc(100dvh - 8px); }
+       @media (max-width: 480px) {
+            .student-container { height: calc(100vh - 8px); height: calc(100dvh - 8px); max-height: none; }
             .choice-btn { font-size: 18px; min-height: 48px; }
             .stu-timer { font-size: 28px; }
             .stu-question { font-size: 15px; }
+            .stu-marquee { min-height: 36px; height: 36px; max-height: 36px; font-size: 13px; }
+        }
+        /* iPad 橫放優化 */
+        @media (min-width: 768px) and (orientation: landscape) {
+            .student-container {
+                max-width: 680px;
+                height: calc(100vh - 32px);
+                height: calc(100dvh - 32px);
+                max-height: 700px;
+            }
+            .stu-question { font-size: 18px; padding: 16px 20px; }
+            .stu-timer { font-size: 40px; min-height: 56px; }
+            .choice-btn { font-size: 24px; min-height: 64px; border-radius: 20px; }
+            .stu-marquee { min-height: 48px; height: 48px; max-height: 48px; font-size: 16px; }
+            .stu-submit button { font-size: 20px; padding: 16px; }
+        }
+
+        /* 直立手機或小型平板 */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .student-container {
+                max-width: 100%;
+                height: calc(100vh - 12px);
+                height: calc(100dvh - 12px);
+            }
+            .choice-btn { font-size: 20px; min-height: 56px; }
+            .stu-timer { font-size: 32px; }
         }
     </style>
 </head>
