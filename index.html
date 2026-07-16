@@ -564,7 +564,6 @@
         const roomCodeDisplay = $('#roomCodeDisplay');
         const roomIdDisplay = $('#roomIdDisplay');
 
-        const gotoPage2Btn = $('#gotoPage2Btn');
         const gotoPage3Btn = $('#gotoPage3Btn');
         const gotoPage4Btn = $('#gotoPage4Btn');
         const gotoPage5Btn = $('#gotoPage5Btn');
@@ -677,7 +676,6 @@
         }
 
         function updateNavButtons() {
-            gotoPage2Btn.disabled = STATE.currentPage !== 1;
             gotoPage3Btn.disabled = STATE.currentPage !== 2 || !STATE.isPublished;
             gotoPage4Btn.disabled = STATE.currentPage !== 3 || !STATE.isStopped;
             gotoPage5Btn.disabled = STATE.currentPage !== 4;
@@ -907,8 +905,7 @@
                 publishStatus.innerHTML = `<span data-i18n="notPublished">${t('notPublished')}</span>`;
                 updateCards();
                 updateCharts();
-                gotoPage2Btn.disabled = false;
-
+                
                 // === 關鍵修復：防止第二頁飛走 ===
                 // 先關閉所有 transition，瞬間跳轉到第二頁
                 pagesTrack.style.transition = 'none';
@@ -2136,7 +2133,6 @@
         // ============================================================
         // 35. 事件綁定
         // ============================================================
-        gotoPage2Btn.addEventListener('click', () => goToPage(2));
         gotoPage3Btn.addEventListener('click', () => goToPage(3));
         gotoPage4Btn.addEventListener('click', async () => {
             if (STATE.roomId) {
@@ -2297,7 +2293,6 @@
         async function init() {
             await loadRosterFromSheet();
             goToPage(1);
-            gotoPage2Btn.disabled = true;
             gotoPage3Btn.disabled = true;
             gotoPage4Btn.disabled = true;
             gotoPage5Btn.disabled = true;
