@@ -721,7 +721,7 @@
         // ============================================================
         // 9. 載入名單
         // ============================================================
-        async function loadRosterFromSheet() {
+                async function loadRosterFromSheet() {
             const url = 'https://script.google.com/macros/s/AKfycbyTN6NbWdLc-OfKoa_3iyX5uHCwpDuEeIYSRSVgFcE4aM3RHHfgJthaAMXoiul2YTkH6A/exec';
             try {
                 const resp = await fetch(url);
@@ -731,7 +731,18 @@
                 return true;
             } catch (e) {
                 console.warn('載入名單失敗', e);
-                alert('⚠️ 無法載入學生名單，請檢查網路連線。');
+                // 失敗時詢問是否使用無班級模式
+                const useCustom = confirm('⚠️ 無法載入學生名單，可能網路不穩或試算表暫時無法讀取。\n\n是否改用「無班級模式」繼續上課？\n（學生可手動輸入代碼加入）');
+                if (useCustom) {
+                    // 自動勾選無班級模式並啟用自訂人數
+                    customClassCheckbox.checked = true;
+                    customStudentCount.disabled = false;
+                    customStudentCount.value = 20;
+                    STATE.customClassEnabled = true;
+                    STATE.rosterData = {};
+                    STATE.allStudents = [];
+                    return false; // 表示未載入名單，但可繼續
+                }
                 return false;
             }
         }
