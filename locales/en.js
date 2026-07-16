@@ -53,5 +53,11 @@ export const en = {
     errorNoRoom: 'Please create a room first', secondsPlaceholder: 'sec',
     qrTitle: 'Scan QR Code to Join Classroom',
     qrRoomCode: 'Room Code: ----',
-    qrClose: 'Close'
+    qrClose: 'Close',
+    dockBuzz: 'Buzz',
+    buzzTitle: 'Buzz Tool',
+    buzzStart: 'Start Buzz',
+    buzzCountdown: 'Buzz countdown...',
+    buzzOver: 'Buzz over!',
+    buzzResult: 'Buzz Result'
 };
