@@ -1724,7 +1724,12 @@
                             openGroupTool();
                         }
                     });
-                    document.body.appendChild(floatEl);
+                                const appContainer = document.getElementById('app');
+            if (appContainer) {
+                appContainer.appendChild(floatEl);
+            } else {
+                document.body.appendChild(floatEl);
+            }
                 }
                 if (!groupActive || groups.length === 0) {
                     floatEl.classList.remove('show');
