@@ -59,5 +59,6 @@ export const en = {
     buzzStart: 'Start Buzz',
     buzzCountdown: 'Buzz countdown...',
     buzzOver: 'Buzz over!',
-    buzzResult: 'Buzz Result'
+    buzzResult: 'Buzz Result',
+    buzzReset: 'New Round'
 };
