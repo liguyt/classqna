@@ -408,6 +408,9 @@
                 <h3><span class="material-symbols-outlined" style="font-size:28px;">qr_code</span> <span data-i18n="qrTitle">掃描 QR Code 加入教室</span></h3>
                 <p id="qrModalRoomCode" data-i18n="qrRoomCode">教室代碼：----</p>
                 <div id="qrcodeDisplay"></div>
+                                <div id="qrStudentList" style="margin-top:12px; max-height:200px; overflow-y:auto; text-align:left; font-size:14px;">
+                    <div style="color:var(--text-muted); text-align:center;" data-i18n="noStudents">尚無學生連線</div>
+                </div>
                 <button class="btn btn-ghost close-btn" id="qrModalClose"><span class="material-symbols-outlined" style="font-size:16px;">close</span> <span data-i18n="close">關閉</span></button>
             </div>
         </div>
@@ -889,15 +892,51 @@
         }
 
         let studentsUnsubscribe = null;
+        function updateQRStudentList(students) {
+            const container = document.getElementById('qrStudentList');
+            if (!container) return;
+            if (students.length === 0) {
+                container.innerHTML = `<div style="color:var(--text-muted); text-align:center;" data-i18n="noStudents">${t('noStudents')}</div>`;
+                return;
+            }
+            container.innerHTML = students.map(s => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; border-bottom:1px solid rgba(0,0,0,0.05);">
+                    <span>${s.name}</span>
+                    <button class="btn btn-ghost btn-sm" data-kick="${s.id}" style="color:var(--danger); padding:2px 6px;">🗑️</button>
+                </div>
+            `).join('');
 
-        function listenStudents() {
+            // 綁定踢出事件
+            container.querySelectorAll('[data-kick]').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const studentId = btn.dataset.kick;
+                    if (!confirm(`確定要移除 ${studentId} 嗎？`)) return;
+                    try {
+                        await deleteDoc(doc(db, 'rooms', STATE.roomId, 'students', studentId));
+                    } catch (err) {
+                        alert('移除失敗：' + err.message);
+                    }
+                });
+            });
+        }
+                function listenStudents() {
             if (studentsUnsubscribe) studentsUnsubscribe();
             const q = collection(db, 'rooms', STATE.roomId, 'students');
             studentsUnsubscribe = onSnapshot(q, (snapshot) => {
                 let count = 0;
-                snapshot.forEach(doc => { if (doc.data().online !== false) count++; });
+                const students = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.online !== false) {
+                        count++;
+                        students.push({ id: doc.id, name: data.name || doc.id });
+                    }
+                });
                 onlineCount.textContent = count;
                 updateCards();
+                // 同步更新 QR 彈窗內的學生名單
+                updateQRStudentList(students);
             }, (err) => { console.warn('監聽學生失敗', err); });
         }
 
