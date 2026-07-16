@@ -537,10 +537,15 @@
             }
             document.getElementById('langZh').className = currentLang === 'zh' ? 'active' : '';
             document.getElementById('langEn').className = currentLang === 'en' ? 'active' : '';
-            if (toolModal.classList.contains('show')) {
+                        if (toolModal.classList.contains('show')) {
                 toolModalContent.querySelectorAll('[data-i18n]').forEach(el => {
                     el.textContent = t(el.dataset.i18n);
                 });
+            }
+            // 更新發布按鈕文字
+            if (publishBtn && STATE.currentQuestion >= 0) {
+                const nextQ = (STATE.currentQuestion || 0) + 1;
+                publishBtn.innerHTML = `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', nextQ)}`;
             }
             renderClassCheckboxes();
             // 更新建立教室按鈕文字
