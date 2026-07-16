@@ -1913,99 +1913,145 @@
         // ============================================================
         // 🆕 搶答工具
         // ============================================================
-        function openBuzzTool() {
+            function openBuzzTool() {
+            // 清理舊的搶答監聽器
+            if (STATE.buzzUnsubscribe) {
+                STATE.buzzUnsubscribe();
+                STATE.buzzUnsubscribe = null;
+            }
+
             let buzzSeconds = STATE.buzzCountdown || 5;
+            let buzzInterval = null;
+            let remain = buzzSeconds;
+
             toolModalContent.innerHTML = `
                 <div class="modal-title"><span class="material-symbols-outlined">bolt</span> <span data-i18n="buzzTitle">${t('buzzTitle')}</span></div>
-                <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin:16px 0;">
-                    <button class="btn btn-ghost btn-sm" id="buzzMinus">－</button>
-                    <span style="font-size:36px; font-weight:700;" id="buzzSecondsDisplay">${buzzSeconds}</span>
-                    <button class="btn btn-ghost btn-sm" id="buzzPlus">＋</button>
-                    <span data-i18n="seconds">秒</span>
+                <div id="buzzSetupArea">
+                    <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin:16px 0;">
+                        <button class="btn btn-ghost btn-sm" id="buzzMinus">－</button>
+                        <span style="font-size:36px; font-weight:700;" id="buzzSecondsDisplay">${buzzSeconds}</span>
+                        <button class="btn btn-ghost btn-sm" id="buzzPlus">＋</button>
+                        <span data-i18n="seconds">秒</span>
+                    </div>
+                    <div style="text-align:center;">
+                        <button class="btn btn-success btn-lg" id="buzzStartBtn"><span class="material-symbols-outlined">play_arrow</span> <span data-i18n="buzzStart">${t('buzzStart')}</span></button>
+                    </div>
                 </div>
-                <div style="text-align:center;">
-                    <button class="btn btn-success btn-lg" id="buzzStart"><span class="material-symbols-outlined">play_arrow</span> <span data-i18n="buzzStart">開始搶答</span></button>
+                <div id="buzzCountdownArea" style="display:none;">
+                    <div class="timer-display" id="buzzCountdownDisplay" style="font-size:72px;">${buzzSeconds}</div>
+                    <div style="color:var(--text-secondary);" data-i18n="buzzCountdown">${t('buzzCountdown')}</div>
                 </div>
-                <div id="buzzResultInTool" style="margin-top:12px; max-height:200px; overflow-y:auto;"></div>
-                <div style="text-align:center; margin-top:8px;">
-                    <button class="btn btn-ghost btn-sm" id="buzzClose"><span data-i18n="close">關閉</span></button>
+                <div id="buzzResultArea" style="display:none; margin-top:12px;">
+                    <div style="font-weight:700; margin-bottom:6px;">🎯 <span data-i18n="buzzResult">${t('buzzResult')}</span></div>
+                    <div id="buzzResultList" style="max-height:200px; overflow-y:auto; text-align:left; padding:0 20px;"></div>
+                </div>
+                <div style="display:flex; gap:10px; justify-content:center; margin-top:16px;">
+                    <button class="btn btn-ghost btn-sm" id="buzzReset" style="display:none;"><span class="material-symbols-outlined">refresh</span> <span data-i18n="buzzReset">${t('buzzReset')}</span></button>
+                    <button class="btn btn-ghost btn-sm" id="buzzCloseBtn"><span data-i18n="close">${t('close')}</span></button>
                 </div>`;
             toolModal.classList.add('show');
 
-            const display = document.getElementById('buzzSecondsDisplay');
-            document.getElementById('buzzMinus').onclick = () => { if (buzzSeconds > 1) { buzzSeconds--; display.textContent = buzzSeconds; } };
-            document.getElementById('buzzPlus').onclick = () => { if (buzzSeconds < 30) { buzzSeconds++; display.textContent = buzzSeconds; } };
+            const setupArea = document.getElementById('buzzSetupArea');
+            const countdownArea = document.getElementById('buzzCountdownArea');
+            const resultArea = document.getElementById('buzzResultArea');
+            const countdownDisplay = document.getElementById('buzzCountdownDisplay');
+            const resultList = document.getElementById('buzzResultList');
+            const buzzReset = document.getElementById('buzzReset');
 
-            document.getElementById('buzzStart').onclick = async () => {
+            // 秒數調整
+            document.getElementById('buzzMinus').onclick = () => {
+                if (buzzSeconds > 1) { buzzSeconds--; document.getElementById('buzzSecondsDisplay').textContent = buzzSeconds; }
+            };
+            document.getElementById('buzzPlus').onclick = () => {
+                if (buzzSeconds < 30) { buzzSeconds++; document.getElementById('buzzSecondsDisplay').textContent = buzzSeconds; }
+            };
+
+            // 開始搶答
+            document.getElementById('buzzStartBtn').onclick = async () => {
                 STATE.buzzCountdown = buzzSeconds;
                 STATE.buzzActive = true;
+                remain = buzzSeconds;
+
+                // 更新 Firestore
                 await updateDoc(doc(db, 'rooms', STATE.roomId), {
                     buzzActive: true,
                     buzzCountdown: buzzSeconds,
                 });
-                // 關閉設定視窗，開始倒數（教師端顯示在第3頁）
-                toolModal.classList.remove('show');
-                goToPage(3);
-                startBuzzCountdown(buzzSeconds);
+
+                // 切換 UI：隱藏設定區，顯示倒數區
+                setupArea.style.display = 'none';
+                countdownArea.style.display = 'block';
+                countdownDisplay.textContent = remain;
+
+                // 開始倒數
+                buzzInterval = setInterval(async () => {
+                    remain--;
+                    countdownDisplay.textContent = remain;
+                    if (remain <= 0) {
+                        clearInterval(buzzInterval);
+                        countdownArea.style.display = 'none';
+                        resultArea.style.display = 'block';
+                        buzzReset.style.display = 'inline-flex';
+                        await updateDoc(doc(db, 'rooms', STATE.roomId), { buzzActive: false });
+                        STATE.buzzActive = false;
+
+                        // 開始監聽搶答結果
+                        const buzzRef = collection(db, 'rooms', STATE.roomId, 'buzzes');
+                        STATE.buzzUnsubscribe = onSnapshot(query(buzzRef, orderBy('timestamp', 'asc'), limit(10)), (snap) => {
+                            resultList.innerHTML = '';
+                            let rank = 1;
+                            snapshot.forEach(doc => {
+                                const d = doc.data();
+                                const medals = ['🥇','🥈','🥉'];
+                                const medal = rank <= 3 ? medals[rank-1] : `${rank}`;
+                                resultList.innerHTML += `<div style="padding:4px 0;">${medal} ${d.name}</div>`;
+                                rank++;
+                            });
+                            if (snapshot.empty) {
+                                resultList.innerHTML = `<div style="color:var(--text-muted); text-align:center;">尚無學生搶答</div>`;
+                            }
+                        });
+                    }
+                }, 1000);
             };
 
-            document.getElementById('buzzClose').onclick = () => {
-                toolModal.classList.remove('show');
-            };
-
-            // 如果有正在進行的搶答結果，即時顯示
-            if (STATE.roomId) {
+            // 再來一輪
+            document.getElementById('buzzReset').onclick = async () => {
+                // 清除舊的搶答資料
+                if (STATE.buzzUnsubscribe) {
+                    STATE.buzzUnsubscribe();
+                    STATE.buzzUnsubscribe = null;
+                }
                 const buzzRef = collection(db, 'rooms', STATE.roomId, 'buzzes');
-                const unsub = onSnapshot(query(buzzRef, orderBy('timestamp', 'asc'), limit(10)), (snap) => {
-                    const resultDiv = document.getElementById('buzzResultInTool');
-                    if (!resultDiv) return;
-                    const items = [];
-                    snap.forEach(doc => {
-                        const d = doc.data();
-                        items.push(`${d.name}`);
-                    });
-                    resultDiv.innerHTML = items.map((name, i) => `<div>${i+1}. ${name}</div>`).join('') || '';
-                });
-                toolModal._buzzUnsub = unsub;
-            }
-        }
+                const snap = await getDocs(buzzRef);
+                const batch = writeBatch(db);
+                snap.forEach(d => batch.delete(d.ref));
+                await batch.commit();
 
-        function startBuzzCountdown(seconds) {
-            let remain = seconds;
-            // 利用計時器大螢幕顯示倒數
-            timerLargeDisplay.textContent = remain;
-            timerLargeDisplay.className = 'timer-large';
-            timerLabel.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">bolt</span> <span data-i18n="buzzCountdown">搶答倒數中...</span>`;
-            timerLargeContainer.style.display = 'block';
-            buzzResultArea.classList.remove('hidden');
-            buzzResultList.innerHTML = '';
+                // 重置 UI
+                buzzSeconds = 5;
+                document.getElementById('buzzSecondsDisplay').textContent = buzzSeconds;
+                setupArea.style.display = 'block';
+                countdownArea.style.display = 'none';
+                resultArea.style.display = 'none';
+                buzzReset.style.display = 'none';
+                countdownDisplay.textContent = buzzSeconds;
+            };
 
-            // 監聽搶答結果
-            if (STATE.buzzUnsubscribe) STATE.buzzUnsubscribe();
-            const buzzRef = collection(db, 'rooms', STATE.roomId, 'buzzes');
-            STATE.buzzUnsubscribe = onSnapshot(query(buzzRef, orderBy('timestamp', 'asc'), limit(10)), (snap) => {
-                buzzResultList.innerHTML = '';
-                let rank = 1;
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    const medals = ['🥇','🥈','🥉'];
-                    const medal = rank <= 3 ? medals[rank-1] : `${rank}`;
-                    buzzResultList.innerHTML += `<div style="padding:4px 0;">${medal} ${d.name}</div>`;
-                    rank++;
-                });
-            });
-
-            const buzzInterval = setInterval(async () => {
-                remain--;
-                timerLargeDisplay.textContent = remain;
-                if (remain <= 0) {
-                    clearInterval(buzzInterval);
-                    timerLargeDisplay.textContent = '⚡';
-                    timerLabel.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">bolt</span> <span data-i18n="buzzOver">搶答結束！</span>`;
-                    await updateDoc(doc(db, 'rooms', STATE.roomId), { buzzActive: false });
+            // 關閉
+            document.getElementById('buzzCloseBtn').onclick = () => {
+                if (buzzInterval) clearInterval(buzzInterval);
+                if (STATE.buzzUnsubscribe) {
+                    STATE.buzzUnsubscribe();
+                    STATE.buzzUnsubscribe = null;
+                }
+                toolModal.classList.remove('show');
+                // 順便關閉搶答狀態
+                if (STATE.buzzActive) {
+                    updateDoc(doc(db, 'rooms', STATE.roomId), { buzzActive: false }).catch(() => {});
                     STATE.buzzActive = false;
                 }
-            }, 1000);
+            };
         }
 
         // ========== 管理後台 ==========
