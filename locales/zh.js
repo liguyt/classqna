@@ -91,5 +91,8 @@ export const zh = {
     buzzCountdown: '搶答倒數中...',
     buzzOver: '搶答結束！',
     buzzBtn: '搶答',
-    buzzDone: '已搶答'
+    buzzDone: '已搶答',
+    errorNoStudents: '此教室已達自訂人數上限',
+    reconnecting: '連線中斷，正在重新連線...',
+    reconnected: '已恢復連線'
 };

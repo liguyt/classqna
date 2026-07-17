@@ -90,5 +90,8 @@ export const en = {
     buzzCountdown: 'Buzz countdown...',
     buzzOver: 'Buzz over!',
     buzzBtn: 'Buzz',
-    buzzDone: 'Done'
+    buzzDone: 'Done',
+    errorNoStudents: 'This room has reached its custom seat limit',
+    reconnecting: 'Connection lost, reconnecting...',
+    reconnected: 'Reconnected'
 };
