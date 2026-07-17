@@ -23,45 +23,39 @@
 
     <style>
         :root {
-            --student-bg: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 40%, #fdf2f8 100%);
-            --student-card: rgba(255,255,255,0.75);
-            --student-radius: 24px;
-            --student-shadow: 0 12px 40px rgba(0,0,0,0.08);
-            --transition: 0.25s cubic-bezier(0.2, 0.9, 0.4, 1);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', 'PingFang TC', system-ui, sans-serif;
-            background: var(--student-bg);
-            min-height: 100vh;
+            background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 40%, #fdf2f8 100%);
             min-height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 12px;
+            padding-top: calc(12px + var(--safe-top));
+            padding-bottom: calc(12px + var(--safe-bottom));
             overflow: hidden;
             -webkit-user-select: none;
             user-select: none;
         }
 
         /* 主容器 */
-                .student-container {
+        .student-container {
             width: 100%;
-            /* iPad 橫放最適寬度，同時相容所有裝置 */
             max-width: 680px;
-            /* 高度優先使用 dvh，fallback vh */
-            height: calc(100vh - 24px);
-            height: calc(100dvh - 24px);
-            min-height: 400px;
-            max-height: 900px;
-            background: var(--student-card);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            height: calc(100dvh - 24px - var(--safe-top) - var(--safe-bottom));
+            max-height: 800px;
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255,255,255,0.6);
-            border-radius: var(--student-radius);
-            box-shadow: var(--student-shadow);
+            border-radius: 28px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -73,7 +67,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 16px;
+            padding: 10px 18px;
             background: rgba(255,255,255,0.5);
             border-bottom: 1px solid rgba(255,255,255,0.6);
             font-size: 13px;
@@ -82,12 +76,12 @@
             gap: 8px;
             flex-shrink: 0;
         }
-        .stu-header .identity { display: flex; align-items: center; gap: 6px; }
+        .stu-header .identity { display: flex; align-items: center; gap: 6px; flex: 1; overflow: hidden; }
         .stu-header .change-btn {
             font-size: 11px; font-weight: 500; color: var(--primary);
             background: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.4);
             border-radius: 20px; padding: 4px 10px; cursor: pointer;
-            display: flex; align-items: center; gap: 4px; transition: var(--transition);
+            display: flex; align-items: center; gap: 4px; flex-shrink: 0;
         }
         .stu-header .change-btn:hover { background: white; }
         .stu-header .change-btn:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -95,28 +89,31 @@
         .lang-toggle button {
             width: 32px; height: 32px; border-radius: 50%;
             border: 1px solid transparent; background: rgba(255,255,255,0.5);
-            font-size: 12px; font-weight: 600; cursor: pointer; transition: var(--transition);
+            font-size: 12px; font-weight: 600; cursor: pointer;
         }
-        .lang-toggle button.active { background: white; color: var(--primary); box-shadow: var(--shadow-sm); }
+        .lang-toggle button.active { background: white; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 
-        /* 跑馬燈 */
-                .stu-marquee {
-            padding: 8px 16px; font-size: 15px; font-weight: 600; text-align: center;
-            background: rgba(255,200,50,0.2); color: #b45309;
-            /* 固定高度，避免有/無廣播時畫面跳動 */
-            min-height: 44px; height: 44px; max-height: 44px;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-            transition: background 0.3s; overflow: hidden; white-space: nowrap;
+        /* 跑馬燈（固定高度，不跳動） */
+        .stu-marquee {
+            height: 40px; min-height: 40px; max-height: 40px;
+            padding: 0 18px; font-size: 15px; font-weight: 600;
+            display: flex; align-items: center; flex-shrink: 0;
+            background: rgba(255,200,50,0.08); color: transparent;
+            overflow: hidden; white-space: nowrap; position: relative;
         }
-        .stu-marquee:empty {
-            background: rgba(255,200,50,0.05); /* 無訊息時仍有淡淡底色 */
-            color: transparent;
+        .stu-marquee.active { color: #b45309; background: rgba(255,200,50,0.2); }
+        .stu-marquee.scroll span {
+            display: inline-block; animation: marquee 8s linear 2;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
         }
 
         /* 題目區 */
         .stu-question {
-            padding: 14px 18px; display: flex; align-items: center; gap: 10px;
-            font-size: 17px; font-weight: 600; color: var(--text-primary);
+            padding: 12px 18px; display: flex; align-items: center; gap: 10px;
+            font-size: 16px; font-weight: 600; color: var(--text-primary);
             background: rgba(255,255,255,0.4); flex-shrink: 0;
         }
         .stu-question .q-score {
@@ -126,46 +123,47 @@
 
         /* 計時器 */
         .stu-timer {
-            text-align: center; font-size: 36px; font-weight: 700; padding: 8px;
-            color: var(--text-primary); flex-shrink: 0; min-height: 50px;
+            text-align: center; font-size: 40px; font-weight: 700; padding: 4px;
+            color: var(--text-primary); flex-shrink: 0; min-height: 48px;
         }
         .stu-timer.urgent { color: var(--danger); animation: pulse 0.5s infinite; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         /* 作答區 */
         .stu-answer {
-            flex: 1; display: flex; flex-direction: column; padding: 10px 16px;
-            gap: 8px; overflow-y: auto;
+            flex: 1; display: flex; flex-direction: column; padding: 12px 18px;
+            gap: 10px; overflow-y: auto; min-height: 0;
         }
         .choice-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1;
+            align-content: center;
         }
         .choice-btn {
             background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);
-            border: 2px solid rgba(255,255,255,0.6); border-radius: 18px;
-            font-size: 22px; font-weight: 700; color: var(--text-primary);
-            cursor: pointer; transition: var(--transition); min-height: 60px;
+            border: 2px solid rgba(255,255,255,0.6); border-radius: 20px;
+            font-size: 24px; font-weight: 700; color: var(--text-primary);
+            cursor: pointer; min-height: 60px; transition: all 0.2s;
         }
-        .choice-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .choice-btn:hover:not(:disabled):not(.locked) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         .choice-btn.selected { border-color: var(--primary); background: rgba(79,70,229,0.15); }
-        .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .choice-btn.correct { border-color: var(--success); background: #d1fae5; }
-        .choice-btn.wrong { border-color: var(--danger); background: #fecaca; }
-        .text-input-wrap { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+        .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .choice-btn.locked { opacity: 0.6; }
+        .text-input-wrap { flex: 1; display: flex; flex-direction: column; gap: 8px; }
         .text-input-wrap textarea {
             flex: 1; padding: 14px; border: 2px solid rgba(0,0,0,0.08);
             border-radius: 18px; font-size: 16px; background: rgba(255,255,255,0.8);
-            resize: none; font-family: inherit; min-height: 80px;
+            resize: none; font-family: inherit; min-height: 100px;
         }
+        .text-input-wrap textarea:disabled { opacity: 0.4; }
         .char-count { text-align: right; font-size: 12px; color: var(--text-muted); }
 
         /* 送出按鈕 */
-        .stu-submit { flex-shrink: 0; padding: 0 16px 12px; }
+        .stu-submit { flex-shrink: 0; padding: 0 18px 14px; }
         .stu-submit button {
-            width: 100%; padding: 14px; border: none; border-radius: 16px;
+            width: 100%; padding: 14px; border: none; border-radius: 18px;
             background: linear-gradient(135deg, #4f46e5, #7c3aed);
             color: white; font-size: 18px; font-weight: 700; cursor: pointer;
-            box-shadow: 0 6px 18px rgba(79,70,229,0.3); transition: var(--transition);
+            box-shadow: 0 6px 18px rgba(79,70,229,0.3);
         }
         .stu-submit button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(79,70,229,0.4); }
         .stu-submit button:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -173,18 +171,45 @@
 
         /* 狀態列 */
         .stu-status {
-            flex-shrink: 0; text-align: center; padding: 8px; font-size: 14px;
+            flex-shrink: 0; text-align: center; padding: 8px; font-size: 13px;
             font-weight: 600; color: var(--text-secondary);
             background: rgba(255,255,255,0.4); border-top: 1px solid rgba(255,255,255,0.6);
         }
 
+        /* 彈窗（投票、搶答） */
+        .stu-modal-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center; z-index: 20;
+        }
+        .stu-modal-overlay.hidden { display: none; }
+        .stu-modal-box {
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px); border-radius: 24px;
+            padding: 28px; width: 90%; max-width: 360px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2); text-align: center;
+        }
+        .stu-modal-box .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+        .stu-modal-box .buzz-display { font-size: 72px; font-weight: 700; margin: 16px 0; }
+        .stu-modal-box .vote-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+        .stu-modal-box .vote-options button {
+            padding: 12px; border-radius: 14px; border: 2px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; cursor: pointer;
+        }
+        .stu-modal-box .vote-options button.selected { border-color: var(--primary); background: rgba(79,70,229,0.1); }
+        .stu-modal-box .vote-options button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .stu-modal-box .btn-close {
+            margin-top: 12px; padding: 10px 24px; border: none; border-radius: 14px;
+            background: rgba(255,255,255,0.6); font-size: 14px; font-weight: 600; cursor: pointer;
+        }
+
         /* 登入畫面 */
         .login-overlay {
-            position: absolute; inset: 0; background: var(--student-card);
+            position: absolute; inset: 0; background: rgba(255,255,255,0.85);
             backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
             display: flex; flex-direction: column; align-items: center;
-            justify-content: center; gap: 16px; padding: 24px; z-index: 10;
-            border-radius: var(--student-radius);
+            justify-content: center; gap: 16px; padding: 24px; z-index: 30;
+            border-radius: 28px;
         }
         .login-overlay.hidden { display: none; }
         .login-title { font-size: 28px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
@@ -201,7 +226,6 @@
             color: white; font-size: 18px; font-weight: 700; cursor: pointer;
             box-shadow: 0 6px 18px rgba(79,70,229,0.3);
         }
-        .login-join:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(79,70,229,0.4); }
         .login-selects { display: flex; gap: 8px; width: 100%; max-width: 320px; }
         .login-selects select {
             flex: 1; padding: 10px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.08);
@@ -209,41 +233,23 @@
         }
         .login-status { font-size: 13px; color: var(--text-muted); text-align: center; }
 
-        /* 隱藏 */
         .hidden { display: none !important; }
 
-        /* 手機優化 */
-       @media (max-width: 480px) {
-            .student-container { height: calc(100vh - 8px); height: calc(100dvh - 8px); max-height: none; }
+        /* 響應式 */
+        @media (max-width: 480px) {
+            .student-container { height: calc(100dvh - 8px); max-height: none; border-radius: 20px; }
             .choice-btn { font-size: 18px; min-height: 48px; }
-            .stu-timer { font-size: 28px; }
-            .stu-question { font-size: 15px; }
-            .stu-marquee { min-height: 36px; height: 36px; max-height: 36px; font-size: 13px; }
-        }
-        /* iPad 橫放優化 */
-        @media (min-width: 768px) and (orientation: landscape) {
-            .student-container {
-                max-width: 680px;
-                height: calc(100vh - 32px);
-                height: calc(100dvh - 32px);
-                max-height: 700px;
-            }
-            .stu-question { font-size: 18px; padding: 16px 20px; }
-            .stu-timer { font-size: 40px; min-height: 56px; }
-            .choice-btn { font-size: 24px; min-height: 64px; border-radius: 20px; }
-            .stu-marquee { min-height: 48px; height: 48px; max-height: 48px; font-size: 16px; }
-            .stu-submit button { font-size: 20px; padding: 16px; }
-        }
-
-        /* 直立手機或小型平板 */
-        @media (max-width: 768px) and (orientation: portrait) {
-            .student-container {
-                max-width: 100%;
-                height: calc(100vh - 12px);
-                height: calc(100dvh - 12px);
-            }
-            .choice-btn { font-size: 20px; min-height: 56px; }
             .stu-timer { font-size: 32px; }
+            .stu-question { font-size: 14px; }
+            .stu-marquee { height: 34px; min-height: 34px; max-height: 34px; font-size: 13px; }
+        }
+        @media (min-width: 768px) and (orientation: landscape) {
+            .student-container { height: calc(100dvh - 40px); max-height: 700px; }
+            .stu-question { font-size: 18px; padding: 16px 20px; }
+            .stu-timer { font-size: 44px; min-height: 56px; }
+            .choice-btn { font-size: 26px; min-height: 70px; }
+            .stu-marquee { height: 44px; min-height: 44px; max-height: 44px; font-size: 16px; }
+            .stu-submit button { font-size: 20px; padding: 16px; }
         }
     </style>
 </head>
@@ -268,7 +274,7 @@
         </div>
 
         <!-- 跑馬燈 -->
-        <div class="stu-marquee" id="marqueeArea"></div>
+        <div class="stu-marquee" id="marqueeArea"><span></span></div>
 
         <!-- 題目區 -->
         <div class="stu-question" id="questionArea">
@@ -306,6 +312,26 @@
             <span class="material-symbols-outlined" style="font-size:14px;">hourglass_empty</span> <span id="statusText">等待教師開始</span>
         </div>
 
+        <!-- 投票彈窗 -->
+        <div class="stu-modal-overlay hidden" id="voteModal">
+            <div class="stu-modal-box">
+                <div class="modal-title" data-i18n="voteTitle">即時投票</div>
+                <div class="vote-options" id="voteOptionsList"></div>
+                <button class="login-join" id="voteSubmitBtn" data-i18n="voteSubmit">送出投票</button>
+                <button class="btn-close" id="voteCloseBtn" data-i18n="close">關閉</button>
+            </div>
+        </div>
+
+        <!-- 搶答彈窗 -->
+        <div class="stu-modal-overlay hidden" id="buzzModal">
+            <div class="stu-modal-box">
+                <div class="modal-title" data-i18n="buzzTitle">搶答</div>
+                <div class="buzz-display" id="buzzCountdownDisplay">5</div>
+                <button class="login-join" id="buzzBtn" disabled data-i18n="buzzBtn">搶答</button>
+                <button class="btn-close" id="buzzCloseBtn" data-i18n="close">關閉</button>
+            </div>
+        </div>
+
         <!-- 登入畫面 -->
         <div class="login-overlay" id="loginScreen">
             <div class="login-title">
@@ -336,7 +362,7 @@
         import {
             getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc,
             collection, query, where, onSnapshot, getDocs, writeBatch,
-            serverTimestamp, orderBy, limit
+            serverTimestamp
         } from "firebase/firestore";
 
         import { zh } from './locales/zh.js';
@@ -374,9 +400,7 @@
             });
             document.getElementById('langZh').className = currentLang === 'zh' ? 'active' : '';
             document.getElementById('langEn').className = currentLang === 'en' ? 'active' : '';
-            if (STATE.studentId) {
-                updateIdentityDisplay();
-            }
+            if (STATE.studentId) updateIdentityDisplay();
         }
 
         document.getElementById('langZh').addEventListener('click', () => { currentLang = 'zh'; updateAllTexts(); });
@@ -402,10 +426,14 @@
             myAnswer: null,
             rosterData: {},
             allStudents: [],
-            // 搶答相關
+            // 投票
+            voteActive: false,
+            voteOptions: [],
+            voteLocked: false,
+            // 搶答
             buzzActive: false,
             buzzCountdown: 5,
-            buzzLocked: false,       // 本地鎖定，防止重複送出
+            buzzLocked: false,
         };
 
         // ============================================================
@@ -419,6 +447,7 @@
         const roomDisplay = $('#roomDisplay');
         const roundDisplay = $('#roundDisplay');
         const marqueeArea = $('#marqueeArea');
+        const marqueeSpan = marqueeArea.querySelector('span');
         const questionText = $('#questionText');
         const scoreDisplay = $('#scoreDisplay');
         const timerDisplay = $('#timerDisplay');
@@ -439,6 +468,16 @@
         const classSelect = $('#classSelect');
         const seatSelect = $('#seatSelect');
         const loginStatus = $('#loginStatus');
+
+        // 彈窗
+        const voteModal = $('#voteModal');
+        const voteOptionsList = $('#voteOptionsList');
+        const voteSubmitBtn = $('#voteSubmitBtn');
+        const voteCloseBtn = $('#voteCloseBtn');
+        const buzzModal = $('#buzzModal');
+        const buzzCountdownDisplay = $('#buzzCountdownDisplay');
+        const buzzBtn = $('#buzzBtn');
+        const buzzCloseBtn = $('#buzzCloseBtn');
 
         // ============================================================
         // 輔助函式
@@ -492,9 +531,7 @@
                 for (const cls in roster) roster[cls].sort((a,b) => parseInt(a.number)-parseInt(b.number));
                 STATE.rosterData = roster;
                 STATE.allStudents = all;
-            } catch (e) {
-                console.warn('載入名單失敗', e);
-            }
+            } catch (e) { console.warn('載入名單失敗', e); }
         }
 
         // ============================================================
@@ -522,23 +559,17 @@
                 classSelect.innerHTML = `<option value="">${t('studentSelectClass')}</option>`;
                 classSelect.disabled = false;
 
-                if (custom) {
-                    await autoJoinCustomRoom(data);
-                    return;
-                }
+                if (custom) { await autoJoinCustomRoom(data); return; }
 
                 for (const cls of selectedClasses) {
                     const [g, c] = cls.split('-');
                     const label = formatClassName(g, c);
                     const opt = document.createElement('option');
-                    opt.value = cls;
-                    opt.textContent = label;
+                    opt.value = cls; opt.textContent = label;
                     classSelect.appendChild(opt);
                 }
-
                 classSelect.addEventListener('change', updateSeatDropdown);
                 loginStatus.innerHTML = `<span>✅ ${t('studentLoginStatus')}</span>`;
-
                 if (selectedClasses.length === 1) {
                     classSelect.value = selectedClasses[0];
                     classSelect.dispatchEvent(new Event('change'));
@@ -555,14 +586,11 @@
             const roster = STATE.rosterData[cls] || [];
             for (const s of roster) {
                 const opt = document.createElement('option');
-                opt.value = s.number;
-                opt.textContent = `${s.number} - ${s.name}`;
+                opt.value = s.number; opt.textContent = `${s.number} - ${s.name}`;
                 seatSelect.appendChild(opt);
             }
             seatSelect.disabled = false;
-            if (roster.length === 1) {
-                seatSelect.value = roster[0].number;
-            }
+            if (roster.length === 1) seatSelect.value = roster[0].number;
         }
 
         async function autoJoinCustomRoom(data) {
@@ -641,84 +669,46 @@
         // 更換學生
         // ============================================================
         async function changeStudent() {
-            if (STATE.isAnswering && STATE.isLocked) {
-                alert(t('errorNoAnswer'));
-                return;
-            }
+            if (STATE.isAnswering && STATE.isLocked) { alert(t('errorNoAnswer')); return; }
             if (!confirm(t('studentChange'))) return;
-
-            try {
-                await deleteDoc(doc(db, 'rooms', STATE.roomId, 'students', STATE.studentId));
-            } catch (e) {}
-
-            if (teacherCommandUnsub) { teacherCommandUnsub(); teacherCommandUnsub = null; }
-            if (myAnswerUnsub) { myAnswerUnsub(); myAnswerUnsub = null; }
-            if (buzzListenerUnsub) { buzzListenerUnsub(); buzzListenerUnsub = null; }
-
+            try { await deleteDoc(doc(db, 'rooms', STATE.roomId, 'students', STATE.studentId)); } catch (e) {}
+            cleanupListeners();
             STATE.isLoggedIn = false;
-            STATE.studentId = null;
-            STATE.studentName = null;
-            STATE.isLocked = false;
-            STATE.isAnswering = false;
-            STATE.myAnswer = null;
-            STATE.buzzActive = false;
-            STATE.buzzLocked = false;
-
-            answerArea.classList.add('hidden');
-            submitArea.classList.add('hidden');
+            STATE.studentId = null; STATE.studentName = null;
+            STATE.isLocked = false; STATE.isAnswering = false; STATE.myAnswer = null;
+            STATE.voteActive = false; STATE.voteLocked = false;
+            STATE.buzzActive = false; STATE.buzzLocked = false;
+            answerArea.classList.add('hidden'); submitArea.classList.add('hidden');
             loginScreen.classList.remove('hidden');
-            classSelect.value = '';
-            seatSelect.innerHTML = `<option value="">${t('studentSelectSeat')}</option>`;
-            seatSelect.disabled = true;
+            classSelect.value = ''; seatSelect.innerHTML = `<option value="">${t('studentSelectSeat')}</option>`; seatSelect.disabled = true;
             loginStatus.innerHTML = `<span>🔄 ${t('studentLoginStatus')}</span>`;
             resetUI();
+        }
+
+        function cleanupListeners() {
+            if (teacherCommandUnsub) { teacherCommandUnsub(); teacherCommandUnsub = null; }
+            if (myAnswerUnsub) { myAnswerUnsub(); myAnswerUnsub = null; }
+            if (voteListenerUnsub) { voteListenerUnsub(); voteListenerUnsub = null; }
+            clearTimer(); clearBuzzTimer();
         }
 
         // ============================================================
         // 全螢幕鎖定
         // ============================================================
         function lockScreen() {
-            try {
-                const el = document.documentElement;
-                if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
-                else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-            } catch (e) {}
-
-            document.addEventListener('touchmove', (e) => {
-                if (document.fullscreenElement || document.webkitFullscreenElement) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
-                    if (document.fullscreenElement || document.webkitFullscreenElement) {
-                        e.preventDefault();
-                        return false;
-                    }
-                }
-            });
-
-            window.addEventListener('beforeunload', (e) => {
-                if (document.fullscreenElement || document.webkitFullscreenElement) {
-                    e.preventDefault();
-                    e.returnValue = '';
-                }
-            });
+            try { const el = document.documentElement; if (el.requestFullscreen) el.requestFullscreen().catch(()=>{}); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } catch (e) {}
+            document.addEventListener('touchmove', (e) => { if (document.fullscreenElement || document.webkitFullscreenElement) e.preventDefault(); }, { passive: false });
+            document.addEventListener('keydown', (e) => { if ((e.key === 'F5' || (e.ctrlKey && e.key === 'r')) && (document.fullscreenElement || document.webkitFullscreenElement)) { e.preventDefault(); return false; } });
+            window.addEventListener('beforeunload', (e) => { if (document.fullscreenElement || document.webkitFullscreenElement) { e.preventDefault(); e.returnValue = ''; } });
         }
 
         function resetUI() {
-            choiceBtns.forEach(b => { b.classList.remove('selected', 'correct', 'wrong'); b.disabled = true; });
-            textInput.value = '';
-            textInput.disabled = true;
-            charCount.textContent = '0 字';
-            submitBtn.disabled = true;
-            submitBtn.classList.remove('submitted');
-            timerDisplay.textContent = '--';
-            timerDisplay.className = 'stu-timer';
-            questionText.textContent = '等待教師出題...';
-            scoreDisplay.textContent = '1分';
-            marqueeArea.textContent = '';
+            choiceBtns.forEach(b => { b.classList.remove('selected'); b.disabled = true; });
+            textInput.value = ''; textInput.disabled = true; charCount.textContent = '0 字';
+            submitBtn.disabled = true; submitBtn.classList.remove('submitted');
+            timerDisplay.textContent = '--'; timerDisplay.className = 'stu-timer';
+            questionText.textContent = '等待教師出題...'; scoreDisplay.textContent = '1分';
+            marqueeArea.classList.remove('active', 'scroll'); marqueeSpan.textContent = '';
             setStatus('等待教師開始');
         }
 
@@ -726,6 +716,7 @@
         // 監聽教師指令（核心，僅 1 個 onSnapshot）
         // ============================================================
         let teacherCommandUnsub = null;
+        let voteListenerUnsub = null;
 
         function listenTeacherCommands() {
             if (teacherCommandUnsub) teacherCommandUnsub();
@@ -743,34 +734,69 @@
                 }
 
                 // 跑馬燈
-                if (data.broadcastMsg?.trim()) {
-                    marqueeArea.textContent = '📢 ' + data.broadcastMsg;
-                    setTimeout(() => { marqueeArea.textContent = ''; }, 8000);
+                const msg = data.broadcastMsg?.trim() || '';
+                if (msg) {
+                    marqueeSpan.textContent = '📢 ' + msg;
+                    marqueeArea.classList.add('active');
+                    if (msg.length > 10) {
+                        marqueeArea.classList.add('scroll');
+                        marqueeSpan.addEventListener('animationend', function handler() {
+                            marqueeArea.classList.remove('scroll', 'active');
+                            marqueeSpan.textContent = '';
+                            marqueeSpan.removeEventListener('animationend', handler);
+                        }, { once: true });
+                    } else {
+                        marqueeArea.classList.remove('scroll');
+                        clearTimeout(marqueeArea._timeout);
+                        marqueeArea._timeout = setTimeout(() => {
+                            marqueeArea.classList.remove('active');
+                            marqueeSpan.textContent = '';
+                        }, 8000);
+                    }
                 }
 
-                // 題目資訊
+                // 題目
                 STATE.currentQuestion = data.currentQuestion || 0;
                 STATE.currentRoundId = data.currentRoundId || null;
-                roundDisplay.textContent = `${t('studentRound').replace('{n}', STATE.currentQuestion)}`;
+                roundDisplay.textContent = t('studentRound').replace('{n}', STATE.currentQuestion);
                 questionText.textContent = data.questionNote || (STATE.currentQuestion > 0 ? `第 ${STATE.currentQuestion} 題` : '等待教師出題...');
-
                 STATE.questionType = data.questionType || 'choice';
                 STATE.questionScore = data.questionScore || 1;
                 scoreDisplay.textContent = `${STATE.questionScore}分`;
 
-                // 搶答狀態
-                STATE.buzzActive = data.buzzActive || false;
-                STATE.buzzCountdown = data.buzzCountdown || 5;
-                if (STATE.buzzActive) {
-                    startBuzzMode(data.buzzCountdown);
+                // 搶答
+                if (data.buzzActive) {
+                    STATE.buzzActive = true;
+                    STATE.buzzCountdown = data.buzzCountdown || 5;
+                    if (!buzzModal.classList.contains('hidden')) return;
+                    openBuzzModal(data.buzzCountdown);
+                } else if (!data.buzzActive && STATE.buzzActive) {
+                    STATE.buzzActive = false;
+                    closeBuzzModal();
+                }
+
+                // 投票
+                if (data.voteActive) {
+                    STATE.voteActive = true;
+                    STATE.voteOptions = data.voteOptions || [];
+                    if (!voteModal.classList.contains('hidden')) return;
+                    openVoteModal();
+                } else if (!data.voteActive && STATE.voteActive) {
+                    STATE.voteActive = false;
+                    STATE.voteLocked = false;
+                    voteModal.classList.add('hidden');
+                }
+                // 投票結果公布
+                if (data.voteResults && !data.voteActive && STATE.voteLocked) {
+                    showVoteResults(data.voteResults);
                 }
 
                 // 作答狀態
-                if (data.isAnswering && !STATE.buzzActive) {
+                if (data.isAnswering && !STATE.buzzActive && !STATE.voteActive) {
                     STATE.isAnswering = true;
                     enableInput(true);
                     if (data.timerSeconds) startTimer(data.timerSeconds);
-                } else if (!data.buzzActive) {
+                } else if (!data.buzzActive && !STATE.voteActive) {
                     STATE.isAnswering = false;
                     enableInput(false);
                     clearTimer();
@@ -784,19 +810,17 @@
 
                 // 清除
                 if (data.clearAll) {
-                    STATE.myAnswer = null;
-                    STATE.isLocked = false;
-                    STATE.buzzLocked = false;
-                    resetUI();
-                    enableInput(true);
+                    STATE.myAnswer = null; STATE.isLocked = false;
+                    STATE.voteLocked = false; STATE.buzzLocked = false;
+                    resetUI(); enableInput(true);
                 }
             });
         }
-                    // ============================================================
+
+        // ============================================================
         // 監聽自己的答案（僅 1 個 onSnapshot）
         // ============================================================
         let myAnswerUnsub = null;
-
         function listenMyAnswer() {
             if (myAnswerUnsub) myAnswerUnsub();
             const ansRef = doc(db, 'rooms', STATE.roomId, 'answers', STATE.studentId);
@@ -806,100 +830,68 @@
                     if (data.roundId === STATE.currentRoundId) {
                         STATE.myAnswer = { choice: data.choice || null, text: data.text || null };
                         STATE.isLocked = true;
-                        if (data.choice) {
-                            choiceBtns.forEach(b => {
-                                b.classList.toggle('selected', b.dataset.choice === data.choice);
-                            });
-                        }
-                        if (data.text) {
-                            textInput.value = data.text;
-                            charCount.textContent = data.text.length + ' 字';
-                        }
+                        if (data.choice) choiceBtns.forEach(b => b.classList.toggle('selected', b.dataset.choice === data.choice));
+                        if (data.text) { textInput.value = data.text; charCount.textContent = data.text.length + ' 字'; }
                         setStatus('🔒 ' + t('studentLocked'), 'var(--success)');
                         enableInput(false);
-                        submitBtn.disabled = true;
-                        submitBtn.classList.add('submitted');
+                        submitBtn.disabled = true; submitBtn.classList.add('submitted');
                     }
                 }
             });
         }
 
         // ============================================================
-        // 輸入控制
+        // 輸入控制（動態顯示選擇/文字題）
         // ============================================================
         function enableInput(enabled) {
             const isChoice = (STATE.questionType === 'choice');
-            choiceBtns.forEach(b => { b.disabled = !enabled || !isChoice; });
             if (isChoice) {
                 choiceGrid.classList.remove('hidden');
                 textInputWrap.classList.add('hidden');
+                choiceBtns.forEach(b => { b.disabled = !enabled || STATE.isLocked; });
             } else {
                 choiceGrid.classList.add('hidden');
                 textInputWrap.classList.remove('hidden');
+                textInput.disabled = !enabled || STATE.isLocked;
             }
-            textInput.disabled = !enabled || isChoice;
-            submitBtn.disabled = !enabled;
-            if (!enabled) {
-                submitBtn.classList.add('submitted');
-            } else {
-                submitBtn.classList.remove('submitted');
-                setStatus(t('studentAnswering'), 'var(--primary)');
-            }
+            submitBtn.disabled = !enabled || STATE.isLocked;
+            if (!enabled) { submitBtn.classList.add('submitted'); }
+            else { submitBtn.classList.remove('submitted'); setStatus(t('studentAnswering'), 'var(--primary)'); }
         }
 
         function disableAllInputs(disabled) {
             choiceBtns.forEach(b => b.disabled = true);
-            textInput.disabled = true;
-            submitBtn.disabled = true;
-            if (disabled) {
-                submitBtn.classList.add('submitted');
-                setStatus('🔒 ' + t('studentScreenLocked'), 'var(--danger)');
-            }
+            textInput.disabled = true; submitBtn.disabled = true;
+            if (disabled) { submitBtn.classList.add('submitted'); setStatus('🔒 ' + t('studentScreenLocked'), 'var(--danger)'); }
         }
 
         // ============================================================
         // 計時器
         // ============================================================
         let timerInterval = null;
-
         function startTimer(seconds) {
             clearTimer();
             let remain = seconds;
-            timerDisplay.textContent = remain + 's';
-            timerDisplay.className = 'stu-timer';
+            timerDisplay.textContent = remain + 's'; timerDisplay.className = 'stu-timer';
             timerInterval = setInterval(() => {
                 remain--;
                 timerDisplay.textContent = remain + 's';
-                if (remain <= 5) {
-                    timerDisplay.className = 'stu-timer urgent';
-                } else {
-                    timerDisplay.className = 'stu-timer';
-                }
-                if (remain <= 0) {
-                    clearTimer();
-                    timerDisplay.textContent = '⌛';
-                    timerDisplay.className = 'stu-timer urgent';
-                }
+                timerDisplay.className = remain <= 5 ? 'stu-timer urgent' : 'stu-timer';
+                if (remain <= 0) { clearTimer(); timerDisplay.textContent = '⌛'; timerDisplay.className = 'stu-timer urgent'; }
             }, 1000);
         }
-
-        function clearTimer() {
-            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
-            timerDisplay.textContent = '--';
-            timerDisplay.className = 'stu-timer';
-        }
+        function clearTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } timerDisplay.textContent = '--'; timerDisplay.className = 'stu-timer'; }
 
         // ============================================================
-        // 送出答案（Firebase 寫入 1 次）
+        // 送出答案（Firebase 寫入 1 次，防連點）
         // ============================================================
+        let submitLock = false;
         async function submitAnswer() {
+            if (submitLock) return;
             if (STATE.isLocked || STATE.isScreenLocked) return;
             if (!STATE.isAnswering) { alert(t('errorNotAnswering')); return; }
-
             const qType = STATE.questionType;
-            let choice = '';
-            let text = '';
-
+            let choice = '', text = '';
             if (qType === 'choice') {
                 const selected = choiceGrid.querySelector('.choice-btn.selected');
                 if (!selected) { alert(t('studentSelectSeat')); return; }
@@ -908,103 +900,141 @@
                 text = textInput.value.trim();
                 if (!text) { alert(t('studentAnswering')); return; }
             }
-
+            submitLock = true;
             try {
                 const ansRef = doc(db, 'rooms', STATE.roomId, 'answers', STATE.studentId);
-                await setDoc(ansRef, {
-                    studentId: STATE.studentId,
-                    name: STATE.studentName,
-                    roundId: STATE.currentRoundId,
-                    choice: choice,
-                    text: text,
-                    timestamp: serverTimestamp(),
-                });
-                STATE.myAnswer = { choice, text };
-                STATE.isLocked = true;
+                await setDoc(ansRef, { studentId: STATE.studentId, name: STATE.studentName, roundId: STATE.currentRoundId, choice, text, timestamp: serverTimestamp() });
+                STATE.myAnswer = { choice, text }; STATE.isLocked = true;
                 setStatus('✅ ' + t('studentSubmitted'), 'var(--success)');
-                enableInput(false);
-                submitBtn.disabled = true;
-                submitBtn.classList.add('submitted');
-            } catch (e) {
-                alert('❌ ' + t('errorCreateRoom'));
-            }
+                enableInput(false); submitBtn.disabled = true; submitBtn.classList.add('submitted');
+            } catch (e) { alert('❌ ' + t('errorCreateRoom')); }
+            finally { submitLock = false; }
         }
 
         // ============================================================
-        // 搶答模式
+        // 公布答案
         // ============================================================
-        let buzzTimerInterval = null;
-        let buzzListenerUnsub = null;
-
-        function startBuzzMode(countdownSeconds) {
-            // 隱藏一般作答區，顯示搶答畫面
-            choiceGrid.classList.add('hidden');
-            textInputWrap.classList.add('hidden');
-            submitBtn.disabled = true;
-            submitBtn.classList.add('submitted');
-
-            let remain = countdownSeconds;
-            timerDisplay.textContent = remain;
-            timerDisplay.className = 'stu-timer';
-            setStatus('⚡ ' + t('buzzCountdown'), 'var(--warning)');
-
-            // 建立或顯示搶答按鈕
-            let buzzBtn = document.getElementById('buzzBtn');
-            if (!buzzBtn) {
-                buzzBtn = document.createElement('button');
-                buzzBtn.id = 'buzzBtn';
-                buzzBtn.className = 'choice-btn';
-                buzzBtn.style.cssText = 'width:100%; font-size:28px; min-height:80px; background:linear-gradient(135deg,#f59e0b,#d97706); color:white; border:none; margin-top:10px;';
-                buzzBtn.textContent = '⚡';
-                buzzBtn.disabled = true;
-                answerArea.appendChild(buzzBtn);
-            }
-            buzzBtn.style.display = 'block';
-            buzzBtn.disabled = true;
-
-            // 監聽房間的搶答狀態變化
-            if (buzzListenerUnsub) buzzListenerUnsub();
-            const roomRef = doc(db, 'rooms', STATE.roomId);
-            buzzListenerUnsub = onSnapshot(roomRef, (snap) => {
-                const d = snap.data();
-                if (d && d.buzzActive === false && STATE.buzzActive) {
-                    // 教師端關閉搶答
-                    STATE.buzzActive = false;
-                    STATE.buzzLocked = false;
-                    if (buzzBtn) buzzBtn.style.display = 'none';
-                    clearBuzzTimer();
-                    setStatus(t('buzzOver'), 'var(--text-secondary)');
-                }
+        function revealCorrectAnswer(answer) {
+            choiceBtns.forEach(btn => {
+                if (btn.dataset.choice === answer) btn.classList.add('correct');
+                else if (btn.classList.contains('selected')) btn.classList.add('wrong');
+            });
+            setStatus(`📢 ${t('correct')}：${answer}`, 'var(--success)');
+        }
+                // ============================================================
+        // 投票功能
+        // ============================================================
+        function openVoteModal() {
+            STATE.voteLocked = false;
+            voteModal.classList.remove('hidden');
+            voteOptionsList.innerHTML = STATE.voteOptions.map(opt => 
+                `<button class="vote-option-btn" data-option="${opt}">${opt}</button>`
+            ).join('');
+            
+            // 選項點擊（可更改選擇）
+            voteOptionsList.querySelectorAll('.vote-option-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (STATE.voteLocked) return;
+                    voteOptionsList.querySelectorAll('.vote-option-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                });
             });
 
-            // 倒數
+            voteSubmitBtn.disabled = false;
+            voteSubmitBtn.onclick = async () => {
+                if (STATE.voteLocked) return;
+                const selected = voteOptionsList.querySelector('.vote-option-btn.selected');
+                if (!selected) { alert('請選擇一個選項'); return; }
+                STATE.voteLocked = true;
+                voteSubmitBtn.disabled = true;
+                
+                // 寫入投票記錄（每個學生 1 次寫入）
+                try {
+                    const voteRef = doc(db, 'rooms', STATE.roomId, 'votes', STATE.studentId);
+                    await setDoc(voteRef, {
+                        studentId: STATE.studentId,
+                        name: STATE.studentName,
+                        option: selected.dataset.option,
+                        timestamp: serverTimestamp(),
+                    });
+                    voteOptionsList.querySelectorAll('.vote-option-btn').forEach(b => b.disabled = true);
+                    voteSubmitBtn.textContent = '✅ ' + t('voteSubmitted');
+                } catch (e) {
+                    console.warn('投票寫入失敗', e);
+                    STATE.voteLocked = false;
+                    voteSubmitBtn.disabled = false;
+                }
+            };
+
+            voteCloseBtn.onclick = () => {
+                voteModal.classList.add('hidden');
+                if (!STATE.voteLocked) STATE.voteLocked = true; // 未投票關閉視為棄權
+            };
+        }
+
+        function showVoteResults(results) {
+            voteModal.classList.remove('hidden');
+            const maxVotes = Math.max(...Object.values(results), 1);
+            voteOptionsList.innerHTML = Object.entries(results).map(([option, count]) => {
+                const pct = Math.round((count / maxVotes) * 100);
+                const isTop = count === maxVotes && count > 0;
+                return `<div style="display:flex; align-items:center; gap:8px; padding:4px 0;">
+                    <span style="font-weight:600;">${isTop ? '👑 ' : ''}${option}</span>
+                    <div style="flex:1; height:8px; background:rgba(0,0,0,0.05); border-radius:4px; overflow:hidden;">
+                        <div style="width:${pct}%; height:100%; background:var(--primary); border-radius:4px;"></div>
+                    </div>
+                    <span style="font-weight:600;">${count}</span>
+                </div>`;
+            }).join('');
+            voteSubmitBtn.style.display = 'none';
+            voteCloseBtn.textContent = '關閉';
+            voteCloseBtn.onclick = () => voteModal.classList.add('hidden');
+            // 5 秒後自動關閉
+            clearTimeout(window._voteResultTimer);
+            window._voteResultTimer = setTimeout(() => voteModal.classList.add('hidden'), 5000);
+        }
+
+        // ============================================================
+        // 搶答功能（彈窗版）
+        // ============================================================
+        function openBuzzModal(countdownSeconds) {
+            STATE.buzzLocked = false;
+            let remain = countdownSeconds;
+            buzzModal.classList.remove('hidden');
+            buzzCountdownDisplay.textContent = remain;
+            buzzCountdownDisplay.style.color = 'var(--text-primary)';
+            buzzBtn.disabled = true;
+            buzzBtn.textContent = '⏳ ' + t('buzzCountdown');
+            buzzBtn.style.background = 'rgba(255,255,255,0.5)';
+            buzzBtn.style.color = 'var(--text-muted)';
+
             clearBuzzTimer();
             buzzTimerInterval = setInterval(() => {
                 remain--;
-                timerDisplay.textContent = remain;
-                if (remain <= 3) timerDisplay.className = 'stu-timer urgent';
+                buzzCountdownDisplay.textContent = remain;
+                if (remain <= 3) buzzCountdownDisplay.style.color = 'var(--danger)';
                 if (remain <= 0) {
                     clearBuzzTimer();
-                    timerDisplay.textContent = '⚡';
-                    timerDisplay.className = 'stu-timer urgent';
-                    setStatus('🔴 ' + t('buzzOver'), 'var(--danger)');
+                    buzzCountdownDisplay.textContent = '⚡';
+                    buzzCountdownDisplay.style.color = 'var(--danger)';
                     // 啟用搶答按鈕
-                    if (buzzBtn && !STATE.buzzLocked) {
+                    if (!STATE.buzzLocked) {
                         buzzBtn.disabled = false;
-                        buzzBtn.textContent = '🔴 搶答！';
+                        buzzBtn.textContent = '🔴 ' + t('buzzBtn');
                         buzzBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                        buzzBtn.style.color = 'white';
                     }
                 }
             }, 1000);
 
             // 搶答按鈕事件（只允許點一次）
             buzzBtn.onclick = async () => {
-                if (STATE.buzzLocked || !STATE.buzzActive) return;
+                if (STATE.buzzLocked) return;
                 STATE.buzzLocked = true;
                 buzzBtn.disabled = true;
-                buzzBtn.textContent = '✅ 已搶答';
+                buzzBtn.textContent = '✅ ' + t('buzzDone');
                 buzzBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-                setStatus('✅ ' + t('studentSubmitted'), 'var(--success)');
+                buzzBtn.style.color = 'white';
 
                 // 寫入搶答記錄（每個學生 1 次寫入）
                 try {
@@ -1018,24 +1048,20 @@
                     console.warn('搶答寫入失敗', e);
                 }
             };
+
+            buzzCloseBtn.onclick = () => closeBuzzModal();
         }
 
+        function closeBuzzModal() {
+            clearBuzzTimer();
+            buzzModal.classList.add('hidden');
+            STATE.buzzActive = false;
+            STATE.buzzLocked = true;
+        }
+
+        let buzzTimerInterval = null;
         function clearBuzzTimer() {
             if (buzzTimerInterval) { clearInterval(buzzTimerInterval); buzzTimerInterval = null; }
-        }
-
-        // ============================================================
-        // 公布答案
-        // ============================================================
-        function revealCorrectAnswer(answer) {
-            choiceBtns.forEach(btn => {
-                if (btn.dataset.choice === answer) {
-                    btn.classList.add('correct');
-                } else if (btn.classList.contains('selected') && btn.dataset.choice !== answer) {
-                    btn.classList.add('wrong');
-                }
-            });
-            setStatus(`📢 ${t('correct')}：${answer}`, 'var(--success)');
         }
 
         // ============================================================
@@ -1050,7 +1076,6 @@
         });
 
         roomInput.addEventListener('input', () => {
-            // 自動偵測 4 碼
             if (roomInput.value.length === 4 && /^\d{4}$/.test(roomInput.value)) {
                 joinRoom();
             }
@@ -1103,7 +1128,7 @@
             }
 
             updateAllTexts();
-            console.log('📝 學生端 v4.0 已啟動！');
+            console.log('📝 學生端 v4.1 已啟動！');
         }
 
         init();
