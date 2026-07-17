@@ -1516,7 +1516,8 @@
         async function sendBroadcast() {
             const msg = broadcastInput.value.trim();
             if (!msg) { alert(t('broadcastPlaceholder')); return; }
-            await updateDoc(doc(db, 'rooms', STATE.roomId), { broadcastMsg: msg });
+            // broadcastAt 讓學生端可以分辨「這是新的一次廣播」，避免每次房間文件更新（例如鎖定、計時、投票…）都誤觸發跑馬燈重播
+            await updateDoc(doc(db, 'rooms', STATE.roomId), { broadcastMsg: msg, broadcastAt: serverTimestamp() });
             broadcastInput.value = '';
             broadcastModal.classList.remove('show');
             alert(t('broadcastSent'));

@@ -426,6 +426,7 @@
             myAnswer: null,
             rosterData: {},
             allStudents: [],
+            lastBroadcastAt: null,
             // 投票
             voteActive: false,
             voteOptions: [],
@@ -689,6 +690,8 @@
             if (teacherCommandUnsub) { teacherCommandUnsub(); teacherCommandUnsub = null; }
             if (myAnswerUnsub) { myAnswerUnsub(); myAnswerUnsub = null; }
             if (voteListenerUnsub) { voteListenerUnsub(); voteListenerUnsub = null; }
+            clearTimeout(teacherCommandRetryTimer); teacherCommandRetryCount = 0;
+            clearTimeout(myAnswerRetryTimer);
             clearTimer(); clearBuzzTimer();
         }
 
@@ -717,11 +720,19 @@
         // ============================================================
         let teacherCommandUnsub = null;
         let voteListenerUnsub = null;
+        let teacherCommandRetryTimer = null;
+        let teacherCommandRetryCount = 0;
 
         function listenTeacherCommands() {
-            if (teacherCommandUnsub) teacherCommandUnsub();
+            if (teacherCommandUnsub) { teacherCommandUnsub(); teacherCommandUnsub = null; }
+            if (!STATE.roomId || !STATE.isLoggedIn) return;
             const roomRef = doc(db, 'rooms', STATE.roomId);
             teacherCommandUnsub = onSnapshot(roomRef, async (snapshot) => {
+                // 連線恢復：清除重試計數與狀態提示
+                if (teacherCommandRetryCount > 0) {
+                    teacherCommandRetryCount = 0;
+                    if (STATE.isLoggedIn) setStatus('✅ ' + t('reconnected'), 'var(--success)');
+                }
                 const data = snapshot.data();
                 if (!data) return;
 
@@ -733,10 +744,17 @@
                     return;
                 }
 
-                // 跑馬燈
+                // 跑馬燈（只在「新」廣播時觸發，避免其他欄位更新誤觸發重播）
                 const msg = data.broadcastMsg?.trim() || '';
-                if (msg) {
+                const broadcastAtMs = data.broadcastAt?.toMillis ? data.broadcastAt.toMillis() : null;
+                const isNewBroadcast = msg && broadcastAtMs && broadcastAtMs !== STATE.lastBroadcastAt;
+                if (isNewBroadcast) {
+                    STATE.lastBroadcastAt = broadcastAtMs;
+                    clearTimeout(marqueeArea._timeout);
+                    marqueeArea.classList.remove('scroll', 'active');
                     marqueeSpan.textContent = '📢 ' + msg;
+                    // 觸發 reflow 讓移除/加回 class 能重新啟動 CSS animation
+                    void marqueeArea.offsetWidth;
                     marqueeArea.classList.add('active');
                     if (msg.length > 10) {
                         marqueeArea.classList.add('scroll');
@@ -747,7 +765,6 @@
                         }, { once: true });
                     } else {
                         marqueeArea.classList.remove('scroll');
-                        clearTimeout(marqueeArea._timeout);
                         marqueeArea._timeout = setTimeout(() => {
                             marqueeArea.classList.remove('active');
                             marqueeSpan.textContent = '';
@@ -814,15 +831,33 @@
                     STATE.voteLocked = false; STATE.buzzLocked = false;
                     resetUI(); enableInput(true);
                 }
+            }, (err) => {
+                console.warn('教師指令監聽失敗，將自動重試', err);
+                teacherCommandUnsub = null;
+                scheduleTeacherCommandRetry();
             });
+        }
+
+        function scheduleTeacherCommandRetry() {
+            if (!STATE.isLoggedIn) return;
+            if (STATE.isLoggedIn) setStatus('⚠️ ' + t('reconnecting'), 'var(--danger)');
+            clearTimeout(teacherCommandRetryTimer);
+            teacherCommandRetryCount++;
+            // 指數退避，最長等 15 秒重試一次
+            const delay = Math.min(15000, 1000 * Math.pow(2, Math.min(teacherCommandRetryCount, 4)));
+            teacherCommandRetryTimer = setTimeout(() => {
+                if (STATE.isLoggedIn && STATE.roomId) listenTeacherCommands();
+            }, delay);
         }
 
         // ============================================================
         // 監聽自己的答案（僅 1 個 onSnapshot）
         // ============================================================
         let myAnswerUnsub = null;
+        let myAnswerRetryTimer = null;
         function listenMyAnswer() {
-            if (myAnswerUnsub) myAnswerUnsub();
+            if (myAnswerUnsub) { myAnswerUnsub(); myAnswerUnsub = null; }
+            if (!STATE.roomId || !STATE.studentId || !STATE.isLoggedIn) return;
             const ansRef = doc(db, 'rooms', STATE.roomId, 'answers', STATE.studentId);
             myAnswerUnsub = onSnapshot(ansRef, (snapshot) => {
                 if (snapshot.exists()) {
@@ -837,6 +872,13 @@
                         submitBtn.disabled = true; submitBtn.classList.add('submitted');
                     }
                 }
+            }, (err) => {
+                console.warn('答案監聽失敗，將自動重試', err);
+                myAnswerUnsub = null;
+                clearTimeout(myAnswerRetryTimer);
+                myAnswerRetryTimer = setTimeout(() => {
+                    if (STATE.isLoggedIn && STATE.roomId) listenMyAnswer();
+                }, 3000);
             });
         }
 
@@ -1111,6 +1153,21 @@
             if (STATE.isLoggedIn && STATE.isAnswering) {
                 e.preventDefault();
                 e.returnValue = '';
+            }
+        });
+
+        // iPad 從背景切回前景，或網路恢復時，強制重新訂閱監聽器
+        // （iOS Safari 常在背景休眠後讓底層長連線失效，但不一定會觸發 onSnapshot 的 error callback）
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && STATE.isLoggedIn && STATE.roomId) {
+                listenTeacherCommands();
+                listenMyAnswer();
+            }
+        });
+        window.addEventListener('online', () => {
+            if (STATE.isLoggedIn && STATE.roomId) {
+                listenTeacherCommands();
+                listenMyAnswer();
             }
         });
 
