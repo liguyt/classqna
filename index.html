@@ -1212,6 +1212,8 @@
             if (histChoice) {
                 histChoice.answers.forEach(a => { a.earnedScore = (a.choice === answer) ? score : 0; });
             }
+            // 累計得分持久化寫回 Firestore，避免瀏覽器重新整理後分數消失
+            updateDoc(doc(db, 'rooms', STATE.roomId), { cumulativeScores: STATE.cumulativeScores }).catch(() => {});
             updateCards();
             updateCharts();
             gotoPage5Btn.disabled = false;
@@ -1364,7 +1366,18 @@
         function updateCharts() { updateRankList(); }
 
         function updateRankList() {
-            const sorted = Object.entries(STATE.cumulativeScores).sort((a, b) => b[1] - a[1]).slice(0, 20);
+            let sorted = Object.entries(STATE.cumulativeScores);
+            if (rankSortAsc) {
+                // 依座號升冪排序（相容一般學生ID「年級-班級-座號」與自訂人數教室的「temp_座號」格式）
+                sorted.sort((a, b) => {
+                    const seatA = parseInt((a[0].match(/(\d+)$/) || [0, 0])[1], 10) || 0;
+                    const seatB = parseInt((b[0].match(/(\d+)$/) || [0, 0])[1], 10) || 0;
+                    return seatA - seatB;
+                });
+            } else {
+                // 預設：依分數降冪排序
+                sorted.sort((a, b) => b[1] - a[1]);
+            }
             if (sorted.length === 0) {
                 rankList.innerHTML = `<div style="color:var(--text-muted); padding:20px; text-align:center;" data-i18n="noScore">${t('noScore')}</div>`;
                 return;
@@ -1373,10 +1386,16 @@
             sorted.forEach(([id, score], idx) => {
                 const name = getStudentName(id);
                 let rankClass = 'rank-item';
-                if (idx === 0) rankClass += ' top1';
-                if (idx === 1) rankClass += ' top2';
-                if (idx === 2) rankClass += ' top3';
-                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`;
+                // 名次徽章仍依「分數排名」計算，而不是目前顯示順序（即使切換成依座號排序，名次徽章也應維持原本的分數排名）
+                let scoreRankIdx = idx;
+                if (rankSortAsc) {
+                    const scoreSorted = Object.entries(STATE.cumulativeScores).sort((a, b) => b[1] - a[1]);
+                    scoreRankIdx = scoreSorted.findIndex(([sid]) => sid === id);
+                }
+                if (scoreRankIdx === 0) rankClass += ' top1';
+                if (scoreRankIdx === 1) rankClass += ' top2';
+                if (scoreRankIdx === 2) rankClass += ' top3';
+                const medal = scoreRankIdx === 0 ? '🥇' : scoreRankIdx === 1 ? '🥈' : scoreRankIdx === 2 ? '🥉' : `${scoreRankIdx + 1}`;
                 html += `<div class="${rankClass}"><span class="rank-num">${medal}</span><span class="rank-name">${name}</span><span class="rank-score">${score} ${t('score')}</span></div>`;
             });
             rankList.innerHTML = html;
@@ -1431,6 +1450,8 @@
                     const parent = this.closest('.text-list-item');
                     const badge = parent.querySelector('.score-badge');
                     if (badge) badge.textContent = `${STATE.cumulativeScores[studentId] || 0} 分`;
+                    // 累計得分持久化寫回 Firestore，避免瀏覽器重新整理後分數消失
+                    updateDoc(doc(db, 'rooms', STATE.roomId), { cumulativeScores: STATE.cumulativeScores }).catch(() => {});
                 });
             });
         }
@@ -2036,6 +2057,38 @@
             const resultList = document.getElementById('buzzResultList');
             const buzzReset = document.getElementById('buzzReset');
 
+            // 監聽搶答結果（獨立函式，開始搶答時立刻呼叫，重新打開視窗時也能重新接上）
+            // 目前固定只取「反應最快前 10 名」；若要改成列出全部學生的快慢排序，
+            // 只要把下面 limit(10) 拿掉或調大即可，作法上難度差不多，因為 Firestore 本身就是照 timestamp 排序整份清單，
+            // limit 只是「要顯示前幾筆」，不影響排序方式或效能負擔。
+            function startBuzzResultsListener() {
+                if (STATE.buzzUnsubscribe) { STATE.buzzUnsubscribe(); STATE.buzzUnsubscribe = null; }
+                const buzzRef = collection(db, 'rooms', STATE.roomId, 'buzzes');
+                STATE.buzzUnsubscribe = onSnapshot(query(buzzRef, orderBy('timestamp', 'asc'), limit(10)), (snap) => {
+                    resultList.innerHTML = '';
+                    let rank = 1;
+                    snap.forEach(docSnap => {
+                        const d = docSnap.data();
+                        const medals = ['🥇','🥈','🥉'];
+                        const medal = rank <= 3 ? medals[rank-1] : `${rank}`;
+                        resultList.innerHTML += `<div style="padding:4px 0;">${medal} ${d.name}</div>`;
+                        rank++;
+                    });
+                    if (snap.empty) {
+                        resultList.innerHTML = `<div style="color:var(--text-muted); text-align:center;">尚無學生搶答</div>`;
+                    }
+                }, (err) => console.warn('搶答結果監聽失敗', err));
+            }
+
+            // 重新開啟工具視窗時，依目前 Firestore 狀態恢復正確畫面，而不是每次都跳回初始設定畫面
+            if (STATE.buzzActive) {
+                setupArea.style.display = 'none';
+                countdownArea.style.display = 'none';
+                resultArea.style.display = 'block';
+                buzzReset.style.display = 'inline-flex';
+                startBuzzResultsListener();
+            }
+
             // 秒數調整
             document.getElementById('buzzMinus').onclick = () => {
                 if (buzzSeconds > 1) { buzzSeconds--; document.getElementById('buzzSecondsDisplay').textContent = buzzSeconds; }
@@ -2061,8 +2114,12 @@
                 countdownArea.style.display = 'block';
                 countdownDisplay.textContent = remain;
 
+                // 從「開始搶答」這一刻就立刻開始監聽結果（不用等倒數結束），
+                // 這樣教師從第一秒就能即時看到誰按了，也避免只在計時器結束那一刻才訂閱造成的邊界問題
+                startBuzzResultsListener();
+
                 // 開始倒數
-                buzzInterval = setInterval(async () => {
+                buzzInterval = setInterval(() => {
                     remain--;
                     countdownDisplay.textContent = remain;
                     if (remain <= 0) {
@@ -2074,23 +2131,6 @@
                         // buzzActive 代表「搶答彈窗應保持開啟」，倒數結束後學生端的搶答鈕才剛剛從灰轉亮，
                         // 若此時把 buzzActive 設 false，學生端會立刻把彈窗關掉，導致學生根本按不到搶答鈕。
                         // buzzActive 要維持 true，直到老師按「關閉」或「再來一輪」才結束。
-
-                        // 開始監聽搶答結果
-                        const buzzRef = collection(db, 'rooms', STATE.roomId, 'buzzes');
-                        STATE.buzzUnsubscribe = onSnapshot(query(buzzRef, orderBy('timestamp', 'asc'), limit(10)), (snap) => {
-                            resultList.innerHTML = '';
-                            let rank = 1;
-                            snap.forEach(docSnap => {
-                                const d = docSnap.data();
-                                const medals = ['🥇','🥈','🥉'];
-                                const medal = rank <= 3 ? medals[rank-1] : `${rank}`;
-                                resultList.innerHTML += `<div style="padding:4px 0;">${medal} ${d.name}</div>`;
-                                rank++;
-                            });
-                            if (snap.empty) {
-                                resultList.innerHTML = `<div style="color:var(--text-muted); text-align:center;">尚無學生搶答</div>`;
-                            }
-                        }, (err) => console.warn('搶答結果監聽失敗', err));
                     }
                 }, 1000);
             };
