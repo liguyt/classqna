@@ -43,7 +43,7 @@ export const en = {
     voteTitle: 'Live Vote', voteDesc: 'Create vote options, sync to students',
     voteOptionPlaceholder: 'Option name', voteAddOption: 'Add', voteStart: 'Start Vote', voteStop: 'Stop Vote',
     voteClear: 'Clear', voteNoOptions: 'No options. Add some.', voteNeedOptions: 'At least 2 options required',
-    voteStarted: 'Vote started', voteStopped: 'Vote stopped',
+    voteStarted: 'Vote started', voteStopped: 'Vote stopped', voteStopReveal: 'End & Reveal Results',
     groupTitle: 'Group Scoring', groupNamePlaceholder: 'Group name', groupAdd: 'Add',
     groupReset: 'Reset Scores', groupDeleteConfirm: 'Delete all groups?', groupNoGroups: 'No groups yet',
     groupConfirmReset: 'Reset all scores?', minimize: 'Minimize', start: 'Start',

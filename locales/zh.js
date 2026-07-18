@@ -43,7 +43,7 @@ export const zh = {
     voteTitle: '即時投票', voteDesc: '建立投票選項，學生端即時同步',
     voteOptionPlaceholder: '輸入選項名稱', voteAddOption: '新增', voteStart: '開始投票', voteStop: '停止投票',
     voteClear: '清除', voteNoOptions: '尚無選項，請加入投票選項', voteNeedOptions: '至少需要 2 個選項',
-    voteStarted: '投票已開始', voteStopped: '投票已停止',
+    voteStarted: '投票已開始', voteStopped: '投票已停止', voteStopReveal: '結束投票並公布結果',
     groupTitle: '小組評分', groupNamePlaceholder: '輸入小組名稱', groupAdd: '新增',
     groupReset: '重置分數', groupDeleteConfirm: '確定要刪除所有小組嗎？',
     groupNoGroups: '尚無小組，請新增', groupConfirmReset: '確定要重置所有小組分數嗎？',
