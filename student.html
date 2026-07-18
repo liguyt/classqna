@@ -278,7 +278,7 @@
 
         <!-- 題目區 -->
         <div class="stu-question" id="questionArea">
-            <span class="material-symbols-outlined">book_open</span>
+            <span class="material-symbols-outlined">menu_book</span>
             <span id="questionText">等待教師出題...</span>
             <span class="q-score" id="scoreDisplay">1分</span>
         </div>
@@ -427,6 +427,7 @@
             rosterData: {},
             allStudents: [],
             lastBroadcastAt: null,
+            lastVoteResultsAt: null,
             // 投票
             voteActive: false,
             voteOptions: [],
@@ -679,6 +680,7 @@
             STATE.isLocked = false; STATE.isAnswering = false; STATE.myAnswer = null;
             STATE.voteActive = false; STATE.voteLocked = false;
             STATE.buzzActive = false; STATE.buzzLocked = false;
+            STATE.lastBroadcastAt = null; STATE.lastVoteResultsAt = null;
             answerArea.classList.add('hidden'); submitArea.classList.add('hidden');
             loginScreen.classList.remove('hidden');
             classSelect.value = ''; seatSelect.innerHTML = `<option value="">${t('studentSelectSeat')}</option>`; seatSelect.disabled = true;
@@ -800,12 +802,17 @@
                     openVoteModal();
                 } else if (!data.voteActive && STATE.voteActive) {
                     STATE.voteActive = false;
-                    STATE.voteLocked = false;
-                    voteModal.classList.add('hidden');
                 }
-                // 投票結果公布
-                if (data.voteResults && !data.voteActive && STATE.voteLocked) {
+                // 投票結果公布（用 voteResultsAt 時間戳判斷是否為「新」結果，避免其他欄位更新誤觸發重播；
+                // 派送給所有學生，不限於已投票者）
+                const voteResultsAtMs = data.voteResultsAt?.toMillis ? data.voteResultsAt.toMillis() : null;
+                if (data.voteResults && voteResultsAtMs && voteResultsAtMs !== STATE.lastVoteResultsAt) {
+                    STATE.lastVoteResultsAt = voteResultsAtMs;
                     showVoteResults(data.voteResults);
+                } else if (!data.voteActive && (!data.voteResults || Object.keys(data.voteResults).length === 0)) {
+                    // 老師清除投票（尚未產生結果）時關閉彈窗
+                    voteModal.classList.add('hidden');
+                    STATE.voteLocked = false;
                 }
 
                 // 作答狀態
@@ -968,6 +975,7 @@
         // ============================================================
         function openVoteModal() {
             STATE.voteLocked = false;
+            clearTimeout(window._voteResultTimer);
             voteModal.classList.remove('hidden');
             voteOptionsList.innerHTML = STATE.voteOptions.map(opt => 
                 `<button class="vote-option-btn" data-option="${opt}">${opt}</button>`
@@ -982,7 +990,10 @@
                 });
             });
 
+            // 還原上一輪投票結果畫面留下的狀態（否則下一輪送出按鈕會永久消失）
+            voteSubmitBtn.style.display = '';
             voteSubmitBtn.disabled = false;
+            voteSubmitBtn.textContent = t('voteSubmit');
             voteSubmitBtn.onclick = async () => {
                 if (STATE.voteLocked) return;
                 const selected = voteOptionsList.querySelector('.vote-option-btn.selected');
@@ -1029,7 +1040,7 @@
                 </div>`;
             }).join('');
             voteSubmitBtn.style.display = 'none';
-            voteCloseBtn.textContent = '關閉';
+            voteCloseBtn.textContent = t('close');
             voteCloseBtn.onclick = () => voteModal.classList.add('hidden');
             // 5 秒後自動關閉
             clearTimeout(window._voteResultTimer);

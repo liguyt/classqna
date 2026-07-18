@@ -577,6 +577,7 @@
             sortByTime: false,
             questionType: 'choice',
             cumulativeScores: {},
+            roundAwarded: {},
             currentPage: 1,
             isPublished: false,
             isStopped: false,
@@ -922,6 +923,7 @@
                 STATE.currentAnswers = {};
                 STATE.history = [];
                 STATE.cumulativeScores = {};
+                STATE.roundAwarded = {};
                 STATE.specifiedStudents = [];
                 STATE.isPublished = false;
                 STATE.isStopped = false;
@@ -1058,6 +1060,7 @@
 
             STATE.currentAnswers = {};
             STATE.specifiedStudents = [];
+            STATE.roundAwarded = {};
             STATE.isPublished = true;
             STATE.isStopped = false;
             STATE.questionType = qType;
@@ -1201,7 +1204,13 @@
                 const ans = STATE.currentAnswers[id];
                 if (ans.choice === answer) {
                     STATE.cumulativeScores[id] = (STATE.cumulativeScores[id] || 0) + score;
+                    STATE.roundAwarded[id] = score;
                 }
+            }
+            // 把本題實得分數寫回歷史紀錄，供匯出 Excel 使用
+            const histChoice = STATE.history.find(h => h.roundId === STATE.currentRoundId);
+            if (histChoice) {
+                histChoice.answers.forEach(a => { a.earnedScore = (a.choice === answer) ? score : 0; });
             }
             updateCards();
             updateCharts();
@@ -1390,7 +1399,7 @@
                 const ans = STATE.currentAnswers[id] || null;
                 const text = ans?.text || '(未送出)';
                 const hasAnswer = !!ans;
-                const isChecked = (STATE.cumulativeScores[id] || 0) > 0;
+                const isChecked = (STATE.roundAwarded[id] || 0) > 0;
 
                 html += `<div class="text-list-item" style="background:${hasAnswer ? 'var(--success-light)' : 'rgba(255,255,255,0.3)'};">
                             <input type="checkbox" data-student-id="${id}" ${isChecked ? 'checked' : ''} ${!hasAnswer ? 'disabled' : ''} />
@@ -1407,8 +1416,16 @@
                     const s = STATE.questionScore || 1;
                     if (this.checked) {
                         STATE.cumulativeScores[studentId] = (STATE.cumulativeScores[studentId] || 0) + s;
+                        STATE.roundAwarded[studentId] = s;
                     } else {
                         STATE.cumulativeScores[studentId] = Math.max(0, (STATE.cumulativeScores[studentId] || 0) - s);
+                        STATE.roundAwarded[studentId] = 0;
+                    }
+                    // 把本題實得分數寫回歷史紀錄，供匯出 Excel 使用
+                    const histText = STATE.history.find(h => h.roundId === STATE.currentRoundId);
+                    if (histText) {
+                        const a = histText.answers.find(a => a.studentId === studentId);
+                        if (a) a.earnedScore = STATE.roundAwarded[studentId] || 0;
                     }
                     updateRankList();
                     const parent = this.closest('.text-list-item');
@@ -1438,6 +1455,7 @@
             STATE.correctAnswer = null;
             STATE.isRevealed = false;
             STATE.specifiedStudents = [];
+            STATE.roundAwarded = {};
             STATE.isPublished = false;
             STATE.isStopped = false;
             STATE.currentQuestion = 0;
@@ -1489,7 +1507,8 @@
                             isCorrect = '❌ 錯誤';
                         }
                     } else if (h.type === 'text') {
-                        earnedScore = STATE.cumulativeScores[ans.studentId] || 0;
+                        // 優先使用該題自己記錄的實得分數；若因為老師還沒批改而沒有記錄，才退回顯示 0
+                        earnedScore = (typeof ans.earnedScore === 'number') ? ans.earnedScore : 0;
                         isCorrect = earnedScore > 0 ? '✅ 正確' : '';
                     }
                     rows.push([
@@ -1670,6 +1689,8 @@
             let voteOptions = [];
             let voteResults = {};
             let voteActive = false;
+            let votesSubUnsub = null; // 監聽 votes 子集合，統計即時票數
+
             toolModalContent.innerHTML = `
                 <div class="modal-title"><span class="material-symbols-outlined">how_to_vote</span> <span data-i18n="voteTitle">${t('voteTitle')}</span></div>
                 <div style="display:flex;gap:8px;margin-bottom:10px;">
@@ -1679,7 +1700,7 @@
                 <div id="toolVoteOptions" class="vote-options"></div>
                 <div style="display:flex;gap:10px;margin-top:8px;">
                     <button class="btn btn-success" id="toolVoteStart"><span class="material-symbols-outlined">play_arrow</span> ${t('voteStart')}</button>
-                    <button class="btn btn-danger" id="toolVoteStop"><span class="material-symbols-outlined">stop</span> ${t('voteStop')}</button>
+                    <button class="btn btn-danger" id="toolVoteStop"><span class="material-symbols-outlined">stop</span> ${t('voteStopReveal')}</button>
                     <button class="btn btn-ghost" id="toolVoteClear"><span class="material-symbols-outlined">delete</span> ${t('voteClear')}</button>
                 </div>`;
             toolModal.classList.add('show');
@@ -1687,10 +1708,29 @@
             const optContainer = document.getElementById('toolVoteOptions');
             function render() {
                 const total = Object.values(voteResults).reduce((a,b)=>a+b,0) || 1;
+                const maxVotes = Math.max(...Object.values(voteResults), 0);
                 optContainer.innerHTML = voteOptions.map(opt => {
                     const cnt = voteResults[opt] || 0;
-                    return `<div class="vote-option"><span>${opt}</span><div class="vote-bar"><div class="vote-fill" style="width:${Math.round(cnt/total*100)}%;"></div></div><span>${cnt}</span></div>`;
+                    const isTop = maxVotes > 0 && cnt === maxVotes;
+                    return `<div class="vote-option"><span>${isTop ? '👑 ' : ''}${opt}</span><div class="vote-bar"><div class="vote-fill" style="width:${Math.round(cnt/total*100)}%;"></div></div><span>${cnt}</span></div>`;
                 }).join('') || `<div style="color:var(--text-muted);text-align:center;padding:12px;" data-i18n="voteNoOptions">${t('voteNoOptions')}</div>`;
+            }
+
+            // 即時統計 votes 子集合（學生投票寫入的地方），這是原本完全缺失的一步
+            function subscribeVotes() {
+                if (votesSubUnsub) { votesSubUnsub(); votesSubUnsub = null; }
+                if (!STATE.roomId) return;
+                const votesRef = collection(db, 'rooms', STATE.roomId, 'votes');
+                votesSubUnsub = onSnapshot(votesRef, (snap) => {
+                    const tally = {};
+                    voteOptions.forEach(o => tally[o] = 0);
+                    snap.forEach(d => {
+                        const opt = d.data().option;
+                        if (opt) tally[opt] = (tally[opt] || 0) + 1;
+                    });
+                    voteResults = tally;
+                    render();
+                }, (err) => console.warn('投票統計監聽失敗', err));
             }
 
             document.getElementById('toolVoteAddOption').onclick = () => {
@@ -1703,25 +1743,58 @@
             document.getElementById('toolVoteStart').onclick = async () => {
                 if (voteOptions.length < 2) { alert(t('voteNeedOptions')); return; }
                 voteActive = true;
-                if (STATE.roomId) await updateDoc(doc(db,'rooms',STATE.roomId), { voteActive:true, voteOptions, voteResults });
+                voteResults = {}; voteOptions.forEach(o => voteResults[o] = 0);
+                if (STATE.roomId) {
+                    // 清掉上一輪殘留的投票文件，避免混入新一輪的票數統計
+                    const votesRef = collection(db, 'rooms', STATE.roomId, 'votes');
+                    const oldSnap = await getDocs(votesRef);
+                    if (!oldSnap.empty) {
+                        const batch = writeBatch(db);
+                        oldSnap.forEach(d => batch.delete(d.ref));
+                        await batch.commit();
+                    }
+                    await updateDoc(doc(db,'rooms',STATE.roomId), { voteActive:true, voteOptions, voteResults, voteResultsAt: null });
+                    subscribeVotes();
+                }
                 render();
             };
             document.getElementById('toolVoteStop').onclick = async () => {
                 voteActive = false;
-                if (STATE.roomId) await updateDoc(doc(db,'rooms',STATE.roomId), { voteActive:false });
+                if (STATE.roomId) {
+                    // 結束投票並把目前統計到的最終票數＋時間戳寫回房間文件，
+                    // 學生端會用 voteResultsAt 判斷這是「新」結果並彈出含皇冠的結果視窗（推送給所有學生，不限投票過的人）
+                    await updateDoc(doc(db,'rooms',STATE.roomId), { voteActive:false, voteResults, voteResultsAt: serverTimestamp() });
+                }
+                render();
             };
             document.getElementById('toolVoteClear').onclick = async () => {
                 voteOptions = []; voteResults = {}; voteActive = false;
-                if (STATE.roomId) await updateDoc(doc(db,'rooms',STATE.roomId), { voteActive:false, voteOptions:[], voteResults:{} });
+                if (votesSubUnsub) { votesSubUnsub(); votesSubUnsub = null; }
+                if (STATE.roomId) {
+                    const votesRef = collection(db, 'rooms', STATE.roomId, 'votes');
+                    const oldSnap = await getDocs(votesRef);
+                    if (!oldSnap.empty) {
+                        const batch = writeBatch(db);
+                        oldSnap.forEach(d => batch.delete(d.ref));
+                        await batch.commit();
+                    }
+                    await updateDoc(doc(db,'rooms',STATE.roomId), { voteActive:false, voteOptions:[], voteResults:{}, voteResultsAt: null });
+                }
                 render();
             };
             if (STATE.roomId) {
+                // 監聽房間文件，用來在重新開啟投票工具視窗時恢復目前狀態（例如老師不小心關掉工具視窗又重新打開）
                 const unsub = onSnapshot(doc(db,'rooms',STATE.roomId), (snap) => {
                     const d = snap.data();
-                    if (d) { voteResults = d.voteResults || {}; voteActive = d.voteActive || false; render(); }
+                    if (!d) return;
+                    voteActive = d.voteActive || false;
+                    if (d.voteOptions && d.voteOptions.length) voteOptions = d.voteOptions;
+                    if (voteActive) subscribeVotes(); else if (d.voteResults) { voteResults = d.voteResults; render(); }
                 });
                 toolModal._voteUnsub = unsub;
+                if (voteActive) subscribeVotes();
             }
+            toolModal._votesSubCleanup = () => { if (votesSubUnsub) { votesSubUnsub(); votesSubUnsub = null; } };
             render();
         }
 
@@ -1997,25 +2070,27 @@
                         countdownArea.style.display = 'none';
                         resultArea.style.display = 'block';
                         buzzReset.style.display = 'inline-flex';
-                        await updateDoc(doc(db, 'rooms', STATE.roomId), { buzzActive: false });
-                        STATE.buzzActive = false;
+                        // 注意：這裡「不」把 buzzActive 設為 false！
+                        // buzzActive 代表「搶答彈窗應保持開啟」，倒數結束後學生端的搶答鈕才剛剛從灰轉亮，
+                        // 若此時把 buzzActive 設 false，學生端會立刻把彈窗關掉，導致學生根本按不到搶答鈕。
+                        // buzzActive 要維持 true，直到老師按「關閉」或「再來一輪」才結束。
 
                         // 開始監聽搶答結果
                         const buzzRef = collection(db, 'rooms', STATE.roomId, 'buzzes');
                         STATE.buzzUnsubscribe = onSnapshot(query(buzzRef, orderBy('timestamp', 'asc'), limit(10)), (snap) => {
                             resultList.innerHTML = '';
                             let rank = 1;
-                            snapshot.forEach(doc => {
-                                const d = doc.data();
+                            snap.forEach(docSnap => {
+                                const d = docSnap.data();
                                 const medals = ['🥇','🥈','🥉'];
                                 const medal = rank <= 3 ? medals[rank-1] : `${rank}`;
                                 resultList.innerHTML += `<div style="padding:4px 0;">${medal} ${d.name}</div>`;
                                 rank++;
                             });
-                            if (snapshot.empty) {
+                            if (snap.empty) {
                                 resultList.innerHTML = `<div style="color:var(--text-muted); text-align:center;">尚無學生搶答</div>`;
                             }
-                        });
+                        }, (err) => console.warn('搶答結果監聽失敗', err));
                     }
                 }, 1000);
             };
@@ -2032,6 +2107,11 @@
                 const batch = writeBatch(db);
                 snap.forEach(d => batch.delete(d.ref));
                 await batch.commit();
+
+                // 把 buzzActive 寫回 false，讓所有學生端的搶答彈窗關閉、解除搶答鎖定，
+                // 這樣下一輪「開始搶答」時 false→true 的變化才能讓學生端重新彈出視窗
+                await updateDoc(doc(db, 'rooms', STATE.roomId), { buzzActive: false });
+                STATE.buzzActive = false;
 
                 // 重置 UI
                 buzzSeconds = 5;
@@ -2310,8 +2390,10 @@
             if (e.target === toolModal) {
                 toolModal.classList.remove('show');
                 if (toolModal._voteUnsub) { toolModal._voteUnsub(); toolModal._voteUnsub = null; }
+                if (toolModal._votesSubCleanup) { toolModal._votesSubCleanup(); toolModal._votesSubCleanup = null; }
                 if (toolModal._groupUnsub) { toolModal._groupUnsub(); toolModal._groupUnsub = null; }
                 if (toolModal._buzzUnsub) { toolModal._buzzUnsub(); toolModal._buzzUnsub = null; }
+                if (STATE.buzzUnsubscribe) { STATE.buzzUnsubscribe(); STATE.buzzUnsubscribe = null; }
                 if (timerToolInterval) { clearInterval(timerToolInterval); timerToolInterval = null; timerToolRunning = false; }
             }
         });
