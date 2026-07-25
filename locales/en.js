@@ -1,4 +1,7 @@
 export const en = {
+    imageType: 'Image (Draw/Upload)',
+    bgImageOptional: 'Background Image (Optional)',
+    uploadImage: 'Choose File / Photo',
     appName: 'Wutai Elementary',
     roomCodeLabel: 'Room Code',
     onlineCount: 'Online',

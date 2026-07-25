@@ -1,4 +1,7 @@
 export const zh = {
+    imageType: '圖片題 (畫圖/上傳)',
+    bgImageOptional: '背景圖片 (選填)',
+    uploadImage: '選擇檔案 / 拍照',
     appName: '霧臺國小',
     roomCodeLabel: '教室代碼',
     onlineCount: '線上人數',
