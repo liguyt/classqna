@@ -1,6 +1,53 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <script>
+        window.alert = function(msg) {
+            console.log("ALERT:", msg);
+            const overlay = document.createElement('div');
+            overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);";
+            const box = document.createElement('div');
+            box.style.cssText = "background:#fff;padding:24px;border-radius:12px;min-width:320px;max-width:400px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.2);font-family:sans-serif;";
+            const msgEl = document.createElement('p');
+            msgEl.innerText = msg;
+            msgEl.style.cssText = "margin-bottom:24px;color:#333;white-space:pre-wrap;line-height:1.5;font-size:16px;";
+            const btnOk = document.createElement('button');
+            btnOk.innerText = "確定";
+            btnOk.style.cssText = "background:#3b82f6;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;width:100%;font-size:16px;";
+            btnOk.onclick = () => document.body.removeChild(overlay);
+            box.appendChild(msgEl);
+            box.appendChild(btnOk);
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+        };
+        window.asyncConfirm = function(msg) {
+            return new Promise(resolve => {
+                const overlay = document.createElement('div');
+                overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);";
+                const box = document.createElement('div');
+                box.style.cssText = "background:#fff;padding:24px;border-radius:12px;min-width:320px;max-width:400px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.2);font-family:sans-serif;";
+                const msgEl = document.createElement('p');
+                msgEl.innerText = msg;
+                msgEl.style.cssText = "margin-bottom:24px;color:#333;white-space:pre-wrap;line-height:1.5;font-size:16px;";
+                const btnGroup = document.createElement('div');
+                btnGroup.style.cssText = "display:flex;gap:12px;justify-content:center;";
+                const btnCancel = document.createElement('button');
+                btnCancel.innerText = "取消";
+                btnCancel.style.cssText = "background:#f1f5f9;color:#475569;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;flex:1;font-size:16px;";
+                btnCancel.onclick = () => { document.body.removeChild(overlay); resolve(false); };
+                const btnOk = document.createElement('button');
+                btnOk.innerText = "確定";
+                btnOk.style.cssText = "background:#ef4444;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;flex:1;font-size:16px;";
+                btnOk.onclick = () => { document.body.removeChild(overlay); resolve(true); };
+                btnGroup.appendChild(btnCancel);
+                btnGroup.appendChild(btnOk);
+                box.appendChild(msgEl);
+                box.appendChild(btnGroup);
+                overlay.appendChild(box);
+                document.body.appendChild(overlay);
+            });
+        };
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>霧臺國小 - 學生作答</title>
@@ -9,14 +56,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
 
     <!-- Firebase SDK -->
-    <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js"
-            }
-        }
-    </script>
 
     <!-- 主視覺樣式 -->
     <link rel="stylesheet" href="css/style.css" />
@@ -128,6 +167,7 @@
         }
         .stu-timer.urgent { color: var(--danger); animation: pulse 0.5s infinite; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* 作答區 */
         .stu-answer {
@@ -252,6 +292,41 @@
             .stu-submit button { font-size: 20px; padding: 16px; }
         }
     </style>
+<script>
+window.showImageModal = function(url) {
+    if (window.currentImageModalOverlay) {
+        document.body.removeChild(window.currentImageModalOverlay);
+        window.currentImageModalOverlay = null;
+    }
+    const overlay = document.createElement('div');
+    overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;backdrop-filter:blur(4px);";
+    
+    const img = document.createElement('img');
+    img.src = url;
+    img.style.cssText = "max-width:90vw;max-height:85vh;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.5);";
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = "關閉";
+    closeBtn.style.cssText = "margin-top:16px;padding:8px 24px;background:#6b7280;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer;";
+    closeBtn.onclick = () => {
+        if (window.currentImageModalOverlay) {
+            document.body.removeChild(window.currentImageModalOverlay);
+            window.currentImageModalOverlay = null;
+        }
+    };
+    
+    overlay.appendChild(img);
+    overlay.appendChild(closeBtn);
+    document.body.appendChild(overlay);
+    window.currentImageModalOverlay = overlay;
+};
+window.closeImageModal = function() {
+    if (window.currentImageModalOverlay) {
+        document.body.removeChild(window.currentImageModalOverlay);
+        window.currentImageModalOverlay = null;
+    }
+};
+</script>
 </head>
 <body>
 
@@ -298,6 +373,21 @@
                 <textarea id="textInput" placeholder="請輸入你的答案..." disabled></textarea>
                 <div class="char-count" id="charCount">0 字</div>
             </div>
+            <div class="image-canvas-wrap hidden" id="imageCanvasWrap" style="position:relative; width:100%; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                <div style="display:flex; gap:8px; align-items:center; width:100%; justify-content:center; flex-wrap:wrap;">
+                    <button class="btn btn-sm btn-ghost" id="colorBlack" style="background:#000; width:30px; height:30px; border-radius:50%; border:2px solid #ccc;"></button>
+                    <button class="btn btn-sm btn-ghost" id="colorRed" style="background:#ef4444; width:30px; height:30px; border-radius:50%;"></button>
+                    <button class="btn btn-sm btn-ghost" id="colorBlue" style="background:#3b82f6; width:30px; height:30px; border-radius:50%;"></button>
+                    <button class="btn btn-sm btn-ghost" id="colorGreen" style="background:#22c55e; width:30px; height:30px; border-radius:50%;"></button>
+                    <button class="btn btn-sm btn-ghost" id="undoCanvasBtn" style="border:1px solid #ddd; border-radius:8px; padding:4px 10px; font-size:14px;"><span class="material-symbols-outlined" style="font-size:16px;">undo</span> 復原</button>
+                    <button class="btn btn-sm btn-ghost" id="clearCanvasBtn" style="border:1px solid #ddd; border-radius:8px; padding:4px 10px; font-size:14px;"><span class="material-symbols-outlined" style="font-size:16px;">delete</span> 清除</button>
+                    <label id="studentImageInputLabel" class="btn btn-sm btn-ghost" style="border:1px solid #ddd; border-radius:8px; padding:4px 10px; font-size:14px; cursor:pointer; display:flex; align-items:center; color:var(--primary);">
+                        <span class="material-symbols-outlined" style="font-size:16px; margin-right:4px;">photo_camera</span> <span data-i18n="uploadImage">選擇檔案 / 拍照</span>
+                        <input type="file" id="studentImageInput" accept="image/*, image/jpeg, image/png" capture="environment" style="display:none;" />
+                    </label>
+                </div>
+                <canvas id="drawingCanvas" style="border:1px solid #ddd; border-radius:8px; touch-action:none; background:#fff; max-width:100%;" width="400" height="300"></canvas>
+            </div>
         </div>
 
         <!-- 送出按鈕 -->
@@ -329,6 +419,14 @@
                 <div class="buzz-display" id="buzzCountdownDisplay">5</div>
                 <button class="login-join" id="buzzBtn" disabled data-i18n="buzzBtn">搶答</button>
                 <button class="btn-close" id="buzzCloseBtn" data-i18n="close">關閉</button>
+            </div>
+        </div>
+        
+        <!-- 等待畫面 -->
+        <div class="stu-modal-overlay hidden" id="waitOverlay" style="background:rgba(255,255,255,0.9); z-index:900;">
+            <div style="text-align:center; color:var(--primary);">
+                <span class="material-symbols-outlined" style="font-size:64px; animation:spin 2s linear infinite;">sync</span>
+                <div style="font-size:20px; font-weight:700; margin-top:12px;" data-i18n="studentWaiting">等待下一題開始...</div>
             </div>
         </div>
 
@@ -457,6 +555,13 @@
         const choiceBtns = choiceGrid.querySelectorAll('.choice-btn');
         const textInputWrap = $('#textInputWrap');
         const textInput = $('#textInput');
+        const imageCanvasWrap = $('#imageCanvasWrap');
+        const drawingCanvas = $('#drawingCanvas');
+        const clearCanvasBtn = $('#clearCanvasBtn');
+        const colorBlack = $('#colorBlack');
+        const colorRed = $('#colorRed');
+        const colorBlue = $('#colorBlue');
+        const colorGreen = $('#colorGreen');
         const charCount = $('#charCount');
         const submitArea = $('#submitArea');
         const submitBtn = $('#submitBtn');
@@ -672,7 +777,7 @@
         // ============================================================
         async function changeStudent() {
             if (STATE.isAnswering && STATE.isLocked) { alert(t('errorNoAnswer')); return; }
-            if (!confirm(t('studentChange'))) return;
+            if (!await window.asyncConfirm(t('studentChange'))) return;
             try { await deleteDoc(doc(db, 'rooms', STATE.roomId, 'students', STATE.studentId)); } catch (e) {}
             cleanupListeners();
             STATE.isLoggedIn = false;
@@ -710,11 +815,21 @@
         function resetUI() {
             choiceBtns.forEach(b => { b.classList.remove('selected'); b.disabled = true; });
             textInput.value = ''; textInput.disabled = true; charCount.textContent = '0 字';
+            if (drawContext) {
+                window.fillWhiteBg();
+                if (STATE.currentQuestionImageUrl) {
+                    loadCanvasBackground(STATE.currentQuestionImageUrl);
+                }
+                if (window.clearCanvasHistory) window.clearCanvasHistory();
+            }
             submitBtn.disabled = true; submitBtn.classList.remove('submitted');
             timerDisplay.textContent = '--'; timerDisplay.className = 'stu-timer';
             questionText.textContent = '等待教師出題...'; scoreDisplay.textContent = '1分';
             marqueeArea.classList.remove('active', 'scroll'); marqueeSpan.textContent = '';
             setStatus('等待教師開始');
+            
+            const waitOverlay = document.getElementById('waitOverlay');
+            if (waitOverlay) waitOverlay.classList.add('hidden');
         }
 
         // ============================================================
@@ -773,10 +888,22 @@
                         }, 8000);
                     }
                 }
+                
+                // 圖片廣播
+                const imgUrl = data.broadcastImageUrl?.trim() || '';
+                const imgAtMs = data.broadcastImageAt?.toMillis ? data.broadcastImageAt.toMillis() : null;
+                const isNewImg = imgUrl && imgAtMs && imgAtMs !== STATE.lastBroadcastImageAt;
+                if (isNewImg) {
+                    STATE.lastBroadcastImageAt = imgAtMs;
+                    if (window.showImageModal) window.showImageModal(imgUrl);
+                } else if (!imgUrl && window.closeImageModal) {
+                    window.closeImageModal();
+                }
 
                 // 題目
                 STATE.currentQuestion = data.currentQuestion || 0;
                 STATE.currentRoundId = data.currentRoundId || null;
+                STATE.currentQuestionImageUrl = data.questionImageUrl || null;
                 roundDisplay.textContent = t('studentRound').replace('{n}', STATE.currentQuestion);
                 questionText.textContent = data.questionNote || (STATE.currentQuestion > 0 ? `第 ${STATE.currentQuestion} 題` : '等待教師出題...');
                 STATE.questionType = data.questionType || 'choice';
@@ -815,11 +942,26 @@
                     STATE.voteLocked = false;
                 }
 
+                // 延長時間
+                if (data.extendTimer && data.extendTimer !== STATE.lastExtendTimer) {
+                    STATE.lastExtendTimer = data.extendTimer;
+                    if (STATE.isAnswering && window.extendStuTimer) {
+                        window.extendStuTimer(10);
+                    }
+                }
+
                 // 作答狀態
                 if (data.isAnswering && !STATE.buzzActive && !STATE.voteActive) {
                     STATE.isAnswering = true;
                     enableInput(true);
-                    if (data.timerSeconds) startTimer(data.timerSeconds);
+                    if (data.answeringStartedAt !== STATE.lastAnsweringStartedAt) {
+                        STATE.lastAnsweringStartedAt = data.answeringStartedAt;
+                        if (data.timerSeconds) {
+                            const startedMs = data.answeringStartedAt?.toMillis ? data.answeringStartedAt.toMillis() : Date.now();
+                            const elapsed = Math.floor((Date.now() - startedMs) / 1000);
+                            startTimer(data.timerSeconds, elapsed);
+                        }
+                    }
                 } else if (!data.buzzActive && !STATE.voteActive) {
                     STATE.isAnswering = false;
                     enableInput(false);
@@ -894,16 +1036,35 @@
         // ============================================================
         function enableInput(enabled) {
             const isChoice = (STATE.questionType === 'choice');
+            const isImage = (STATE.questionType === 'image');
             if (isChoice) {
                 choiceGrid.classList.remove('hidden');
                 textInputWrap.classList.add('hidden');
+                imageCanvasWrap.classList.add('hidden');
                 choiceBtns.forEach(b => { b.disabled = !enabled || STATE.isLocked; });
+            } else if (isImage) {
+                choiceGrid.classList.add('hidden');
+                textInputWrap.classList.add('hidden');
+                imageCanvasWrap.classList.remove('hidden');
+                const studentImageInputLabel = document.getElementById('studentImageInputLabel');
+                if (studentImageInputLabel) {
+                    studentImageInputLabel.style.display = STATE.currentQuestionImageUrl ? 'none' : 'flex';
+                }
             } else {
                 choiceGrid.classList.add('hidden');
                 textInputWrap.classList.remove('hidden');
+                imageCanvasWrap.classList.add('hidden');
                 textInput.disabled = !enabled || STATE.isLocked;
             }
             submitBtn.disabled = !enabled || STATE.isLocked;
+            
+            const waitOverlay = document.getElementById('waitOverlay');
+            if (STATE.isLocked && STATE.flowState !== 'idle') {
+                if (waitOverlay) waitOverlay.classList.remove('hidden');
+            } else {
+                if (waitOverlay) waitOverlay.classList.add('hidden');
+            }
+
             if (!enabled) { submitBtn.classList.add('submitted'); }
             else { submitBtn.classList.remove('submitted'); setStatus(t('studentAnswering'), 'var(--primary)'); }
         }
@@ -918,17 +1079,25 @@
         // 計時器
         // ============================================================
         let timerInterval = null;
-        function startTimer(seconds) {
+        let stuTimerRemain = 0;
+        function startTimer(seconds, elapsedSeconds = 0) {
             clearTimer();
-            let remain = seconds;
-            timerDisplay.textContent = remain + 's'; timerDisplay.className = 'stu-timer';
+            stuTimerRemain = Math.max(0, seconds - elapsedSeconds);
+            timerDisplay.textContent = stuTimerRemain + 's'; timerDisplay.className = 'stu-timer';
             timerInterval = setInterval(() => {
-                remain--;
-                timerDisplay.textContent = remain + 's';
-                timerDisplay.className = remain <= 5 ? 'stu-timer urgent' : 'stu-timer';
-                if (remain <= 0) { clearTimer(); timerDisplay.textContent = '⌛'; timerDisplay.className = 'stu-timer urgent'; }
+                stuTimerRemain--;
+                timerDisplay.textContent = stuTimerRemain + 's';
+                timerDisplay.className = stuTimerRemain <= 5 ? 'stu-timer urgent' : 'stu-timer';
+                if (stuTimerRemain <= 0) { clearTimer(); timerDisplay.textContent = '⌛'; timerDisplay.className = 'stu-timer urgent'; }
             }, 1000);
         }
+        window.extendStuTimer = function(sec) {
+            if (timerInterval) {
+                stuTimerRemain += sec;
+                timerDisplay.textContent = stuTimerRemain + 's';
+                timerDisplay.className = stuTimerRemain <= 5 ? 'stu-timer urgent' : 'stu-timer';
+            }
+        };
         function clearTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } timerDisplay.textContent = '--'; timerDisplay.className = 'stu-timer'; }
 
         // ============================================================
@@ -940,11 +1109,13 @@
             if (STATE.isLocked || STATE.isScreenLocked) return;
             if (!STATE.isAnswering) { alert(t('errorNotAnswering')); return; }
             const qType = STATE.questionType;
-            let choice = '', text = '';
+            let choice = '', text = '', imageUrl = '';
             if (qType === 'choice') {
                 const selected = choiceGrid.querySelector('.choice-btn.selected');
                 if (!selected) { alert(t('studentSelectSeat')); return; }
                 choice = selected.dataset.choice;
+            } else if (qType === 'image') {
+                imageUrl = drawingCanvas.toDataURL('image/jpeg', 0.8);
             } else {
                 text = textInput.value.trim();
                 if (!text) { alert(t('studentAnswering')); return; }
@@ -952,8 +1123,10 @@
             submitLock = true;
             try {
                 const ansRef = doc(db, 'rooms', STATE.roomId, 'answers', STATE.studentId);
-                await setDoc(ansRef, { studentId: STATE.studentId, name: STATE.studentName, roundId: STATE.currentRoundId, choice, text, timestamp: serverTimestamp() });
-                STATE.myAnswer = { choice, text }; STATE.isLocked = true;
+                const payload = { studentId: STATE.studentId, name: STATE.studentName, roundId: STATE.currentRoundId, choice, text, timestamp: serverTimestamp() };
+                if (qType === 'image') payload.imageUrl = imageUrl;
+                await setDoc(ansRef, payload);
+                STATE.myAnswer = { choice, text, imageUrl }; STATE.isLocked = true;
                 setStatus('✅ ' + t('studentSubmitted'), 'var(--success)');
                 enableInput(false); submitBtn.disabled = true; submitBtn.classList.add('submitted');
             } catch (e) { alert('❌ ' + t('errorCreateRoom')); }
@@ -1197,6 +1370,173 @@
 
             updateAllTexts();
             console.log('📝 學生端 v4.1 已啟動！');
+        }
+
+        // Canvas Drawing Setup
+        let isDrawing = false;
+        let drawColor = '#000000';
+        let drawContext = null;
+        if (drawingCanvas) {
+            drawContext = drawingCanvas.getContext('2d');
+            window.fillWhiteBg = function() {
+                drawContext.fillStyle = '#ffffff';
+                drawContext.fillRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            };
+            window.fillWhiteBg();
+            drawContext.lineWidth = 3;
+            drawContext.lineCap = 'round';
+            drawContext.lineJoin = 'round';
+
+            let canvasHistory = [];
+            let canvasStep = -1;
+            window.clearCanvasHistory = () => {
+                canvasHistory = [];
+                canvasStep = -1;
+            };
+            const saveCanvasState = () => {
+                canvasStep++;
+                if (canvasStep < canvasHistory.length) {
+                    canvasHistory.length = canvasStep;
+                }
+                canvasHistory.push(drawingCanvas.toDataURL());
+            };
+            const undoCanvasBtn = document.getElementById('undoCanvasBtn');
+            if (undoCanvasBtn) {
+                undoCanvasBtn.addEventListener('click', () => {
+                    if (!STATE.isAnswering || STATE.isLocked || STATE.isScreenLocked) return;
+                    if (canvasStep > 0) {
+                        canvasStep--;
+                        const img = new Image();
+                        img.onload = () => {
+                            window.fillWhiteBg();
+                            drawContext.drawImage(img, 0, 0);
+                        };
+                        img.src = canvasHistory[canvasStep];
+                    } else if (canvasStep === 0) {
+                        window.fillWhiteBg();
+                        if (STATE.currentQuestionImageUrl) {
+                            loadCanvasBackground(STATE.currentQuestionImageUrl);
+                        }
+                        canvasStep = -1;
+                        canvasHistory = [];
+                    }
+                });
+            }
+
+            const startDraw = (e) => {
+                if (!STATE.isAnswering || STATE.isLocked || STATE.isScreenLocked) return;
+                isDrawing = true;
+                const pos = getPos(e);
+                drawContext.beginPath();
+                drawContext.moveTo(pos.x, pos.y);
+            };
+            const draw = (e) => {
+                if (!isDrawing) return;
+                e.preventDefault(); 
+                const pos = getPos(e);
+                drawContext.lineTo(pos.x, pos.y);
+                drawContext.stroke();
+            };
+            const stopDraw = () => {
+                if (isDrawing) {
+                    isDrawing = false;
+                    drawContext.closePath();
+                    saveCanvasState();
+                }
+            };
+
+            const getPos = (e) => {
+                const rect = drawingCanvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const scaleX = drawingCanvas.width / rect.width;
+                const scaleY = drawingCanvas.height / rect.height;
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            };
+
+            drawingCanvas.addEventListener('mousedown', startDraw);
+            drawingCanvas.addEventListener('mousemove', draw);
+            window.addEventListener('mouseup', stopDraw);
+
+            drawingCanvas.addEventListener('touchstart', startDraw, {passive: false});
+            drawingCanvas.addEventListener('touchmove', draw, {passive: false});
+            window.addEventListener('touchend', stopDraw);
+            
+            const resetBorders = () => [colorBlack, colorRed, colorBlue, colorGreen].forEach(b => b.style.border = 'none');
+            const setColor = (btn, color) => {
+                btn.addEventListener('click', () => {
+                    resetBorders();
+                    btn.style.border = '2px solid #ccc';
+                    drawColor = color;
+                    drawContext.strokeStyle = drawColor;
+                });
+            };
+            setColor(colorBlack, '#000000');
+            setColor(colorRed, '#ef4444');
+            setColor(colorBlue, '#3b82f6');
+            setColor(colorGreen, '#22c55e');
+            
+            clearCanvasBtn.addEventListener('click', () => {
+                if (!STATE.isAnswering || STATE.isLocked || STATE.isScreenLocked) return;
+                window.fillWhiteBg();
+                if (STATE.currentQuestionImageUrl) {
+                    loadCanvasBackground(STATE.currentQuestionImageUrl);
+                }
+                if (window.clearCanvasHistory) window.clearCanvasHistory();
+            });
+
+            const studentImageInput = document.getElementById('studentImageInput');
+            if (studentImageInput) {
+                studentImageInput.addEventListener('change', (e) => {
+                    if (!STATE.isAnswering || STATE.isLocked || STATE.isScreenLocked) return;
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            let w = img.width, h = img.height;
+                            const max = 800;
+                            if (w > max || h > max) {
+                                if (w > h) { h = Math.round(h * (max / w)); w = max; }
+                                else { w = Math.round(w * (max / h)); h = max; }
+                            }
+                            drawingCanvas.width = w;
+                            drawingCanvas.height = h;
+                            window.fillWhiteBg();
+                            drawContext.lineWidth = 3;
+                            drawContext.lineCap = 'round';
+                            drawContext.lineJoin = 'round';
+                            drawContext.strokeStyle = drawColor;
+                            drawContext.drawImage(img, 0, 0, w, h);
+                            if (window.clearCanvasHistory) window.clearCanvasHistory();
+                            saveCanvasState();
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+        }
+        
+        function loadCanvasBackground(url) {
+            if (!drawContext) return;
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => {
+                drawingCanvas.width = img.width;
+                drawingCanvas.height = img.height;
+                window.fillWhiteBg();
+                drawContext.lineWidth = 3;
+                drawContext.lineCap = 'round';
+                drawContext.lineJoin = 'round';
+                drawContext.strokeStyle = drawColor;
+                drawContext.drawImage(img, 0, 0);
+            };
+            img.src = url;
         }
 
         init();

@@ -1,6 +1,233 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<script>
+window.showImageModal = function(url, canBroadcast = false, studentId = null) {
+    if (window.currentImageModalOverlay) {
+        document.body.removeChild(window.currentImageModalOverlay);
+        window.currentImageModalOverlay = null;
+    }
+    const overlay = document.createElement('div');
+    overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;backdrop-filter:blur(4px);";
+    
+    // Header with toolbar
+    const toolbar = document.createElement('div');
+    toolbar.style.cssText = "display:flex;gap:10px;margin-bottom:10px;background:#fff;padding:8px 16px;border-radius:8px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:95vw;";
+    
+    // Canvas container
+    const canvas = document.createElement('canvas');
+    canvas.style.cssText = "max-width:90vw;max-height:75vh;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.5);touch-action:none;background:#fff;";
+    
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let hasModified = false;
+    
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#ef4444'; // Default red for teacher
+        ctx.drawImage(img, 0, 0);
+    };
+    img.src = url;
+    
+    const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    };
+    
+    const startDraw = (e) => {
+        e.preventDefault();
+        isDrawing = true;
+        hasModified = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+    };
+    const draw = (e) => {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+    };
+    const endDraw = () => { isDrawing = false; ctx.closePath(); };
+    
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', endDraw);
+    
+    canvas.addEventListener('touchstart', startDraw, {passive: false});
+    canvas.addEventListener('touchmove', draw, {passive: false});
+    window.addEventListener('touchend', endDraw);
+    
+    // Tools
+    const colors = ['#ef4444', '#3b82f6', '#22c55e', '#000000'];
+    colors.forEach(c => {
+        const btn = document.createElement('div');
+        btn.style.cssText = `width:24px;height:24px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${c === '#ef4444' ? '#000' : 'transparent'};margin-right:4px;`;
+        btn.onclick = () => {
+            ctx.strokeStyle = c;
+            Array.from(toolbar.children).forEach(child => {
+                if (child.style.borderRadius === '50%') child.style.borderColor = 'transparent';
+            });
+            btn.style.borderColor = '#000';
+        };
+        toolbar.appendChild(btn);
+    });
+
+    let isBroadcasted = false;
+    const broadcastBtn = document.createElement('button');
+    if (canBroadcast) {
+        broadcastBtn.innerHTML = '<span class="material-symbols-outlined" style="vertical-align:middle;font-size:16px;">campaign</span> <span class="lbl">廣播此圖給全班</span>';
+        broadcastBtn.style.cssText = "margin-left:10px;padding:6px 12px;background:#3b82f6;color:white;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;";
+        broadcastBtn.onclick = () => {
+            if (!isBroadcasted) {
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                if (window.broadcastImageToClass) window.broadcastImageToClass(dataUrl);
+                broadcastBtn.querySelector('.lbl').textContent = "停止廣播";
+                broadcastBtn.style.background = "#ef4444";
+                isBroadcasted = true;
+            } else {
+                if (window.broadcastImageToClass) window.broadcastImageToClass('');
+                broadcastBtn.querySelector('.lbl').textContent = "廣播此圖給全班";
+                broadcastBtn.style.background = "#3b82f6";
+                isBroadcasted = false;
+            }
+        };
+        toolbar.appendChild(broadcastBtn);
+    }
+
+    const saveBtn = document.createElement('button');
+    if (studentId) {
+        saveBtn.innerHTML = '<span class="material-symbols-outlined" style="vertical-align:middle;font-size:16px;">save</span> <span style="margin-left:4px;">儲存覆蓋</span>';
+        saveBtn.style.cssText = "margin-left:10px;padding:6px 12px;background:#10b981;color:white;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;";
+        saveBtn.onclick = () => {
+            if (studentId && window.overwriteStudentImage) {
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                window.overwriteStudentImage(studentId, dataUrl);
+                hasModified = false;
+            }
+        };
+        toolbar.appendChild(saveBtn);
+    }
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = "關閉";
+    closeBtn.style.cssText = "margin-left:10px;padding:6px 12px;background:#6b7280;color:white;border:none;border-radius:4px;cursor:pointer;";
+    closeBtn.onclick = () => {
+        if (isBroadcasted && window.broadcastImageToClass) window.broadcastImageToClass(''); // Stop broadcast
+        window.removeEventListener('mouseup', endDraw);
+        window.removeEventListener('touchend', endDraw);
+        if (window.currentImageModalOverlay) {
+            document.body.removeChild(window.currentImageModalOverlay);
+            window.currentImageModalOverlay = null;
+        }
+    };
+    toolbar.appendChild(closeBtn);
+    
+    overlay.appendChild(toolbar);
+    overlay.appendChild(canvas);
+    document.body.appendChild(overlay);
+    window.currentImageModalOverlay = overlay;
+};
+</script>
+<script>
+window.asyncPrompt = function(msg) {
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);";
+        const box = document.createElement('div');
+        box.style.cssText = "background:#fff;padding:24px;border-radius:12px;min-width:320px;max-width:400px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.2);font-family:sans-serif;";
+        const msgEl = document.createElement('p');
+        msgEl.innerText = msg;
+        msgEl.style.cssText = "margin-bottom:16px;color:#333;white-space:pre-wrap;line-height:1.5;font-size:16px;";
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.style.cssText = "width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;margin-bottom:24px;font-size:16px;";
+        const btnGroup = document.createElement('div');
+        btnGroup.style.cssText = "display:flex;gap:12px;justify-content:center;";
+        const btnCancel = document.createElement('button');
+        btnCancel.innerText = "取消";
+        btnCancel.style.cssText = "background:#f1f5f9;color:#475569;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;flex:1;font-size:16px;";
+        btnCancel.onclick = () => { document.body.removeChild(overlay); resolve(null); };
+        const btnOk = document.createElement('button');
+        btnOk.innerText = "確定";
+        btnOk.style.cssText = "background:#3b82f6;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;flex:1;font-size:16px;";
+        btnOk.onclick = () => { document.body.removeChild(overlay); resolve(input.value); };
+        btnGroup.appendChild(btnCancel);
+        btnGroup.appendChild(btnOk);
+        box.appendChild(msgEl);
+        box.appendChild(input);
+        box.appendChild(btnGroup);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        input.focus();
+    });
+};
+window.prompt = function(msg) {
+    console.log("PROMPT ignored:", msg);
+    return null;
+}
+</script>
+    <script>
+        window.alert = function(msg) {
+            console.log("ALERT:", msg);
+            const overlay = document.createElement('div');
+            overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);";
+            const box = document.createElement('div');
+            box.style.cssText = "background:#fff;padding:24px;border-radius:12px;min-width:320px;max-width:400px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.2);font-family:sans-serif;";
+            const msgEl = document.createElement('p');
+            msgEl.innerText = msg;
+            msgEl.style.cssText = "margin-bottom:24px;color:#333;white-space:pre-wrap;line-height:1.5;font-size:16px;";
+            const btnOk = document.createElement('button');
+            btnOk.innerText = "確定";
+            btnOk.style.cssText = "background:#3b82f6;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;width:100%;font-size:16px;";
+            btnOk.onclick = () => document.body.removeChild(overlay);
+            box.appendChild(msgEl);
+            box.appendChild(btnOk);
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+        };
+        window.asyncConfirm = function(msg) {
+            return new Promise(resolve => {
+                const overlay = document.createElement('div');
+                overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);";
+                const box = document.createElement('div');
+                box.style.cssText = "background:#fff;padding:24px;border-radius:12px;min-width:320px;max-width:400px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.2);font-family:sans-serif;";
+                const msgEl = document.createElement('p');
+                msgEl.innerText = msg;
+                msgEl.style.cssText = "margin-bottom:24px;color:#333;white-space:pre-wrap;line-height:1.5;font-size:16px;";
+                const btnGroup = document.createElement('div');
+                btnGroup.style.cssText = "display:flex;gap:12px;justify-content:center;";
+                const btnCancel = document.createElement('button');
+                btnCancel.innerText = "取消";
+                btnCancel.style.cssText = "background:#f1f5f9;color:#475569;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;flex:1;font-size:16px;";
+                btnCancel.onclick = () => { document.body.removeChild(overlay); resolve(false); };
+                const btnOk = document.createElement('button');
+                btnOk.innerText = "確定";
+                btnOk.style.cssText = "background:#ef4444;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;flex:1;font-size:16px;";
+                btnOk.onclick = () => { document.body.removeChild(overlay); resolve(true); };
+                btnGroup.appendChild(btnCancel);
+                btnGroup.appendChild(btnOk);
+                box.appendChild(msgEl);
+                box.appendChild(btnGroup);
+                overlay.appendChild(box);
+                document.body.appendChild(overlay);
+            });
+        };
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>霧臺國小教室Q&A - 教師端</title>
@@ -9,14 +236,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
 
     <!-- Firebase SDK -->
-    <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js"
-            }
-        }
-    </script>
 
     <!-- XLSX -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js">
@@ -89,8 +308,8 @@
         /* Mini View 位置修正：浮在頁面標題同一列的右側 */
         .group-float {
             position: absolute;
-            top: 0;
-            right: 0;
+            top: 55px;
+            right: 10px;
             background: rgba(255,255,255,0.65);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
@@ -123,6 +342,7 @@
             text-align: center;
         }
     </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -223,7 +443,17 @@
                             <select id="questionTypeSelect">
                                 <option value="choice" data-i18n="choiceType">選擇題 (A/B/C/D)</option>
                                 <option value="text" data-i18n="textType">文字題 (自由輸入)</option>
+                                <option value="image" data-i18n="imageType">圖片題 (畫圖/上傳)</option>
                             </select>
+                            <div id="imageUploadArea" style="display:none; margin-top:12px; width:100%;">
+                                <label style="display:flex; align-items:center; gap:6px; font-weight:600;"><span class="material-symbols-outlined">image</span> <span data-i18n="bgImageOptional">背景圖片 (選填)</span></label>
+                                <label class="btn btn-outline" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px;">
+                                    <span class="material-symbols-outlined">photo_camera</span> <span data-i18n="uploadImage">選擇檔案 / 拍照</span>
+                                    <input type="file" id="questionImageInput" accept="image/*, image/jpeg, image/png" capture="environment" style="display:none;" />
+                                </label>
+                                <div id="questionImageFileName" style="font-size:12px; color:var(--text-secondary); margin-top:4px; text-align:center;"></div>
+                                <img id="questionImagePreview" style="max-width:100%; max-height:200px; display:none; margin-top:12px; border-radius:8px; border:1px solid rgba(0,0,0,0.1);" />
+                            </div>
                             <label><span class="material-symbols-outlined">star</span> <span data-i18n="score">配分</span></label>
                             <input type="number" id="questionScoreInput" min="1" max="10" value="1" />
                             <label><span class="material-symbols-outlined">timer</span> <span data-i18n="seconds">秒數</span></label>
@@ -266,9 +496,10 @@
                     <div class="page-subtitle" id="page3Subtitle" data-i18n="page3Subtitle">觀察學生作答情況，管理作答流程</div>
 
                     <div class="card-panel" style="flex:1; display:flex; flex-direction:column;">
-                        <div id="timerLargeContainer" style="text-align:center; padding:4px 0;">
+                        <div id="timerLargeContainer" style="text-align:center; padding:4px 0; position:relative;">
                             <div class="timer-large" id="timerLargeDisplay">--</div>
                             <div style="font-size:14px; color:var(--text-secondary);" id="timerLabel"><span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="waitingStart">等待開始</span></div>
+                            <button id="extendTimeBtn" class="btn btn-outline btn-sm" style="display:none; margin-top:8px; border-radius:16px;"><span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">add</span> 10s</button>
                         </div>
 
                         <div id="cardContainer" class="card-pool" style="min-height:60px; flex:1;">
@@ -453,6 +684,9 @@
                 <h3><span class="material-symbols-outlined" style="font-size:28px;">qr_code</span> <span data-i18n="qrTitle">掃描 QR Code 加入教室</span></h3>
                 <p id="qrModalRoomCode" data-i18n="qrRoomCode">教室代碼：----</p>
                 <div id="qrcodeDisplay"></div>
+                <div style="margin-top: 12px;">
+                    <a id="qrTestLink" href="#" target="_blank" style="font-size: 14px; color: var(--primary-color); text-decoration: underline;">在電腦上測試學生端 (點此開啟)</a>
+                </div>
                 <div id="qrStudentList" style="margin-top:12px; max-height:200px; overflow-y:auto; text-align:left; font-size:14px;">
                     <div style="color:var(--text-muted); text-align:center;" data-i18n="noStudents">尚無學生連線</div>
                 </div>
@@ -620,6 +854,9 @@
         const roomInfo = $('#roomInfo');
         const questionNoteInput = $('#questionNoteInput');
         const questionTypeSelect = $('#questionTypeSelect');
+        const imageUploadArea = $('#imageUploadArea');
+        const questionImageInput = $('#questionImageInput');
+        const questionImagePreview = $('#questionImagePreview');
         const questionScoreInput = $('#questionScoreInput');
         const customSeconds = $('#customSeconds');
         const publishBtn = $('#publishBtn');
@@ -627,6 +864,7 @@
         const timerLargeContainer = $('#timerLargeContainer');
         const timerLargeDisplay = $('#timerLargeDisplay');
         const timerLabel = $('#timerLabel');
+        const extendTimeBtn = $('#extendTimeBtn');
         const cardContainer = $('#cardContainer');
         const buzzResultArea = $('#buzzResultArea');
         const buzzResultList = $('#buzzResultList');
@@ -749,7 +987,7 @@
                 return true;
             } catch (e) {
                 console.warn('載入名單失敗', e);
-                const useCustom = confirm('⚠️ 無法載入學生名單。\n\n是否改用「無班級模式」繼續上課？');
+                const useCustom = await window.asyncConfirm('⚠️ 無法載入學生名單。\n\n是否改用「無班級模式」繼續上課？');
                 if (useCustom) {
                     customClassCheckbox.checked = true;
                     customStudentCount.disabled = false;
@@ -874,7 +1112,7 @@
             }
             const existingRoom = await checkExistingRoom(name);
             if (existingRoom) {
-                const confirmClose = confirm(`您已有進行中的教室（代碼：${existingRoom}），是否關閉舊教室並建立新教室？`);
+                const confirmClose = await window.asyncConfirm(`您已有進行中的教室（代碼：${existingRoom}），是否關閉舊教室並建立新教室？`);
                 if (confirmClose) {
                     await closeExistingRoom(existingRoom);
                 } else {
@@ -918,8 +1156,14 @@
                 await setDoc(doc(db, 'rooms', STATE.roomId, 'meta', 'info'), { questionCounter: 1 });
                 onlineCount.textContent = '0';
                 listenStudents();
-                STATE.currentQuestion = 0;
-                currentQuestionDisplay.textContent = `${t('currentQuestion')} 第 0 題`;
+                // Check current meta to know what question we're on
+                const metaSnap = await getDoc(doc(db, 'rooms', STATE.roomId, 'meta', 'info'));
+                if (metaSnap.exists()) {
+                    STATE.currentQuestion = (metaSnap.data().questionCounter || 1) - 1;
+                } else {
+                    STATE.currentQuestion = 0;
+                }
+                currentQuestionDisplay.textContent = `${t('currentQuestion')} 第 ${STATE.currentQuestion} 題`;
                 STATE.currentAnswers = {};
                 STATE.history = [];
                 STATE.cumulativeScores = {};
@@ -953,6 +1197,8 @@
             const basePath = base.substring(0, base.lastIndexOf('/') + 1);
             const url = basePath + 'student.html?room=' + roomId;
             qrModalRoomCode.textContent = `${t('roomCodeLabel')}：${roomId}`;
+            const qrTestLink = document.getElementById('qrTestLink');
+            if (qrTestLink) qrTestLink.href = url;
             try {
                 if (typeof QRCode === 'undefined') {
                     await new Promise((resolve, reject) => {
@@ -987,7 +1233,7 @@
                 btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
                     const studentId = btn.dataset.kick;
-                    if (!confirm(`確定要移除 ${studentId} 嗎？`)) return;
+                    if (!await window.asyncConfirm(`確定要移除 ${studentId} 嗎？`)) return;
                     try {
                         await deleteDoc(doc(db, 'rooms', STATE.roomId, 'students', studentId));
                     } catch (err) {
@@ -1018,6 +1264,52 @@
             }, (err) => { console.warn('監聽學生失敗', err); });
         }
 
+        let currentQuestionBase64 = '';
+
+        questionTypeSelect.addEventListener('change', () => {
+            if (questionTypeSelect.value === 'image') {
+                imageUploadArea.style.display = 'block';
+            } else {
+                imageUploadArea.style.display = 'none';
+            }
+            if (questionTypeSelect.value === 'choice') {
+                customSeconds.value = 20;
+            } else {
+                customSeconds.value = 60;
+            }
+        });
+
+        questionImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const fileNameDiv = document.getElementById('questionImageFileName');
+            if (!file) {
+                currentQuestionBase64 = '';
+                questionImagePreview.style.display = 'none';
+                if (fileNameDiv) fileNameDiv.textContent = '';
+                return;
+            }
+            if (fileNameDiv) fileNameDiv.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX = 800;
+                    let w = img.width, h = img.height;
+                    if (w > h && w > MAX) { h *= MAX/w; w = MAX; }
+                    else if (h > w && h > MAX) { w *= MAX/h; h = MAX; }
+                    canvas.width = w; canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    currentQuestionBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                    questionImagePreview.src = currentQuestionBase64;
+                    questionImagePreview.style.display = 'block';
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
         async function publishQuestion() {
             if (!STATE.roomId) { alert(t('errorNoRoom')); return; }
             if (STATE.flowState === 'answering') { alert(t('errorPublish')); return; }
@@ -1042,7 +1334,7 @@
             STATE.correctAnswer = null;
             STATE.isRevealed = false;
 
-            await updateDoc(doc(db, 'rooms', STATE.roomId), {
+            const roomUpdates = {
                 currentQuestion: qNum,
                 currentRoundId: roundId,
                 questionNote: note,
@@ -1053,7 +1345,13 @@
                 revealedAnswer: null,
                 clearAll: true,
                 specifiedStudents: [],
-            });
+            };
+            if (qType === 'image' && currentQuestionBase64) {
+                roomUpdates.questionImageUrl = currentQuestionBase64;
+            } else {
+                roomUpdates.questionImageUrl = null;
+            }
+            await updateDoc(doc(db, 'rooms', STATE.roomId), roomUpdates);
             await sleep(300);
             await updateDoc(doc(db, 'rooms', STATE.roomId), { clearAll: false });
             await setDoc(metaRef, { questionCounter: qNum + 1 });
@@ -1093,11 +1391,16 @@
             if (!STATE.roomId) return;
             if (STATE.flowState === 'idle' || STATE.flowState === 'stopped' || STATE.flowState === 'published') {
                 const sec = parseInt(customSeconds.value) || 20;
-                await updateDoc(doc(db, 'rooms', STATE.roomId), { isAnswering: true, timerSeconds: sec });
+                await updateDoc(doc(db, 'rooms', STATE.roomId), { 
+                    isAnswering: true, 
+                    timerSeconds: sec,
+                    answeringStartedAt: Date.now()
+                });
                 STATE.isAnswering = true;
                 STATE.flowState = 'answering';
                 startStopBtn.innerHTML = `<span class="material-symbols-outlined">stop</span> <span data-i18n="stopAnswering">${t('stopAnswering')}</span>`;
                 startStopBtn.className = 'btn btn-danger btn-lg';
+                extendTimeBtn.style.display = 'inline-flex';
                 startTeacherTimer(sec);
                 timerLabel.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="answering">${t('answering')}</span>`;
                 updateFlowButtons();
@@ -1108,6 +1411,7 @@
 
         async function stopRound() {
             clearTeacherTimer();
+            extendTimeBtn.style.display = 'none';
             timerLabel.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="stopped">${t('stopped')}</span>`;
             timerLargeDisplay.textContent = '⏹️';
             await updateDoc(doc(db, 'rooms', STATE.roomId), { isAnswering: false });
@@ -1124,25 +1428,27 @@
         }
 
         let teacherTimerInterval = null;
+        let teacherTimerRemain = 0;
 
         function startTeacherTimer(seconds) {
             clearTeacherTimer();
-            let remain = seconds;
-            timerLargeDisplay.textContent = remain;
+            teacherTimerRemain = seconds;
+            timerLargeDisplay.textContent = teacherTimerRemain;
             timerLargeDisplay.className = 'timer-large';
             teacherTimerInterval = setInterval(async () => {
-                remain--;
-                timerLargeDisplay.textContent = remain;
-                if (remain <= 5) {
+                teacherTimerRemain--;
+                timerLargeDisplay.textContent = teacherTimerRemain;
+                if (teacherTimerRemain <= 5) {
                     timerLargeDisplay.className = 'timer-large urgent';
                 } else {
                     timerLargeDisplay.className = 'timer-large';
                 }
-                if (remain <= 0) {
+                if (teacherTimerRemain <= 0) {
                     clearTeacherTimer();
                     timerLargeDisplay.textContent = '⏰';
                     timerLargeDisplay.className = 'timer-large urgent';
                     timerLabel.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">timer</span> <span data-i18n="timeUp">${t('timeUp')}</span>`;
+                    extendTimeBtn.style.display = 'none';
                     await stopRound();
                 }
             }, 1000);
@@ -1169,6 +1475,7 @@
                     name: data.name || data.studentId,
                     choice: data.choice || '',
                     text: data.text || '',
+                    imageUrl: data.imageUrl || '',
                     timestamp: data.timestamp?.toDate?.() || new Date(),
                 };
             });
@@ -1246,7 +1553,11 @@
                     const seat = id.replace('temp_', '');
                     let cls = 'card submitted';
                     let label = `T${seat}`;
-                    let sub = ans.choice || ans.text || '?';
+                    let sub = '?';
+                    if (STATE.questionType === 'choice') sub = ans.choice || '?';
+                    else if (STATE.questionType === 'image') sub = '🎨';
+                    else sub = ans.text || '?';
+                    
                     if (STATE.isRevealed && STATE.correctAnswer && STATE.questionType === 'choice') {
                         const isCorrect = (ans.choice === STATE.correctAnswer);
                         cls += isCorrect ? ' reveal-correct' : ' reveal-wrong';
@@ -1311,6 +1622,8 @@
                     } else {
                         if (STATE.questionType === 'choice') {
                             sub = `${ans.choice || '?'}`;
+                        } else if (STATE.questionType === 'image') {
+                            sub = `🎨 已送出`;
                         } else {
                             sub = `📝 ${ans.text || '(空白)'}`;
                         }
@@ -1343,7 +1656,7 @@
                         e.preventDefault();
                         const sid = el.dataset.studentId;
                         if (!sid) return;
-                        if (!confirm(`確定要將學生 ${el.dataset.studentName || sid} 踢出教室嗎？`)) return;
+                        if (!await window.asyncConfirm(`確定要將學生 ${el.dataset.studentName || sid} 踢出教室嗎？`)) return;
                         try {
                             await deleteDoc(doc(db, 'rooms', STATE.roomId, 'students', sid));
                             alert('已踢出該學生');
@@ -1407,6 +1720,14 @@
                 const roster = STATE.rosterData[cls] || [];
                 filtered.push(...roster.map(s => ({ ...s, className: cls })));
             }
+            if (STATE.customClassEnabled) {
+                const tempIds = Object.keys(STATE.currentAnswers).filter(id => id.startsWith('temp_'));
+                for (const id of tempIds) {
+                    const ans = STATE.currentAnswers[id];
+                    const seat = id.replace('temp_', '');
+                    filtered.push({ name: ans.name || `T${seat}`, number: seat, __id: id });
+                }
+            }
             if (filtered.length === 0) {
                 textGradingList.innerHTML = `<div style="color:var(--text-muted); padding:10px; text-align:center;" data-i18n="noStudents">${t('noStudents')}</div>`;
                 return;
@@ -1414,21 +1735,44 @@
             const score = STATE.questionScore || 1;
             let html = '';
             for (const s of filtered) {
-                const id = getStudentId(s);
+                const id = s.__id || getStudentId(s);
                 const ans = STATE.currentAnswers[id] || null;
-                const text = ans?.text || '(未送出)';
                 const hasAnswer = !!ans;
                 const isChecked = (STATE.roundAwarded[id] || 0) > 0;
 
-                html += `<div class="text-list-item" style="background:${hasAnswer ? 'var(--success-light)' : 'rgba(255,255,255,0.3)'};">
-                            <input type="checkbox" data-student-id="${id}" ${isChecked ? 'checked' : ''} ${!hasAnswer ? 'disabled' : ''} />
-                            <span class="seat">${s.number}號</span>
-                            <span class="name">${s.name}</span>
-                            <span class="answer-text">${text}</span>
-                            <span class="score-badge">${STATE.cumulativeScores[id] || 0} 分</span>
-                        </div>`;
+                if (STATE.questionType === 'image') {
+                    const imgUrl = ans?.imageUrl || '';
+                    html += `<div class="image-list-item" style="background:${hasAnswer ? 'var(--success-light)' : 'rgba(255,255,255,0.3)'}; border-radius:12px; padding:10px; text-align:center; position:relative; width:160px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border:1px solid rgba(0,0,0,0.05);">
+                                <div style="margin-bottom:6px; font-weight:600; font-size:14px;">${s.number}號 ${s.name}</div>
+                                <div style="min-height:100px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.02); border-radius:8px;">
+                                    ${hasAnswer && imgUrl ? `<img src="${imgUrl}" style="max-width:100%; max-height:140px; border-radius:8px; cursor:pointer; object-fit:contain;" onclick="window.showImageModal('${imgUrl}', true, '${id}')" />` : `<div style="color:#999; font-size:13px;">(未送出)</div>`}
+                                </div>
+                                <div style="margin-top:8px; display:flex; justify-content:center; align-items:center;">
+                                    <label style="cursor:pointer; font-size:14px; display:flex; align-items:center; gap:4px;"><input type="checkbox" data-student-id="${id}" ${isChecked ? 'checked' : ''} ${!hasAnswer ? 'disabled' : ''} style="transform:scale(1.2);" /> <span class="score-badge" style="margin-left:4px;">${STATE.cumulativeScores[id] || 0} 分</span></label>
+                                </div>
+                            </div>`;
+                } else {
+                    const text = ans?.text || '(未送出)';
+                    html += `<div class="text-list-item" style="background:${hasAnswer ? 'var(--success-light)' : 'rgba(255,255,255,0.3)'};">
+                                <input type="checkbox" data-student-id="${id}" ${isChecked ? 'checked' : ''} ${!hasAnswer ? 'disabled' : ''} />
+                                <span class="seat">${s.number}號</span>
+                                <span class="name">${s.name}</span>
+                                <span class="answer-text">${text}</span>
+                                <span class="score-badge">${STATE.cumulativeScores[id] || 0} 分</span>
+                            </div>`;
+                }
             }
             textGradingList.innerHTML = html;
+            
+            if (STATE.questionType === 'image') {
+                 textGradingList.style.display = 'flex';
+                 textGradingList.style.flexWrap = 'wrap';
+                 textGradingList.style.gap = '12px';
+                 textGradingList.style.justifyContent = 'center';
+            } else {
+                 textGradingList.style.display = 'block';
+            }
+
             textGradingList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                 cb.addEventListener('change', function() {
                     const studentId = this.dataset.studentId;
@@ -1466,7 +1810,7 @@
         }
 
         async function clearAllHistory() {
-            if (!confirm(t('groupDeleteConfirm') || '確定要清除所有紀錄，進入下一題嗎？\n（累計得分將保留）')) return;
+            if (!await window.asyncConfirm(t('groupDeleteConfirm') || '確定要清除所有紀錄，進入下一題嗎？\n（累計得分將保留）')) return;
             const metaRef = doc(db, 'rooms', STATE.roomId, 'meta', 'info');
             const metaSnap = await getDoc(metaRef);
             let nextQNum = 1;
@@ -1479,11 +1823,21 @@
             STATE.roundAwarded = {};
             STATE.isPublished = false;
             STATE.isStopped = false;
-            STATE.currentQuestion = 0;
+            
+            // Keep STATE.currentQuestion unchanged so the UI logic doesn't rollback to "Question 1" when updating buttons
             STATE.currentRoundId = null;
             STATE.flowState = 'idle';
 
-            currentQuestionDisplay.textContent = `${t('currentQuestion')} 第 0 題`;
+            currentQuestionDisplay.textContent = `${t('currentQuestion')} 第 ${STATE.currentQuestion} 題`;
+            
+            // 復原圖片上傳狀態
+            questionImageInput.value = '';
+            currentQuestionBase64 = '';
+            questionImagePreview.src = '';
+            questionImagePreview.style.display = 'none';
+            const fileNameDiv = document.getElementById('questionImageFileName');
+            if (fileNameDiv) fileNameDiv.textContent = '';
+
             publishBtn.innerHTML = `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', nextQNum)}`;
             publishStatus.innerHTML = `<span data-i18n="notPublished">${t('notPublished')}</span>`;
 
@@ -1508,18 +1862,29 @@
             alert(t('successCleared'));
         }
 
-        function exportExcel() {
+        async function exportExcel() {
             if (STATE.history.length === 0) { alert(t('noScore')); return; }
             const rows = [
                 [t('questionNote'), t('questionType'), t('score'), t('studentId'), t('studentName'), t('choice'), t('text'),
-                    t('correct'), t('earnedScore')
+                    t('correct'), t('earnedScore'), '圖片檔名'
                 ]
             ];
-            for (const h of STATE.history) {
+            
+            let zip = null;
+            let imgFolder = null;
+            let hasImage = false;
+            if (typeof JSZip !== 'undefined') {
+                zip = new JSZip();
+                imgFolder = zip.folder("images");
+            }
+
+            for (let qIdx = 0; qIdx < STATE.history.length; qIdx++) {
+                const h = STATE.history[qIdx];
                 const score = h.score || 1;
                 for (const ans of h.answers) {
                     let isCorrect = '';
                     let earnedScore = 0;
+                    let imageFilename = '';
                     if (h.type === 'choice') {
                         if (ans.choice && ans.choice === h.correctAnswer) {
                             isCorrect = '✅ 正確';
@@ -1527,14 +1892,23 @@
                         } else if (ans.choice) {
                             isCorrect = '❌ 錯誤';
                         }
-                    } else if (h.type === 'text') {
+                    } else if (h.type === 'text' || h.type === 'image') {
                         // 優先使用該題自己記錄的實得分數；若因為老師還沒批改而沒有記錄，才退回顯示 0
                         earnedScore = (typeof ans.earnedScore === 'number') ? ans.earnedScore : 0;
                         isCorrect = earnedScore > 0 ? '✅ 正確' : '';
+                        
+                        if (h.type === 'image' && ans.imageUrl && imgFolder) {
+                            const base64Data = ans.imageUrl.split(',')[1];
+                            if (base64Data) {
+                                imageFilename = `Q${qIdx + 1}_${ans.studentId}_${ans.name}.jpg`;
+                                imgFolder.file(imageFilename, base64Data, {base64: true});
+                                hasImage = true;
+                            }
+                        }
                     }
                     rows.push([
                         h.note || '',
-                        h.type === 'choice' ? '選擇題' : '文字題',
+                        h.type === 'choice' ? '選擇題' : (h.type === 'image' ? '圖片題' : '文字題'),
                         score,
                         ans.studentId || '',
                         ans.name || '',
@@ -1542,16 +1916,53 @@
                         ans.text || '',
                         isCorrect,
                         earnedScore,
+                        imageFilename
                     ]);
                 }
             }
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet(rows);
             XLSX.utils.book_append_sheet(wb, ws, '課堂記錄');
-            const fileName = `霧臺國小_課堂記錄_${STATE.roomId || 'class'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-            XLSX.writeFile(wb, fileName);
+            
+            if (hasImage && zip) {
+                const excelBuffer = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+                zip.file("課堂記錄.xlsx", excelBuffer);
+                const content = await zip.generateAsync({type:"blob"});
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(content);
+                a.download = `霧臺國小_課堂記錄與圖片_${STATE.roomId || 'class'}_${new Date().toISOString().slice(0, 10)}.zip`;
+                a.click();
+            } else {
+                const fileName = `霧臺國小_課堂記錄_${STATE.roomId || 'class'}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+            }
             alert(t('successExcelDownloaded'));
         }
+
+        window.broadcastImageToClass = async function(url) {
+            if (!STATE.roomId) return;
+            try {
+                await updateDoc(doc(db, 'rooms', STATE.roomId), {
+                    broadcastImageUrl: url,
+                    broadcastImageAt: serverTimestamp()
+                });
+                if (url) alert('已廣播圖片給全班！');
+            } catch(e) {
+                console.error(e);
+            }
+        };
+        window.overwriteStudentImage = async function(studentId, dataUrl) {
+            if (!STATE.roomId || !studentId) return;
+            try {
+                await updateDoc(doc(db, 'rooms', STATE.roomId, 'answers', studentId), {
+                    imageUrl: dataUrl
+                });
+                alert('已儲存並覆蓋學生的圖片！');
+            } catch(e) {
+                console.error(e);
+                alert('覆蓋失敗');
+            }
+        };
 
         async function sendBroadcast() {
             const msg = broadcastInput.value.trim();
@@ -1624,8 +2035,8 @@
             };
             document.getElementById('toolTimerStop').onclick = () => { clearInterval(timerToolInterval); timerToolRunning = false; };
             document.getElementById('toolTimerReset').onclick = () => { clearInterval(timerToolInterval); timerToolRunning = false; timerToolValue = 0; upd(); };
-            document.querySelectorAll('[data-timer-set]').forEach(b => b.onclick = () => {
-                if (timerToolRunning && !confirm('計時器正在運行，確定要重設嗎？')) return;
+            document.querySelectorAll('[data-timer-set]').forEach(b => b.onclick = async () => {
+                if (timerToolRunning && !await window.asyncConfirm('計時器正在運行，確定要重設嗎？')) return;
                 clearInterval(timerToolInterval); timerToolRunning = false;
                 timerToolMode = 'countdown'; timerToolValue = parseInt(b.dataset.timerSet); upd();
             });
@@ -1963,8 +2374,8 @@
                     updateDoc(doc(db, 'rooms', STATE.roomId), { groups, groupScores }).catch(() => {});
                 }
             });
-            document.getElementById('toolGroupReset').addEventListener('click', () => {
-                if (!confirm(t('groupConfirmReset'))) return;
+            document.getElementById('toolGroupReset').addEventListener('click', async () => {
+                if (!await window.asyncConfirm(t('groupConfirmReset'))) return;
                 for (const g of groups) groupScores[g] = 0;
                 STATE.groupScores = groupScores;
                 if (STATE.roomId) {
@@ -1972,8 +2383,8 @@
                 }
                 renderGroups();
             });
-            document.getElementById('toolGroupDeleteAll').addEventListener('click', () => {
-                if (!confirm(t('groupDeleteConfirm'))) return;
+            document.getElementById('toolGroupDeleteAll').addEventListener('click', async () => {
+                if (!await window.asyncConfirm(t('groupDeleteConfirm'))) return;
                 groups = [];
                 groupScores = {};
                 STATE.groups = [];
@@ -2012,7 +2423,7 @@
         // ============================================================
         // 🆕 搶答工具
         // ============================================================
-            function openBuzzTool() {
+        function openBuzzTool() {
             // 清理舊的搶答監聽器
             if (STATE.buzzUnsubscribe) {
                 STATE.buzzUnsubscribe();
@@ -2040,9 +2451,9 @@
                     <div class="timer-display" id="buzzCountdownDisplay" style="font-size:72px;">${buzzSeconds}</div>
                     <div style="color:var(--text-secondary);" data-i18n="buzzCountdown">${t('buzzCountdown')}</div>
                 </div>
-                <div id="buzzResultArea" style="display:none; margin-top:12px;">
+                <div id="buzzModalResultArea" style="display:none; margin-top:12px;">
                     <div style="font-weight:700; margin-bottom:6px;">🎯 <span data-i18n="buzzResult">${t('buzzResult')}</span></div>
-                    <div id="buzzResultList" style="max-height:200px; overflow-y:auto; text-align:left; padding:0 20px;"></div>
+                    <div id="buzzModalResultList" style="max-height:200px; overflow-y:auto; text-align:left; padding:0 20px;"></div>
                 </div>
                 <div style="display:flex; gap:10px; justify-content:center; margin-top:16px;">
                     <button class="btn btn-ghost btn-sm" id="buzzReset" style="display:none;"><span class="material-symbols-outlined">refresh</span> <span data-i18n="buzzReset">${t('buzzReset')}</span></button>
@@ -2052,9 +2463,9 @@
 
             const setupArea = document.getElementById('buzzSetupArea');
             const countdownArea = document.getElementById('buzzCountdownArea');
-            const resultArea = document.getElementById('buzzResultArea');
+            const resultArea = document.getElementById('buzzModalResultArea');
             const countdownDisplay = document.getElementById('buzzCountdownDisplay');
-            const resultList = document.getElementById('buzzResultList');
+            const resultList = document.getElementById('buzzModalResultList');
             const buzzReset = document.getElementById('buzzReset');
 
             // 監聽搶答結果（獨立函式，開始搶答時立刻呼叫，重新打開視窗時也能重新接上）
@@ -2064,14 +2475,21 @@
             function startBuzzResultsListener() {
                 if (STATE.buzzUnsubscribe) { STATE.buzzUnsubscribe(); STATE.buzzUnsubscribe = null; }
                 const buzzRef = collection(db, 'rooms', STATE.roomId, 'buzzes');
-                STATE.buzzUnsubscribe = onSnapshot(query(buzzRef, orderBy('timestamp', 'asc'), limit(10)), (snap) => {
+                STATE.buzzUnsubscribe = onSnapshot(query(buzzRef, orderBy('timestamp', 'asc'), limit(30)), (snap) => {
                     resultList.innerHTML = '';
                     let rank = 1;
                     snap.forEach(docSnap => {
                         const d = docSnap.data();
                         const medals = ['🥇','🥈','🥉'];
                         const medal = rank <= 3 ? medals[rank-1] : `${rank}`;
-                        resultList.innerHTML += `<div style="padding:4px 0;">${medal} ${d.name}</div>`;
+                        if (rank === 1) {
+                            resultList.innerHTML += `<div style="text-align:center; padding:10px 0; margin-bottom:10px; border-bottom:1px solid #ddd;">
+                                <div style="font-size:48px; line-height:1;">${medal}</div>
+                                <div style="font-size:32px; font-weight:700; color:var(--primary);">${d.name}</div>
+                            </div>`;
+                        } else {
+                            resultList.innerHTML += `<div style="padding:6px 0; font-size:18px; text-align:center;">${medal} ${d.name}</div>`;
+                        }
                         rank++;
                     });
                     if (snap.empty) {
@@ -2181,15 +2599,15 @@
 
         // ========== 管理後台 ==========
         let clickCount = 0, clickTimer = null;
-        document.querySelector('.brand')?.addEventListener('click', () => {
+        document.querySelector('.brand')?.addEventListener('click', async () => {
             clickCount++;
             if (clickTimer) clearTimeout(clickTimer);
             clickTimer = setTimeout(() => { clickCount = 0; }, 3000);
             if (clickCount >= 5) {
                 clickCount = 0;
-                const pwd = prompt('請輸入管理密碼：');
+                const pwd = await window.asyncPrompt('請輸入管理密碼：');
                 if (pwd === 'wt7902230') {
-                    if (confirm('確定要清除所有 Firebase 房間嗎？')) adminCleanRooms();
+                    if (await window.asyncConfirm('確定要清除所有 Firebase 房間嗎？')) adminCleanRooms();
                 } else if (pwd !== null) alert('密碼錯誤');
             }
         });
@@ -2305,10 +2723,10 @@
                     STATE.isRevealed = false;
                 }
             }
-            if (STATE.questionType === 'text') {
+            if (STATE.questionType === 'text' || STATE.questionType === 'image') {
                 choiceRevealArea.classList.add('hidden');
                 textGradingArea.classList.remove('hidden');
-                page4Subtitle.textContent = t('resultRevealDescText');
+                page4Subtitle.textContent = STATE.questionType === 'image' ? '檢視學生畫圖/圖片並給分' : t('resultRevealDescText');
                 renderTextGrading();
             } else {
                 choiceRevealArea.classList.remove('hidden');
@@ -2334,9 +2752,9 @@
 
         backToPage1.addEventListener('click', () => goToPage(1));
         backToPage2.addEventListener('click', () => goToPage(2));
-        backToPage3.addEventListener('click', () => {
+        backToPage3.addEventListener('click', async () => {
             if (STATE.flowState === 'answering') {
-                if (!confirm('正在作答中，返回上一頁將清空本題答案，確定嗎？')) return;
+                if (!await window.asyncConfirm('正在作答中，返回上一頁將清空本題答案，確定嗎？')) return;
             }
             goToPage(3);
         });
@@ -2345,6 +2763,14 @@
         enterRoomBtn.addEventListener('click', enterRoom);
         publishBtn.addEventListener('click', publishQuestion);
         startStopBtn.addEventListener('click', toggleStartStop);
+        extendTimeBtn.addEventListener('click', async () => {
+            if (STATE.roomId && STATE.flowState === 'answering') {
+                teacherTimerRemain += 10;
+                timerLargeDisplay.textContent = teacherTimerRemain;
+                if (teacherTimerRemain > 5) timerLargeDisplay.className = 'timer-large';
+                await updateDoc(doc(db, 'rooms', STATE.roomId), { extendTimer: Date.now() });
+            }
+        });
         viewTextAnswersBtn.addEventListener('click', viewTextAnswers);
 
         document.querySelectorAll('[data-answer]').forEach(btn => {
