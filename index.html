@@ -306,10 +306,10 @@ window.prompt = function(msg) {
         }
         /* Mini View 位置修正：浮在頁面標題同一列的右側 */
         .group-float {
-            position: absolute;
-            top: 55px;
+            position: fixed;
+            top: 95px;
             right: 10px;
-            background: rgba(255,255,255,0.65);
+            background: rgba(255,255,255,0.85);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255,255,255,0.7);
@@ -319,12 +319,15 @@ window.prompt = function(msg) {
             font-weight: 600;
             color: var(--text-primary);
             box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-            cursor: pointer;
-            z-index: 50;
+            cursor: grab;
+            z-index: 9999;
             display: none;
             gap: 8px;
             flex-wrap: wrap;
+            user-select: none;
+            touch-action: none;
         }
+        .group-float:active { cursor: grabbing; }
         .group-float.show {
             display: flex;
         }
@@ -342,7 +345,7 @@ window.prompt = function(msg) {
         }
     </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" crossorigin src="./assets/main-iJxrIzEt.js"></script>
+  <script type="module" crossorigin src="./assets/main-BMQuUDCB.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/en-CcQeNmRf.js">
   <link rel="stylesheet" crossorigin href="./assets/en-DmPmLLMl.css">
 </head>
