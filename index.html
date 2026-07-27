@@ -76,11 +76,11 @@ body {
 }
 /* ─── 頂部標題列 ─── */
 .top-bar {
-    position: sticky; top: 0; z-index: 50;
+    position: sticky; top: 0; z-index: 50; width: 100%;
     background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 20px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px; flex-shrink: 0;
 }
 .brand {
     font-size: 18px; font-weight: 800; color: var(--primary);
@@ -100,9 +100,9 @@ body {
 .lang-toggle button.active { background: var(--primary); color: white; }
 /* ─── 進度指示 ─── */
 .progress-bar {
-    display: flex; align-items: center; padding: 10px 20px; gap: 6px;
+    display: flex; align-items: center; padding: 8px 16px; gap: 6px;
     background: rgba(255,255,255,0.4); border-bottom: 1px solid var(--border);
-    overflow-x: auto;
+    overflow-x: auto; flex-shrink: 0; width: 100%;
 }
 .step-dot {
     width: 10px; height: 10px; border-radius: 50%;
@@ -335,9 +335,10 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
 </style>
 </head>
 <body>
+<div class="app-wrapper">
 <!-- ═══ 頂部標題列 ═══ -->
 <div class="top-bar">
-    <span class="brand" id="brandName">霧臺國小</span>
+    <img src="./logo.jpg" alt="霧臺國小" style="height:32px;width:32px;border-radius:8px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'" /><span class="brand" id="brandName">霧臺國小</span>
     <span class="room-code-badge" id="roomCodeDisplay">
         <span class="material-symbols-outlined" style="font-size:14px;">meeting_room</span>
         教室：<strong id="roomIdDisplay">----</strong>
@@ -346,7 +347,7 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
         <button id="skinToggleBtn" title="切換主題" style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.6);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">🎨</button>
         <div id="skinDropdown" style="display:none;position:absolute;top:38px;right:0;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:6px;min-width:140px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:100;"></div>
     </div>
-    <div class="lang-toggle">
+    <div class="lang-toggle" style="margin-left:0;">
         <button id="langZh" class="active">中</button>
         <button id="langEn">EN</button>
     </div>
@@ -562,6 +563,7 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
 
 </div><!-- /pages-track -->
 </div><!-- /pages-wrapper -->
+</div><!-- /app-wrapper -->
 
 <!-- ═══ Dock 工具列 ═══ -->
 <div class="floating-dock collapsed" id="floatingDock">
@@ -878,9 +880,11 @@ async function createRoom() {
     if (STATE.roomId) { openQR(); return; }
     const teacherName = teacherNameInput.value.trim() || '教師';
     STATE.teacherName = teacherName;
-    if (!STATE.customClassEnabled) {
+    if (STATE.customClassEnabled) {
+        STATE.selectedClasses = [];  // 自訂模式不需要班級
+    } else {
         STATE.selectedClasses = [...classCheckboxContainer.querySelectorAll('input:checked')].map(el => el.value);
-        if (STATE.selectedClasses.length === 0) { await alert('請先選擇班級'); return; }
+        if (STATE.selectedClasses.length === 0) { await alert('請先勾選至少一個班級'); return; }
     }
     if (STATE.customClassEnabled) {
         STATE.customStudentCount = Math.min(50, Math.max(1, parseInt(customStudentCount.value) || 20));
@@ -1128,9 +1132,12 @@ async function collectAnswers() {
 function renderCards() {
     let students = [];
     if (STATE.customClassEnabled) {
-        const ids = Object.keys(STATE.currentAnswers).filter(id => id.startsWith('temp_'));
-        students = ids.map(id => ({ __id: id, name: STATE.currentAnswers[id]?.name || id, number: id.replace('temp_', '') }));
-        if (students.length === 0) { cardContainer.innerHTML = '<div style="color:var(--text-muted);text-align:center;width:100%;padding:20px;">尚未有學生作答</div>'; return; }
+        // 自訂模式：顯示全部座位（1到customStudentCount），不管有沒有作答
+        const count = STATE.customStudentCount || 20;
+        students = Array.from({length: count}, (_, i) => ({
+            __id: `temp_${i+1}`, name: STATE.currentAnswers[`temp_${i+1}`]?.name || `${i+1}號`,
+            number: String(i+1)
+        }));
     } else {
         for (const cls of STATE.selectedClasses) {
             students = students.concat((STATE.rosterData[cls] || []).map(s => ({ ...s, className: cls })));
@@ -1927,8 +1934,8 @@ document.getElementById('dockBroadcast').addEventListener('click', () => {
     broadcastModal.classList.add('show'); broadcastInput.focus();
 });
 document.getElementById('dockLockScreen').addEventListener('click', () => { if (!STATE.roomId) { alert('請先建立教室'); return; } toggleLockScreen(); });
-document.getElementById('dockTimer').addEventListener('click', () => { if (!STATE.roomId) { alert('請先建立教室'); return; } openTimerTool(); });
-document.getElementById('dockDice').addEventListener('click', () => { if (!STATE.roomId) { alert('請先建立教室'); return; } openDiceTool(); });
+document.getElementById('dockTimer').addEventListener('click', () => openTimerTool());
+document.getElementById('dockDice').addEventListener('click', () => openDiceTool());
 document.getElementById('dockPicker').addEventListener('click', () => { if (!STATE.roomId) { alert('請先建立教室'); return; } openPickerTool(); });
 document.getElementById('dockVote').addEventListener('click', () => { if (!STATE.roomId) { alert('請先建立教室'); return; } openVoteTool(); });
 document.getElementById('dockGroup').addEventListener('click', () => { if (!STATE.roomId) { alert('請先建立教室'); return; } openGroupTool(); });
