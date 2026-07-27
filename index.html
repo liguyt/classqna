@@ -73,6 +73,7 @@ body {
     font-family: 'Segoe UI','PingFang TC',system-ui,sans-serif;
     background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 40%, #fce7f3 100%);
     min-height: 100dvh; overflow-x: hidden; color: var(--text-primary);
+    display: flex; justify-content: center;
 }
 /* ─── 頂部標題列 ─── */
 .top-bar {
@@ -82,6 +83,7 @@ body {
     display: flex; align-items: center; gap: 12px;
     padding: 10px 20px; flex-shrink: 0;
 }
+.brand-logo { height: 30px; width: 30px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
 .brand {
     font-size: 18px; font-weight: 800; color: var(--primary);
     letter-spacing: -0.5px; cursor: pointer; user-select: none;
@@ -114,15 +116,21 @@ body {
     font-size: 13px; font-weight: 600; color: var(--text-secondary);
     margin-left: 10px; white-space: nowrap;
 }
-/* ─── 頁面容器 ─── */
-.pages-wrapper { overflow: hidden; }
-.pages-track {
-    display: flex; transition: transform 0.4s cubic-bezier(0.2,0.9,0.4,1);
-    will-change: transform;
+/* ─── App 容器（iPad最佳化） ─── */
+.app-shell {
+    max-width: 1024px; width: 100%; margin: 0 auto;
+    min-height: 100dvh; display: flex; flex-direction: column;
+    background: rgba(255,255,255,0.08); position: relative;
 }
+/* ─── 頁面容器 (show/hide，完全不捲動問題) ─── */
 .page {
-    min-width: 100%; padding: 20px; display: flex; flex-direction: column; gap: 16px;
+    display: none; flex-direction: column; gap: 14px;
+    padding: 16px 16px 100px; /* 底部留給 dock */
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    animation: pageIn 0.22s ease;
 }
+.page.active { display: flex; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 /* ─── 通用卡片 ─── */
 .card-panel {
     background: var(--surface); backdrop-filter: blur(16px);
@@ -285,14 +293,23 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
 .vote-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.4s; }
 /* ─── 分組浮窗 ─── */
 .group-float {
-    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-    background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+    position: fixed; bottom: 90px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(16px);
     border: 1px solid var(--border); border-radius: 16px;
-    padding: 10px 18px; box-shadow: 0 6px 24px rgba(0,0,0,0.12);
-    z-index: 39; cursor: pointer; display: none; font-size: 14px; font-weight: 600;
-    white-space: nowrap; max-width: 90vw; overflow-x: auto;
+    padding: 8px 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    z-index: 39; cursor: grab; display: none; font-size: 14px; font-weight: 600;
+    white-space: nowrap; max-width: 92vw; overflow-x: auto;
+    user-select: none; touch-action: none;
 }
-.group-float.show { display: block; }
+.group-float:active { cursor: grabbing; }
+.group-float.show { display: flex; align-items: center; gap: 0; }
+.group-float-item {
+    padding: 4px 14px; border-right: 1px solid rgba(0,0,0,0.1);
+    display: flex; align-items: center; gap: 6px; line-height: 1.4;
+}
+.group-float-item:last-child { border-right: none; }
+.group-float-score { font-size: 20px; font-weight: 800; color: var(--primary); }
 .group-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
 .group-card {
     min-width: 90px; padding: 12px; border-radius: 12px; text-align: center;
@@ -310,7 +327,7 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
 .dice-display { font-size: 80px; text-align: center; padding: 16px 0; cursor: pointer; user-select: none; }
 .dice-display.rolling { animation: roll 0.6s ease-out; }
 @keyframes roll { 0%{transform:rotate(0) scale(1)} 50%{transform:rotate(180deg) scale(1.3)} 100%{transform:rotate(360deg) scale(1)} }
-.dice-history { font-size: 20px; text-align: center; min-height: 36px; margin: 8px 0; }
+.dice-history { font-size: 40px; text-align: center; min-height: 56px; margin: 8px 0; line-height: 1.3; }
 /* ─── 搶答工具結果 ─── */
 .buzz-first-result { text-align: center; padding: 10px 0 14px; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 10px; }
 .buzz-first-result .medal { font-size: 44px; }
@@ -335,8 +352,10 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
 </style>
 </head>
 <body>
+<div class="app-shell">
 <!-- ═══ 頂部標題列 ═══ -->
 <div class="top-bar">
+    <img src="./logo.jpg" class="brand-logo" alt="logo" onerror="this.style.display='none'" />
     <span class="brand" id="brandName">霧臺國小</span>
     <span class="room-code-badge" id="roomCodeDisplay">
         <span class="material-symbols-outlined" style="font-size:14px;">meeting_room</span>
@@ -357,8 +376,6 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
     <span class="step-text" id="stepText">建立教室</span>
 </div>
 <!-- ═══ 頁面區塊 ═══ -->
-<div class="pages-wrapper">
-<div class="pages-track" id="pagesTrack">
 
 <!-- ▸ 頁1：建立教室 -->
 <div class="page" id="page1">
@@ -556,8 +573,8 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
     </div>
 </div>
 
-</div><!-- /pages-track -->
-</div><!-- /pages-wrapper -->
+
+</div><!-- /app-shell -->
 
 <!-- ═══ Dock 工具列 ═══ -->
 <div class="floating-dock collapsed" id="floatingDock">
@@ -580,11 +597,22 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
 
 <!-- ═══ QR 彈窗 ═══ -->
 <div class="modal-overlay" id="qrModal">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width:500px;">
         <div class="modal-title"><span class="material-symbols-outlined">qr_code</span> <span id="qrModalRoomCode">教室代碼</span></div>
-        <div id="qrcodeDisplay" style="display:flex;justify-content:center;margin:16px 0;"></div>
-        <a id="qrTestLink" target="_blank" style="font-size:13px;color:var(--primary);">在新分頁開啟學生連結</a>
-        <div style="margin-top:16px;">
+        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;justify-content:center;">
+            <div>
+                <div id="qrcodeDisplay" style="display:flex;justify-content:center;margin:8px 0;"></div>
+                <a id="qrTestLink" target="_blank" style="font-size:12px;color:var(--primary);display:block;text-align:center;max-width:180px;word-break:break-all;">開啟學生連結</a>
+            </div>
+            <div style="flex:1;min-width:160px;">
+                <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">
+                    <span class="material-symbols-outlined" style="font-size:15px;vertical-align:middle;">groups</span>
+                    線上學生（<span id="qrOnlineCount">0</span> 人）
+                </div>
+                <div id="qrStudentList" style="max-height:200px;overflow-y:auto;font-size:13px;display:flex;flex-wrap:wrap;gap:4px;"></div>
+            </div>
+        </div>
+        <div style="margin-top:14px;">
             <button class="btn btn-ghost" id="qrModalClose">關閉</button>
         </div>
     </div>
@@ -642,8 +670,36 @@ function applyI18n() {
     document.querySelector('.brand').textContent = LANG === 'zh' ? '霧臺國小' : 'Wutai Elementary';
     document.getElementById('langZh').className = LANG === 'zh' ? 'active' : '';
     document.getElementById('langEn').className = LANG === 'en' ? 'active' : '';
+    // 按鈕文字
     const n = STATE.currentQuestion || 0;
-    publishBtn.innerHTML = `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', n + 1)}`;
+    if (publishBtn) publishBtn.innerHTML = `<span class="material-symbols-outlined">send</span> ${t('publish')||'出題'} #${n + 1}`;
+    document.getElementById('createRoomLabel').textContent = t('createRoom') || '建立教室';
+    document.getElementById('qrModalClose').textContent = t('close') || '關閉';
+    // Dock 標籤
+    const dockLabels = {
+        dockQR:'QR', dockBroadcast: t('broadcast')||'廣播', dockLockScreen: t('lockScreen')||'鎖屏',
+        dockTimer: t('timer')||'計時', dockDice: t('dice')||'骰子',
+        dockPicker: t('picker')||'點名', dockVote: t('vote')||'投票',
+        dockGroup: t('group')||'分組', dockBuzz: t('buzz')||'搶答'
+    };
+    Object.entries(dockLabels).forEach(([id, label]) => {
+        const el = document.getElementById(id);
+        if (el) { const span = el.querySelector('.label'); if (span) span.textContent = label; }
+    });
+    // 題型 Tab
+    const qtypes = document.querySelectorAll('.q-type-tab');
+    const qtypeLabels = [t('qTypeChoice')||'選擇題 ABCD', t('qTypeText')||'文字作答', t('qTypeImage')||'圖片/畫圖'];
+    qtypes.forEach((el, i) => { if (qtypeLabels[i]) el.textContent = qtypeLabels[i]; });
+    // nav 按鈕
+    if (gotoPage3Btn) gotoPage3Btn.innerHTML = `<span class="material-symbols-outlined">navigate_next</span> ${t('viewAnswers')||'查看作答'} →`;
+    if (gotoPage4Btn) gotoPage4Btn.innerHTML = `<span class="material-symbols-outlined">navigate_next</span> ${t('grading')||'批改/得分'} →`;
+    if (gotoPage5Btn) gotoPage5Btn.innerHTML = `<span class="material-symbols-outlined">leaderboard</span> ${t('viewScore')||'查看分數'} →`;
+    if (clearNextBtn) clearNextBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">delete</span> ${t('clearNext')||'清除 · 下一題'}`;
+    if (backToPage2Btn) backToPage2Btn.innerHTML = `<span class="material-symbols-outlined">add_circle</span> ${t('continueQuestion')||'繼續出下一題'}`;
+    if (clearAllBtn) clearAllBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">delete</span> ${t('clearAll')||'清除所有紀錄'}`;
+    if (exportExcelBtn) exportExcelBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">download</span> ${t('exportExcel')||'匯出'}`;
+    if (rankSortBtn) rankSortBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:15px;">sort</span> ${rankSortAsc ? t('sortBySeat')||'依座號排序' : t('sortByScore')||'依分數排序'}`;
+    if (startStopBtn) updateFlowButtons();
     updateRankList();
 }
 document.getElementById('langZh').addEventListener('click', () => { LANG = 'zh'; applyI18n(); });
@@ -671,7 +727,7 @@ const STATE = {
 
 // ── DOM ──
 const $ = s => document.querySelector(s);
-const pagesTrack        = $('#pagesTrack');
+// pagesTrack 已改用 show/hide 不再需要
 const stepDots          = document.querySelectorAll('.step-dot');
 const stepText          = $('#stepText');
 const roomCodeDisplay   = $('#roomCodeDisplay');
@@ -735,19 +791,57 @@ const broadcastSend     = $('#broadcastSend');
 const broadcastBtn2     = $('#broadcastBtn2');
 const groupFloat        = $('#groupFloat');
 
+// ── 浮動計分板拖曳 ──
+(function setupGroupFloatDrag() {
+    let dragging = false, startX = 0, startY = 0, origLeft = 0, origBottom = 0;
+    const start = e => {
+        // 防止點擊事件誤觸（拖曳距離短時才視為點擊）
+        dragging = true;
+        const src = e.touches ? e.touches[0] : e;
+        startX = src.clientX; startY = src.clientY;
+        const rect = groupFloat.getBoundingClientRect();
+        origLeft = rect.left;
+        origBottom = window.innerHeight - rect.bottom;
+        groupFloat.style.transition = 'none';
+        groupFloat.style.transform = 'none';
+        groupFloat.style.left = origLeft + 'px';
+        groupFloat.style.bottom = origBottom + 'px';
+    };
+    const move = e => {
+        if (!dragging) return;
+        e.preventDefault();
+        const src = e.touches ? e.touches[0] : e;
+        const dx = src.clientX - startX, dy = src.clientY - startY;
+        const newLeft = Math.max(0, Math.min(window.innerWidth - 80, origLeft + dx));
+        const newBottom = Math.max(10, Math.min(window.innerHeight - 60, origBottom - dy));
+        groupFloat.style.left = newLeft + 'px';
+        groupFloat.style.bottom = newBottom + 'px';
+    };
+    const end = e => { dragging = false; };
+    groupFloat.addEventListener('mousedown', start);
+    groupFloat.addEventListener('touchstart', start, { passive: false });
+    document.addEventListener('mousemove', move);
+    document.addEventListener('touchmove', move, { passive: false });
+    document.addEventListener('mouseup', end);
+    document.addEventListener('touchend', end);
+})();
+
 // ═══════════════════════════════════════════════
 // 頁面導航
 // ═══════════════════════════════════════════════
 function goToPage(n) {
     if (n < 1 || n > 5) return;
     STATE.currentPage = n;
-    pagesTrack.style.transform = `translateX(-${(n - 1) * 20}%)`;
+    document.querySelectorAll('.page').forEach((p, i) => {
+        p.classList.toggle('active', i + 1 === n);
+    });
     stepDots.forEach((d, i) => {
         d.className = 'step-dot';
         if (i + 1 === n) d.classList.add('active');
         else if (i + 1 < n) d.classList.add('done');
     });
-    stepText.textContent = t(`step${n}`) || `${n}/5`;
+    const stepLabels = [t('page1Title')||'建立教室', t('page2Title')||'出題', '查看作答', '批改/得分', '排行榜'];
+    stepText.textContent = `${n}/5 ${stepLabels[n-1]}`;
     if (STATE.roomId && n >= 2) {
         roomCodeDisplay.classList.add('show');
         roomIdDisplay.textContent = STATE.roomId;
@@ -932,6 +1026,8 @@ function listenStudents() {
         snap.forEach(d => { if (d.data().online !== false) count++; });
         onlineCountEl.textContent = count;
         renderCards();
+        // QR modal 開著時同步更新學生清單
+        if (qrModal.classList.contains('show')) updateQrStudentList();
     }, e => {
         console.warn('監聽學生失敗', e);
         // 5秒後重試（避免連線中斷後學生計數卡住）
@@ -1365,9 +1461,10 @@ async function openQR() {
     const base = window.location.href.split('?')[0];
     const studentUrl = base.substring(0, base.lastIndexOf('/') + 1) + 'student.html?room=' + STATE.roomId;
     qrModalRoomCode.textContent = `教室代碼：${STATE.roomId}`;
-    qrTestLink.href = studentUrl; qrTestLink.textContent = studentUrl;
+    qrTestLink.href = studentUrl;
     qrcodeDisplay.innerHTML = '';
     qrModal.classList.add('show');
+    updateQrStudentList();
     try {
         if (typeof QRCode === 'undefined') {
             await new Promise((res, rej) => {
@@ -1379,6 +1476,25 @@ async function openQR() {
         }
         new QRCode(qrcodeDisplay, { text: studentUrl, width: 180, height: 180, colorDark: '#1e293b', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
     } catch(e) { qrcodeDisplay.innerHTML = '<p style="color:#888;">⚠️ QR 載入失敗</p>'; }
+}
+
+// ═══════════════════════════════════════════════
+// QR 學生清單更新
+// ═══════════════════════════════════════════════
+async function updateQrStudentList() {
+    if (!STATE.roomId) return;
+    const el = document.getElementById('qrStudentList');
+    const countEl = document.getElementById('qrOnlineCount');
+    if (!el || !countEl) return;
+    try {
+        const snap = await getDocs(collection(db, 'rooms', STATE.roomId, 'students'));
+        const online = [];
+        snap.forEach(d => { if (d.data().online !== false) online.push(d.data().name || d.id); });
+        countEl.textContent = online.length;
+        el.innerHTML = online.sort().map(n =>
+            `<span style="background:var(--success-light);color:var(--success);padding:3px 8px;border-radius:8px;font-weight:600;">${n}</span>`
+        ).join('');
+    } catch(e) { console.warn('QR學生清單更新失敗', e); }
 }
 
 // ═══════════════════════════════════════════════
@@ -1578,26 +1694,50 @@ function openDiceTool() {
 function openPickerTool() {
     toolModalContent.innerHTML = `
         <div class="modal-title"><span class="material-symbols-outlined">person_add</span> 隨機點名</div>
-        <div style="font-size:32px;font-weight:700;text-align:center;padding:16px 0;min-height:64px;" id="ttPickResult"><span style="color:var(--text-muted);">點擊下方按鈕</span></div>
-        <div style="text-align:center;">
+        <div style="font-size:36px;font-weight:700;text-align:center;padding:14px 0;min-height:64px;" id="ttPickResult"><span style="color:var(--text-muted);">點擊下方按鈕</span></div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;">
             <button class="btn btn-primary btn-lg" id="ttPickBtn"><span class="material-symbols-outlined">casino</span> 點名</button>
-            <button class="btn btn-ghost" id="ttPickReset" style="margin-left:8px;"><span class="material-symbols-outlined">refresh</span> 重置</button>
-        </div>`;
+            <button class="btn btn-ghost" id="ttPickReset"><span class="material-symbols-outlined">refresh</span> 重置</button>
+            <label style="font-size:13px;gap:6px;cursor:pointer;">
+                <input type="checkbox" id="ttPickExclude" checked /> 排除已選學生
+            </label>
+        </div>
+        <div style="text-align:center;margin-top:8px;font-size:12px;color:var(--text-muted);" id="ttPickStatus"></div>`;
     toolModal.classList.add('show');
     const result = document.getElementById('ttPickResult');
+    const pickStatus = document.getElementById('ttPickStatus');
     const getPool = () => {
         let pool = [];
-        for (const cls of STATE.selectedClasses) pool.push(...(STATE.rosterData[cls] || []).map(s => ({ ...s })));
-        return pool.filter(s => !STATE.pickerExcluded.includes(getStudentId(s)));
+        if (STATE.customClassEnabled) {
+            const cnt = STATE.customStudentCount || 20;
+            pool = Array.from({length: cnt}, (_, i) => ({ __id: `temp_${i+1}`, name: `${i+1}號`, number: String(i+1) }));
+        } else {
+            for (const cls of STATE.selectedClasses) pool.push(...(STATE.rosterData[cls] || []).map(s => ({ ...s })));
+        }
+        const exclude = document.getElementById('ttPickExclude')?.checked;
+        if (exclude) pool = pool.filter(s => !STATE.pickerExcluded.includes(s.__id || getStudentId(s)));
+        return pool;
     };
+    const updatePickStatus = () => {
+        const exclude = document.getElementById('ttPickExclude')?.checked;
+        pickStatus.textContent = exclude ? `已點 ${STATE.pickerExcluded.length} 人` : '每次全體隨機';
+    };
+    document.getElementById('ttPickExclude').addEventListener('change', updatePickStatus);
     document.getElementById('ttPickBtn').onclick = () => {
         const pool = getPool();
-        if (pool.length === 0) { result.innerHTML = '<span style="color:var(--danger);">全部同學已被點過</span>'; return; }
+        if (pool.length === 0) { result.innerHTML = '<span style="color:var(--danger);">全部同學已被點過！請按重置</span>'; return; }
         const s = pool[Math.floor(Math.random() * pool.length)];
-        STATE.pickerExcluded.push(getStudentId(s));
+        const sid = s.__id || getStudentId(s);
+        if (!STATE.pickerExcluded.includes(sid)) STATE.pickerExcluded.push(sid);
         result.innerHTML = `<span>${s.name}</span>`;
+        updatePickStatus();
     };
-    document.getElementById('ttPickReset').onclick = () => { STATE.pickerExcluded = []; result.innerHTML = '<span style="color:var(--text-muted);">點擊下方按鈕</span>'; };
+    document.getElementById('ttPickReset').onclick = () => {
+        STATE.pickerExcluded = [];
+        result.innerHTML = '<span style="color:var(--text-muted);">點擊下方按鈕</span>';
+        updatePickStatus();
+    };
+    updatePickStatus();
 }
 
 // ─── 投票 ───
@@ -1712,10 +1852,16 @@ function openGroupTool() {
         updateGroupFloat();
     };
     const updateGroupFloat = () => {
-        if (!STATE.groupFloatVisible || groups.length === 0) { groupFloat.classList.remove('show'); groupFloat.style.display = 'none'; return; }
+        if (!STATE.groupFloatVisible || groups.length === 0) { groupFloat.classList.remove('show'); return; }
         const maxScore = Math.max(...groups.map(g => scores[g]||0), 0);
-        groupFloat.innerHTML = groups.map(g => { const s = scores[g]||0; return `<span style="margin-right:10px;">${g} <strong>${s}</strong>${maxScore>0&&s===maxScore?' 👑':''}</span>`; }).join('');
-        groupFloat.style.display = 'block'; groupFloat.classList.add('show');
+        groupFloat.innerHTML = groups.map(g => {
+            const s = scores[g] || 0, isTop = maxScore > 0 && s === maxScore;
+            return `<div class="group-float-item">
+                <span>${isTop ? '👑 ' : ''}${g}</span>
+                <span class="group-float-score">${s}</span>
+            </div>`;
+        }).join('');
+        groupFloat.classList.add('show');
     };
     toolModalContent.innerHTML = `
         <div class="modal-title"><span class="material-symbols-outlined">group</span> 分組計分</div>
@@ -1953,7 +2099,14 @@ toolModal.addEventListener('click', e => {
 });
 
 // 分組浮窗點擊 → 重開工具視窗
-groupFloat.addEventListener('click', () => { if (!STATE.roomId) return; openGroupTool(); toolModal.classList.add('show'); });
+// 短距離點擊（<= 5px）才開工具視窗，避免拖曳後誤觸
+let _gfClickStartX = 0, _gfClickStartY = 0;
+groupFloat.addEventListener('mousedown', e => { _gfClickStartX = e.clientX; _gfClickStartY = e.clientY; });
+groupFloat.addEventListener('click', e => {
+    const d = Math.abs(e.clientX - _gfClickStartX) + Math.abs(e.clientY - _gfClickStartY);
+    if (d > 5 || !STATE.roomId) return;
+    openGroupTool(); toolModal.classList.add('show');
+});
 
 // ─── 管理者密碼（秘密功能） ───
 let adminClickCount = 0, adminTimer = null;
@@ -1996,10 +2149,7 @@ setInterval(cleanupExpiredRooms, 3600000);
 // 初始化
 // ═══════════════════════════════════════════════
 async function init() {
-    pagesTrack.style.transition = 'none';
     goToPage(1);
-    pagesTrack.offsetHeight; // force reflow
-    pagesTrack.style.transition = 'transform 0.4s cubic-bezier(0.2,0.9,0.4,1)';
     await loadRoster();
     updateNavButtons(); updateFlowButtons(); applyI18n();
     console.log('🚀 霧臺國小虛擬教室 v5.0 已啟動');
