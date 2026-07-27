@@ -124,4 +124,7 @@ export const zh = {
     stopped: '已停止',
     startAnswering: '開始作答',
     stopAnswering: '停止作答',
+    confirmChange: '確定要更換學生身份？',
+    waitingStart: '等待開始',
+    answering: '作答中...',
 };
