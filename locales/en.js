@@ -123,7 +123,4 @@ export const en = {
     stopped: 'Stopped',
     startAnswering: 'Start Answering',
     stopAnswering: 'Stop Answering',
-    confirmChange: 'Switch student identity?',
-    waitingStart: 'Waiting to start',
-    answering: 'Answering...',
 };
