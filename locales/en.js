@@ -96,7 +96,7 @@ export const en = {
     buzzDone: 'Done',
     errorNoStudents: 'This room has reached its custom seat limit',
     reconnecting: 'Connection lost, reconnecting...',
-    reconnected: 'Reconnected'
+    reconnected: 'Reconnected',
     timer: 'Timer',
     dice: 'Dice',
     picker: 'Picker',
