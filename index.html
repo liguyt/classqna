@@ -71,17 +71,28 @@ window.alert = function(msg) {
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: 'Segoe UI','PingFang TC',system-ui,sans-serif;
-    background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 40%, #fce7f3 100%);
+    background: linear-gradient(135deg, var(--bg-from,#e0e7ff) 0%, var(--bg-via,#ede9fe) 40%, var(--bg-to,#fce7f3) 100%);
     min-height: 100dvh; overflow-x: hidden; color: var(--text-primary);
+    display: flex; justify-content: center;
+}
+/* ─── 全域最大寬度容器（大螢幕/iPad橫向不撐滿）─── */
+.app-wrapper {
+    width: 100%; max-width: 960px;
+    display: flex; flex-direction: column;
+    min-height: 100dvh;
 }
 /* ─── 頂部標題列 ─── */
 .top-bar {
     position: sticky; top: 0; z-index: 50; width: 100%;
     background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 8px;
     padding: 8px 16px; flex-shrink: 0;
 }
+.top-bar-left  { display: flex; align-items: center; gap: 8px; }
+.top-bar-right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+/* 進度點（放在頂部右側）*/
+.top-dots { display: flex; align-items: center; gap: 5px; }
 .brand {
     font-size: 18px; font-weight: 800; color: var(--primary);
     letter-spacing: -0.5px; cursor: pointer; user-select: none;
@@ -99,29 +110,25 @@ body {
 }
 .lang-toggle button.active { background: var(--primary); color: white; }
 /* ─── 進度指示 ─── */
-.progress-bar {
-    display: flex; align-items: center; padding: 8px 16px; gap: 6px;
-    background: rgba(255,255,255,0.4); border-bottom: 1px solid var(--border);
-    overflow-x: auto; flex-shrink: 0; width: 100%;
-}
+/* progress-bar 已整合進 top-bar-right */
 .step-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: rgba(0,0,0,0.12); flex-shrink: 0; cursor: pointer; transition: all 0.2s;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(0,0,0,0.15); flex-shrink: 0; cursor: pointer; transition: all 0.2s;
 }
 .step-dot.done  { background: var(--primary); opacity: 0.5; }
-.step-dot.active{ background: var(--primary); width: 24px; border-radius: 6px; }
-.step-text {
-    font-size: 13px; font-weight: 600; color: var(--text-secondary);
-    margin-left: 10px; white-space: nowrap;
-}
-/* ─── 頁面容器 ─── */
-.pages-wrapper { overflow: hidden; }
-.pages-track {
-    display: flex; transition: transform 0.4s cubic-bezier(0.2,0.9,0.4,1);
-    will-change: transform;
-}
+.step-dot.active{ background: var(--primary); width: 18px; border-radius: 5px; }
+.step-text { font-size: 12px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+/* ─── 頁面容器（簡單 show/hide + fade，避免 translateX% 與 max-width 衝突）──  */
+.pages-wrapper { flex: 1; }
 .page {
-    min-width: 100%; padding: 20px; display: flex; flex-direction: column; gap: 16px;
+    display: none; padding: 20px; flex-direction: column; gap: 16px;
+}
+.page.active {
+    display: flex; animation: pageFadeIn 0.25s ease;
+}
+@keyframes pageFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 /* ─── 通用卡片 ─── */
 .card-panel {
@@ -310,7 +317,7 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
 .dice-display { font-size: 80px; text-align: center; padding: 16px 0; cursor: pointer; user-select: none; }
 .dice-display.rolling { animation: roll 0.6s ease-out; }
 @keyframes roll { 0%{transform:rotate(0) scale(1)} 50%{transform:rotate(180deg) scale(1.3)} 100%{transform:rotate(360deg) scale(1)} }
-.dice-history { font-size: 20px; text-align: center; min-height: 36px; margin: 8px 0; }
+.dice-history { font-size: 36px; text-align: center; min-height: 52px; margin: 8px 0; letter-spacing: 4px; }
 /* ─── 搶答工具結果 ─── */
 .buzz-first-result { text-align: center; padding: 10px 0 14px; border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 10px; }
 .buzz-first-result .medal { font-size: 44px; }
@@ -338,36 +345,40 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
 <div class="app-wrapper">
 <!-- ═══ 頂部標題列 ═══ -->
 <div class="top-bar">
-    <img src="./logo.jpg" alt="霧臺國小" style="height:32px;width:32px;border-radius:8px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'" /><span class="brand" id="brandName">霧臺國小</span>
-    <span style="flex:1;"></span>
-    <span class="room-code-badge" id="roomCodeDisplay">
-        <span class="material-symbols-outlined" style="font-size:14px;">meeting_room</span>
-        教室：<strong id="roomIdDisplay">----</strong>
-    </span>
-    <div style="position:relative;">
-        <button id="skinToggleBtn" title="切換主題" style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.6);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">🎨</button>
-        <div id="skinDropdown" style="display:none;position:absolute;top:38px;right:0;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:6px;min-width:140px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:100;"></div>
+    <div class="top-bar-left">
+        <img src="./logo.jpg" alt="logo" style="height:32px;width:32px;border-radius:8px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'" />
+        <span class="brand" id="brandName">霧臺國小</span>
     </div>
-    <div class="lang-toggle" style="margin-left:0;">
-        <button id="langZh" class="active">中</button>
-        <button id="langEn">EN</button>
+    <div class="top-bar-right">
+        <span class="room-code-badge hidden" id="roomCodeDisplay">
+            <span class="material-symbols-outlined" style="font-size:13px;">meeting_room</span>
+            <strong id="roomIdDisplay">----</strong>
+        </span>
+        <div class="top-dots">
+            <div class="step-dot active" id="dot1" title="建立教室"></div>
+            <div class="step-dot" id="dot2" title="出題"></div>
+            <div class="step-dot" id="dot3" title="作答結果"></div>
+            <div class="step-dot" id="dot4" title="批改"></div>
+            <div class="step-dot" id="dot5" title="排行榜"></div>
+        </div>
+        <span class="step-text" id="stepText"></span>
+        <div style="position:relative;">
+            <button id="skinToggleBtn" title="切換主題" style="width:28px;height:28px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.6);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">🎨</button>
+            <div id="skinDropdown" style="display:none;position:absolute;top:34px;right:0;background:rgba(255,255,255,0.97);backdrop-filter:blur(12px);border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:6px;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:100;"></div>
+        </div>
+        <div class="lang-toggle">
+            <button id="langZh" class="active">中</button>
+            <button id="langEn">EN</button>
+        </div>
     </div>
 </div>
-<!-- ═══ 進度點 ═══ -->
-<div class="progress-bar">
-    <div class="step-dot active" id="dot1"></div>
-    <div class="step-dot" id="dot2"></div>
-    <div class="step-dot" id="dot3"></div>
-    <div class="step-dot" id="dot4"></div>
-    <div class="step-dot" id="dot5"></div>
-    <span class="step-text" id="stepText">建立教室</span>
-</div>
+
 <!-- ═══ 頁面區塊 ═══ -->
 <div class="pages-wrapper">
-<div class="pages-track" id="pagesTrack">
+
 
 <!-- ▸ 頁1：建立教室 -->
-<div class="page" id="page1">
+<div class="page active" id="page1">
     <div class="card-panel">
         <div class="section-title"><span class="material-symbols-outlined">school</span> <span data-i18n="page1Title">建立教室</span></div>
         <div style="display:flex;flex-direction:column;gap:10px;">
@@ -562,7 +573,6 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
     </div>
 </div>
 
-</div><!-- /pages-track -->
 </div><!-- /pages-wrapper -->
 </div><!-- /app-wrapper -->
 
@@ -652,6 +662,29 @@ function applyI18n() {
     document.getElementById('langEn').className = LANG === 'en' ? 'active' : '';
     const n = STATE.currentQuestion || 0;
     publishBtn.innerHTML = `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', n + 1)}`;
+    // 更新各頁面靜態文字
+    const i18nMap = {
+        'createRoomLabel':   t('createRoom')       || '建立教室',
+        'page3Subtitle':     t('viewAnswers')       || '查看作答',
+        'page4Subtitle':     t('grading')           || '批改/得分',
+        'broadcastBtn2':     `<span class="material-symbols-outlined" style="font-size:16px;">campaign</span> ${t('broadcast') || '廣播'}`,
+    };
+    for (const [id, val] of Object.entries(i18nMap)) {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = val;
+    }
+    // 更新 dock 工具列標籤
+    const dockLabels = {
+        'dockQR': ['qr_code','QR'], 'dockBroadcast': ['campaign', t('broadcast')||'廣播'],
+        'dockLockScreen': ['lock', t('lockScreen')||'鎖屏'], 'dockTimer': ['timer', t('timer')||'計時'],
+        'dockDice': ['casino', t('dice')||'骰子'], 'dockPicker': ['person_add', t('picker')||'點名'],
+        'dockVote': ['how_to_vote', t('vote')||'投票'], 'dockGroup': ['group', t('group')||'分組'],
+        'dockBuzz': ['bolt', t('buzz')||'搶答'],
+    };
+    for (const [id, [icon, label]] of Object.entries(dockLabels)) {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = `<span class="material-symbols-outlined">${icon}</span><span class="label">${label}</span>`;
+    }
     updateRankList();
 }
 document.getElementById('langZh').addEventListener('click', () => { LANG = 'zh'; applyI18n(); });
@@ -679,7 +712,7 @@ const STATE = {
 
 // ── DOM ──
 const $ = s => document.querySelector(s);
-const pagesTrack        = $('#pagesTrack');
+// pagesTrack 已移除（改用 class 切換）
 const stepDots          = document.querySelectorAll('.step-dot');
 const stepText          = $('#stepText');
 const roomCodeDisplay   = $('#roomCodeDisplay');
@@ -749,17 +782,24 @@ const groupFloat        = $('#groupFloat');
 function goToPage(n) {
     if (n < 1 || n > 5) return;
     STATE.currentPage = n;
-    pagesTrack.style.transform = `translateX(-${(n - 1) * 20}%)`;
+    // 顯示/隱藏頁面（用 class 切換，避免 translateX% 跟 max-width 衝突）
+    document.querySelectorAll('.page').forEach((p, i) => {
+        p.classList.toggle('active', i + 1 === n);
+    });
+    // 更新進度點
     stepDots.forEach((d, i) => {
         d.className = 'step-dot';
         if (i + 1 === n) d.classList.add('active');
         else if (i + 1 < n) d.classList.add('done');
     });
     stepText.textContent = t(`step${n}`) || `${n}/5`;
+    // 教室代碼顯示
     if (STATE.roomId && n >= 2) {
-        roomCodeDisplay.classList.add('show');
+        roomCodeDisplay.classList.remove('hidden');
         roomIdDisplay.textContent = STATE.roomId;
-    } else { roomCodeDisplay.classList.remove('show'); }
+    } else {
+        roomCodeDisplay.classList.add('hidden');
+    }
     updateNavButtons();
     updateFlowButtons();
 }
@@ -1381,17 +1421,9 @@ async function openQR() {
     qrTestLink.href = studentUrl; qrTestLink.textContent = studentUrl;
     qrcodeDisplay.innerHTML = '';
     qrModal.classList.add('show');
-    try {
-        if (typeof QRCode === 'undefined') {
-            await new Promise((res, rej) => {
-                const sc = document.createElement('script');
-                sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-                sc.onload = res; sc.onerror = rej;
-                document.head.appendChild(sc);
-            });
-        }
-        new QRCode(qrcodeDisplay, { text: studentUrl, width: 180, height: 180, colorDark: '#1e293b', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
-    } catch(e) { qrcodeDisplay.innerHTML = '<p style="color:#888;">⚠️ QR 載入失敗</p>'; }
+    // 用 qrserver.com API 生成 QR Code 圖片，避免 Edge 追蹤防護擋住 cdnjs
+    const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(studentUrl)}`;
+    qrcodeDisplay.innerHTML = `<img src="${qrImgUrl}" width="200" height="200" style="border-radius:8px;" alt="QR Code" onerror="this.parentElement.innerHTML='<p style=color:#888>⚠️ QR 載入失敗，請確認網路連線</p>'" />`;
 }
 
 // ═══════════════════════════════════════════════
@@ -1939,7 +1971,7 @@ document.getElementById('dockTimer').addEventListener('click', () => openTimerTo
 document.getElementById('dockDice').addEventListener('click', () => openDiceTool());
 document.getElementById('dockPicker').addEventListener('click', () => { if (!STATE.roomId) { alert('請先建立教室'); return; } openPickerTool(); });
 document.getElementById('dockVote').addEventListener('click', () => { if (!STATE.roomId) { alert('請先建立教室'); return; } openVoteTool(); });
-document.getElementById('dockGroup').addEventListener('click', () => { if (!STATE.roomId) { alert('請先建立教室'); return; } openGroupTool(); });
+document.getElementById('dockGroup').addEventListener('click', () => openGroupTool());
 document.getElementById('dockBuzz').addEventListener('click', () => { if (!STATE.roomId) { alert('請先建立教室'); return; } openBuzzTool(); });
 
 // 廣播頁2按鈕
@@ -2009,10 +2041,7 @@ setInterval(cleanupExpiredRooms, 3600000);
 // 初始化
 // ═══════════════════════════════════════════════
 async function init() {
-    pagesTrack.style.transition = 'none';
     goToPage(1);
-    pagesTrack.offsetHeight; // force reflow
-    pagesTrack.style.transition = 'transform 0.4s cubic-bezier(0.2,0.9,0.4,1)';
     await loadRoster();
     updateNavButtons(); updateFlowButtons(); applyI18n();
     applyAutoSkin();
