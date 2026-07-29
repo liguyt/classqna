@@ -292,14 +292,17 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
 .vote-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.4s; }
 /* ─── 分組浮窗 ─── */
 .group-float {
-    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    position: fixed; bottom: 90px; left: 50%;
+    transform: translateX(-50%);   /* 初始置中，拖曳後由 JS 覆寫 */
     background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
     border: 1px solid var(--border); border-radius: 16px;
     padding: 10px 18px; box-shadow: 0 6px 24px rgba(0,0,0,0.12);
-    z-index: 39; cursor: pointer; display: none; font-size: 14px; font-weight: 600;
+    z-index: 39; display: none; font-size: 14px; font-weight: 600;
     white-space: nowrap; max-width: 90vw; overflow-x: auto;
+    cursor: grab; user-select: none; touch-action: none;
 }
 .group-float.show { display: block; }
+.group-float.dragging { cursor: grabbing; box-shadow: 0 12px 36px rgba(0,0,0,0.2); }
 .group-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
 .group-card {
     min-width: 90px; padding: 12px; border-radius: 12px; text-align: center;
@@ -502,6 +505,32 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
         <div class="section-title"><span class="material-symbols-outlined">bar_chart</span> <span id="page3Subtitle">查看作答</span></div>
         <div class="card-container" id="resultCards"></div>
     </div>
+    <!-- 頁3 也需要開始/停止按鈕：發布圖片題或文字題後系統跳到頁3，開始鈕不能只在頁2 -->
+    <div class="card-panel" id="page3TimerPanel" style="display:none;">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;">
+            <div class="timer-large" id="timerLargeDisplay3" style="font-size:48px;">--</div>
+            <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+                <button class="btn btn-primary btn-lg" id="startStopBtn3">
+                    <span class="material-symbols-outlined">play_arrow</span> 開始作答
+                </button>
+                <button class="btn btn-ghost btn-sm" id="extendTimeBtn3" style="display:none;">
+                    <span class="material-symbols-outlined">add</span> +10s
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- 第三頁也放開始/停止作答控制，方便不用回第二頁 -->
+    <div class="card-panel" id="page3TimerPanel" style="display:none;">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div class="timer-large" id="timerLargeDisplay2" style="font-size:48px;">--</div>
+            <button class="btn btn-primary btn-lg" id="startStopBtn2">
+                <span class="material-symbols-outlined">play_arrow</span> 開始作答
+            </button>
+            <button class="btn btn-ghost" id="extendTimeBtn2" style="display:none;">
+                <span class="material-symbols-outlined">add</span> +10s
+            </button>
+        </div>
+    </div>
     <div class="btn-row" style="justify-content:flex-end;">
         <button class="btn btn-ghost btn-sm" id="viewTextAnswersBtn" style="display:none;">
             <span class="material-symbols-outlined" style="font-size:16px;">list</span> 查看文字/圖片答案
@@ -597,11 +626,23 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
 
 <!-- ═══ QR 彈窗 ═══ -->
 <div class="modal-overlay" id="qrModal">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width:500px;width:92%;">
         <div class="modal-title"><span class="material-symbols-outlined">qr_code</span> <span id="qrModalRoomCode">教室代碼</span></div>
-        <div id="qrcodeDisplay" style="display:flex;justify-content:center;margin:16px 0;"></div>
-        <a id="qrTestLink" target="_blank" style="font-size:13px;color:var(--primary);">在新分頁開啟學生連結</a>
-        <div style="margin-top:16px;">
+        <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;justify-content:center;">
+            <div>
+                <div id="qrcodeDisplay" style="display:flex;justify-content:center;margin-bottom:8px;"></div>
+                <a id="qrTestLink" target="_blank" style="font-size:12px;color:var(--primary);display:block;text-align:center;word-break:break-all;max-width:210px;">在新分頁開啟學生連結</a>
+            </div>
+            <div style="flex:1;min-width:160px;">
+                <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                    <span class="material-symbols-outlined" style="font-size:16px;">people</span>
+                    已登入學生（<span id="qrOnlineCount">0</span> 人）
+                </div>
+                <div id="qrStudentList" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;font-size:13px;"></div>
+                <div id="qrNoStudents" style="font-size:13px;color:var(--text-muted);padding:12px 0;text-align:center;">尚無學生登入</div>
+            </div>
+        </div>
+        <div style="margin-top:16px;text-align:center;">
             <button class="btn btn-ghost" id="qrModalClose">關閉</button>
         </div>
     </div>
@@ -747,6 +788,12 @@ const gotoPage4Btn      = $('#gotoPage4Btn');
 const gotoPage5Btn      = $('#gotoPage5Btn');
 const resultCards       = $('#resultCards');
 const viewTextAnswersBtn= $('#viewTextAnswersBtn');
+const startStopBtn2     = $('#startStopBtn2');
+const extendTimeBtn2    = $('#extendTimeBtn2');
+const timerLargeDisplay2= $('#timerLargeDisplay2');
+const page3TimerPanel   = $('#page3TimerPanel');
+const qrStudentList     = $('#qrStudentList');
+const qrOnlineCount     = $('#qrOnlineCount');
 const choiceRevealArea  = $('#choiceRevealArea');
 const choiceResultCards = $('#choiceResultCards');
 const hideAnswerBtn     = $('#hideAnswerBtn');
@@ -802,6 +849,8 @@ function goToPage(n) {
     }
     updateNavButtons();
     updateFlowButtons();
+    // 進入頁3時滾到頂部，方便看到計時控制
+    if (n === 3) window.scrollTo({top:0,behavior:'smooth'});
 }
 function updateNavButtons() {
     gotoPage3Btn.disabled = STATE.currentPage !== 2 || !STATE.isPublished;
@@ -811,19 +860,32 @@ function updateNavButtons() {
 function updateFlowButtons() {
     const f = STATE.flowState;
     publishBtn.disabled = !(f === 'idle' || f === 'stopped');
-    if (f === 'published' || f === 'idle') {
-        startStopBtn.disabled = false;
-        startStopBtn.innerHTML = `<span class="material-symbols-outlined">play_arrow</span> ${t('startAnswering')}`;
-        startStopBtn.className = 'btn btn-primary btn-lg';
-    } else if (f === 'answering') {
-        startStopBtn.disabled = false;
-        startStopBtn.innerHTML = `<span class="material-symbols-outlined">stop</span> ${t('stopAnswering')}`;
-        startStopBtn.className = 'btn btn-danger btn-lg';
-    } else if (f === 'stopped') {
-        startStopBtn.disabled = true;
-        startStopBtn.innerHTML = `<span class="material-symbols-outlined">pause</span> ${t('stopped')}`;
-        startStopBtn.className = 'btn btn-ghost btn-lg';
-    }
+    const p3Panel  = document.getElementById('page3TimerPanel');
+    const timer3   = document.getElementById('timerLargeDisplay3');
+    const start3   = document.getElementById('startStopBtn3');
+    const extend3  = document.getElementById('extendTimeBtn3');
+
+    const showPanel = (f === 'published' || f === 'answering' || f === 'stopped');
+    if (p3Panel) p3Panel.style.display = showPanel ? 'block' : 'none';
+
+    const btnConfig = {
+        idle:      { label: t('startAnswering'), cls: 'btn btn-primary btn-lg', disabled: false },
+        published: { label: t('startAnswering'), cls: 'btn btn-primary btn-lg', disabled: false },
+        answering: { label: t('stopAnswering'),  cls: 'btn btn-danger btn-lg',  disabled: false },
+        stopped:   { label: t('stopped'),        cls: 'btn btn-ghost btn-lg',   disabled: true  },
+    };
+    const cfg = btnConfig[f] || btnConfig.idle;
+    const icon = f === 'answering' ? 'stop' : 'play_arrow';
+    const btnHtml = `<span class="material-symbols-outlined">${icon}</span> ${cfg.label}`;
+
+    // 同步更新頁2和頁3的按鈕
+    [startStopBtn, start3].forEach(btn => {
+        if (!btn) return;
+        btn.disabled = cfg.disabled;
+        btn.innerHTML = btnHtml;
+        btn.className = cfg.cls;
+    });
+    if (extend3) extend3.style.display = f === 'answering' ? 'inline-flex' : 'none';
     gotoPage4Btn.disabled = f !== 'stopped';
 }
 
@@ -1122,16 +1184,24 @@ async function stopAnswering() {
 // ═══════════════════════════════════════════════
 // 本地計時器
 // ═══════════════════════════════════════════════
+function syncTimerDisplays(val, urgent = false) {
+    const cls = urgent ? 'timer-large urgent' : 'timer-large';
+    [timerLargeDisplay, document.getElementById('timerLargeDisplay3')].forEach(el => {
+        if (el) { el.textContent = val; el.className = cls; }
+    });
+}
 function startTimer(secs) {
     clearTimer();
     STATE.currentTimerVal = secs;
-    timerLargeDisplay.textContent = STATE.currentTimerVal;
-    timerLargeDisplay.className = 'timer-large';
+    syncTimerDisplays(STATE.currentTimerVal);
     STATE.timerInterval = setInterval(async () => {
         STATE.currentTimerVal--;
-        timerLargeDisplay.textContent = STATE.currentTimerVal;
-        if (STATE.currentTimerVal <= 5) timerLargeDisplay.className = 'timer-large urgent';
-        if (STATE.currentTimerVal <= 0) { clearTimer(); timerLargeDisplay.textContent = '⏰'; await stopAnswering(); }
+        syncTimerDisplays(STATE.currentTimerVal, STATE.currentTimerVal <= 5);
+        if (STATE.currentTimerVal <= 0) {
+            clearTimer();
+            [timerLargeDisplay, document.getElementById('timerLargeDisplay3')].forEach(el => { if (el) { el.textContent = '⏰'; el.className = 'timer-large'; } });
+            await stopAnswering();
+        }
     }, 1000);
 }
 function clearTimer() { if (STATE.timerInterval) { clearInterval(STATE.timerInterval); STATE.timerInterval = null; } }
@@ -1421,9 +1491,35 @@ async function openQR() {
     qrTestLink.href = studentUrl; qrTestLink.textContent = studentUrl;
     qrcodeDisplay.innerHTML = '';
     qrModal.classList.add('show');
-    // 用 qrserver.com API 生成 QR Code 圖片，避免 Edge 追蹤防護擋住 cdnjs
+    // QR Code 圖片（qrserver.com，避免 Edge 追蹤防護擋住 cdnjs）
     const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(studentUrl)}`;
-    qrcodeDisplay.innerHTML = `<img src="${qrImgUrl}" width="200" height="200" style="border-radius:8px;" alt="QR Code" onerror="this.parentElement.innerHTML='<p style=color:#888>⚠️ QR 載入失敗，請確認網路連線</p>'" />`;
+    qrcodeDisplay.innerHTML = `<img src="${qrImgUrl}" width="200" height="200" style="border-radius:8px;" alt="QR Code" onerror="this.parentElement.innerHTML='<p style=color:#888>⚠️ QR 載入失敗</p>'" />`;
+
+    // 即時顯示已登入的學生清單
+    if (STATE.roomId) {
+        const qrOnlineCount = document.getElementById('qrOnlineCount');
+        const qrStudentList = document.getElementById('qrStudentList');
+        const qrNoStudents  = document.getElementById('qrNoStudents');
+        if (window._qrStudentsUnsub) { window._qrStudentsUnsub(); }
+        window._qrStudentsUnsub = onSnapshot(
+            collection(db, 'rooms', STATE.roomId, 'students'),
+            snap => {
+                const online = [];
+                snap.forEach(d => { if (d.data().online !== false) online.push(d.data().name || d.id); });
+                qrOnlineCount.textContent = online.length;
+                if (online.length === 0) {
+                    qrStudentList.innerHTML = '';
+                    qrNoStudents.style.display = 'block';
+                } else {
+                    qrNoStudents.style.display = 'none';
+                    qrStudentList.innerHTML = online.map(name =>
+                        `<div style="padding:5px 10px;background:rgba(16,185,129,0.1);border-radius:8px;color:#065f46;font-weight:600;">✅ ${name}</div>`
+                    ).join('');
+                }
+            },
+            err => console.warn('QR學生監聽失敗', err)
+        );
+    }
 }
 
 // ═══════════════════════════════════════════════
@@ -1731,8 +1827,10 @@ function openGroupTool() {
     // 關閉浮窗點選事件來自 groupFloat，這裡只負責開工具視窗
     let groups = [...(STATE.groups || [])], scores = { ...( STATE.groupScores || {}) };
     const render = () => {
+        const grid = document.getElementById('tgGrid');
+        if (!grid) return; // 工具視窗已關閉，跳過 render
         const maxScore = Math.max(...groups.map(g => scores[g]||0), 0);
-        document.getElementById('tgGrid').innerHTML = groups.map(g => {
+        grid.innerHTML = groups.map(g => {
             const s = scores[g] || 0, isTop = maxScore > 0 && s === maxScore;
             return `<div class="group-card">
                 ${isTop ? '<span class="group-crown">👑</span>' : ''}
@@ -1749,8 +1847,13 @@ function openGroupTool() {
                 const g = btn.dataset.g, delta = parseInt(btn.dataset.d);
                 scores[g] = Math.max(0, (scores[g]||0) + delta);
                 STATE.groups = groups; STATE.groupScores = scores;
-                clearTimeout(window._groupSync);
-                window._groupSync = setTimeout(() => { updateDoc(doc(db,'rooms',STATE.roomId), { groups, groupScores: scores }).catch(()=>{}); }, 500);
+                // 只有在有教室的情況下才寫入 Firebase
+                if (STATE.roomId) {
+                    clearTimeout(window._groupSync);
+                    window._groupSync = setTimeout(() => {
+                        updateDoc(doc(db,'rooms',STATE.roomId), { groups, groupScores: scores }).catch(()=>{});
+                    }, 500);
+                }
                 render(); updateGroupFloat();
             });
         });
@@ -1759,8 +1862,15 @@ function openGroupTool() {
     const updateGroupFloat = () => {
         if (!STATE.groupFloatVisible || groups.length === 0) { groupFloat.classList.remove('show'); groupFloat.style.display = 'none'; return; }
         const maxScore = Math.max(...groups.map(g => scores[g]||0), 0);
-        groupFloat.innerHTML = groups.map(g => { const s = scores[g]||0; return `<span style="margin-right:10px;">${g} <strong>${s}</strong>${maxScore>0&&s===maxScore?' 👑':''}</span>`; }).join('');
-        groupFloat.style.display = 'block'; groupFloat.classList.add('show');
+        // 現代分隔符設計：每組之間用細線 | 隔開，最高分顯示皇冠
+        const items = groups.map(g => {
+            const s = scores[g] || 0;
+            const crown = maxScore > 0 && s === maxScore ? '👑 ' : '';
+            return `<span style="display:inline-flex;align-items:center;gap:5px;padding:0 14px;font-weight:700;">${crown}<span style="color:var(--text-secondary);font-weight:500;">${g}</span><span style="font-size:20px;color:var(--primary);">${s}</span></span>`;
+        });
+        groupFloat.innerHTML = items.join('<span style="color:rgba(0,0,0,0.15);font-size:18px;user-select:none;">│</span>');
+        groupFloat.style.display = 'flex'; groupFloat.style.alignItems = 'center';
+        groupFloat.classList.add('show');
     };
     toolModalContent.innerHTML = `
         <div class="modal-title"><span class="material-symbols-outlined">group</span> 分組計分</div>
@@ -1784,19 +1894,19 @@ function openGroupTool() {
         groups.push(v); scores[v] = 0;
         document.getElementById('tgInput').value = '';
         STATE.groups = groups; STATE.groupScores = scores;
-        updateDoc(doc(db,'rooms',STATE.roomId), { groups, groupScores: scores }).catch(() => {});
+        if (STATE.roomId) updateDoc(doc(db,'rooms',STATE.roomId), { groups, groupScores: scores }).catch(() => {});
         render();
     };
     document.getElementById('tgReset').onclick = async () => {
         if (!await window.asyncConfirm('確定歸零所有組別分數？')) return;
         groups.forEach(g => scores[g] = 0); STATE.groupScores = scores;
-        updateDoc(doc(db,'rooms',STATE.roomId), { groupScores: scores }).catch(() => {}); render();
+        if (STATE.roomId) updateDoc(doc(db,'rooms',STATE.roomId), { groupScores: scores }).catch(() => {}); render();
     };
     document.getElementById('tgDelete').onclick = async () => {
         if (!await window.asyncConfirm('確定刪除所有分組？')) return;
         groups = []; scores = {}; STATE.groups = []; STATE.groupScores = {}; STATE.groupFloatVisible = false;
         groupFloat.classList.remove('show'); groupFloat.style.display = 'none';
-        updateDoc(doc(db,'rooms',STATE.roomId), { groups:[], groupScores:{} }).catch(() => {}); render();
+        if (STATE.roomId) updateDoc(doc(db,'rooms',STATE.roomId), { groups:[], groupScores:{} }).catch(() => {}); render();
     };
     document.getElementById('tgShow').onclick = () => {
         STATE.groupFloatVisible = true; updateGroupFloat(); toolModal.classList.remove('show');
@@ -1806,7 +1916,7 @@ function openGroupTool() {
             const d = snap.data(); if (!d) return;
             if (d.groups) { groups = d.groups; STATE.groups = groups; }
             if (d.groupScores) { scores = d.groupScores; STATE.groupScores = scores; }
-            render();
+            render(); // render() 內有 null check，關閉後不會出錯
         }, e => console.warn('分組工具房間監聽失敗', e));
         toolModal._groupUnsub = unsub;
     }
@@ -1917,6 +2027,21 @@ btnCreateRoom.addEventListener('click', createRoom);
 customClassCheckbox.addEventListener('change', function() { customStudentCount.disabled = !this.checked; STATE.customClassEnabled = this.checked; });
 publishBtn.addEventListener('click', publishQuestion);
 startStopBtn.addEventListener('click', toggleStartStop);
+    document.getElementById('startStopBtn3').addEventListener('click', toggleStartStop);
+    document.getElementById('extendTimeBtn3').addEventListener('click', () => {
+        if (STATE.flowState === 'answering') {
+            STATE.currentTimerVal += 10;
+            syncTimerDisplays(STATE.currentTimerVal);
+        }
+    });
+if (startStopBtn2) startStopBtn2.addEventListener('click', toggleStartStop);
+if (extendTimeBtn2) extendTimeBtn2.addEventListener('click', () => {
+    if (STATE.flowState === 'answering') {
+        STATE.currentTimerVal += 10;
+        if (timerLargeDisplay) timerLargeDisplay.textContent = STATE.currentTimerVal;
+        if (timerLargeDisplay2) timerLargeDisplay2.textContent = STATE.currentTimerVal;
+    }
+});
 extendTimeBtn.addEventListener('click', () => {
     if (STATE.flowState === 'answering') { STATE.currentTimerVal += 10; timerLargeDisplay.textContent = STATE.currentTimerVal; timerLargeDisplay.className = 'timer-large'; }
 });
@@ -1984,10 +2109,12 @@ broadcastSend.addEventListener('click', sendBroadcast);
 broadcastModal.addEventListener('click', e => { if (e.target === broadcastModal) broadcastModal.classList.remove('show'); });
 
 // QR 關閉
-qrModalClose.addEventListener('click', () => qrModal.classList.remove('show'));
-qrModal.addEventListener('click', e => { if (e.target === qrModal) qrModal.classList.remove('show'); });
-
-// 工具彈窗關閉
+function closeQRModal() {
+        qrModal.classList.remove('show');
+        if (window._qrStudentsUnsub) { window._qrStudentsUnsub(); window._qrStudentsUnsub = null; }
+    }
+    qrModalClose.addEventListener('click', closeQRModal);
+    qrModal.addEventListener('click', e => { if (e.target === qrModal) closeQRModal(); }); 工具彈窗關閉
 toolModal.addEventListener('click', e => {
     if (e.target !== toolModal) return;
     toolModal.classList.remove('show');
@@ -1997,8 +2124,45 @@ toolModal.addEventListener('click', e => {
     if (toolTimerInterval) { clearInterval(toolTimerInterval); toolTimerRunning = false; }
 });
 
-// 分組浮窗點擊 → 重開工具視窗
-groupFloat.addEventListener('click', () => { if (!STATE.roomId) return; openGroupTool(); toolModal.classList.add('show'); });
+// 分組浮窗：可拖曳 + 點擊打開工具視窗
+(function setupGroupFloatDrag() {
+    let isDragging = false, startX = 0, startY = 0, origLeft = 0, origTop = 0;
+    groupFloat.addEventListener('pointerdown', e => {
+        // 初始化絕對位置（從 transform 置中改為 px 定位）
+        const rect = groupFloat.getBoundingClientRect();
+        if (!groupFloat.dataset.positioned) {
+            groupFloat.style.left   = rect.left + 'px';
+            groupFloat.style.top    = rect.top  + 'px';
+            groupFloat.style.bottom = 'auto';
+            groupFloat.style.transform = 'none';
+            groupFloat.dataset.positioned = '1';
+        }
+        isDragging = false; // reset, decide on move
+        startX = e.clientX; startY = e.clientY;
+        origLeft = parseFloat(groupFloat.style.left) || rect.left;
+        origTop  = parseFloat(groupFloat.style.top)  || rect.top;
+        groupFloat.setPointerCapture(e.pointerId);
+    });
+    groupFloat.addEventListener('pointermove', e => {
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        if (!isDragging && Math.abs(dx) + Math.abs(dy) > 4) {
+            isDragging = true;
+            groupFloat.classList.add('dragging');
+        }
+        if (isDragging) {
+            groupFloat.style.left = Math.max(0, Math.min(window.innerWidth - groupFloat.offsetWidth, origLeft + dx)) + 'px';
+            groupFloat.style.top  = Math.max(0, Math.min(window.innerHeight - groupFloat.offsetHeight, origTop + dy)) + 'px';
+        }
+    });
+    groupFloat.addEventListener('pointerup', e => {
+        if (!isDragging) {
+            // 短點擊 → 打開工具視窗
+            if (STATE.roomId) { openGroupTool(); toolModal.classList.add('show'); }
+        }
+        isDragging = false;
+        groupFloat.classList.remove('dragging');
+    });
+})();
 
 // ─── 管理者密碼（秘密功能） ───
 let adminClickCount = 0, adminTimer = null;
