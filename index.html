@@ -94,7 +94,7 @@ window.showImageModal = function(url, canBroadcast = false, studentId = null) {
         broadcastBtn.style.cssText = "margin-left:10px;padding:6px 12px;background:#3b82f6;color:white;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;";
         broadcastBtn.onclick = () => {
             if (!isBroadcasted) {
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
                 if (window.broadcastImageToClass) window.broadcastImageToClass(dataUrl);
                 broadcastBtn.querySelector('.lbl').textContent = "停止廣播";
                 broadcastBtn.style.background = "#ef4444";
@@ -115,7 +115,7 @@ window.showImageModal = function(url, canBroadcast = false, studentId = null) {
         saveBtn.style.cssText = "margin-left:10px;padding:6px 12px;background:#10b981;color:white;border:none;border-radius:4px;cursor:pointer;display:flex;align-items:center;";
         saveBtn.onclick = () => {
             if (studentId && window.overwriteStudentImage) {
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
                 window.overwriteStudentImage(studentId, dataUrl);
                 hasModified = false;
             }
@@ -345,7 +345,7 @@ window.prompt = function(msg) {
         }
     </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script type="module" crossorigin src="./assets/main-BMQuUDCB.js"></script>
+  <script type="module" crossorigin src="./assets/main-CNysGiTy.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/en-CcQeNmRf.js">
   <link rel="stylesheet" crossorigin href="./assets/en-DmPmLLMl.css">
 </head>
