@@ -477,16 +477,19 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
             </button>
         </div>
     </div>
-    <!-- 學生卡片 -->
+    <!-- 第二頁：教室學生登入狀況（不顯示答題結果） -->
     <div class="card-panel">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-            <span class="section-title" style="margin-bottom:0;">學生作答狀況</span>
-            <label style="margin-left:auto;font-size:13px;">
-                <input type="checkbox" id="sortByTimeCheck" /> 依作答時間排序
-            </label>
+            <span class="section-title" style="margin-bottom:0;">
+                <span class="material-symbols-outlined" style="font-size:18px;">people</span>
+                教室學生
+            </span>
+            <span style="font-size:13px;color:var(--text-muted);margin-left:4px;">
+                已加入 <strong id="onlineCountBadge" style="color:var(--primary);">0</strong> 人
+            </span>
         </div>
-        <div class="card-container" id="cardContainer">
-            <div style="color:var(--text-muted);text-align:center;width:100%;padding:20px;">尚未有學生在線</div>
+        <div class="card-container" id="onlineStudentsGrid">
+            <div style="color:var(--text-muted);text-align:center;width:100%;padding:20px;">尚無學生加入</div>
         </div>
     </div>
     <div class="btn-row" style="justify-content:flex-end;">
@@ -502,7 +505,15 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
 <!-- ▸ 頁3：作答結果 -->
 <div class="page" id="page3">
     <div class="card-panel">
-        <div class="section-title"><span class="material-symbols-outlined">bar_chart</span> <span id="page3Subtitle">查看作答</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+            <span class="section-title" style="margin-bottom:0;">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <span id="page3Subtitle">查看作答</span>
+            </span>
+            <label style="margin-left:auto;font-size:13px;">
+                <input type="checkbox" id="sortByTimeCheck" /> 依作答時間排序
+            </label>
+        </div>
         <div class="card-container" id="resultCards"></div>
     </div>
     <!-- 頁3 也需要開始/停止按鈕：發布圖片題或文字題後系統跳到頁3，開始鈕不能只在頁2 -->
@@ -782,7 +793,8 @@ const timerLabel        = $('#timerLabel');
 const startStopBtn      = $('#startStopBtn');
 const extendTimeBtn     = $('#extendTimeBtn');
 const sortByTimeCheck   = $('#sortByTimeCheck');
-const cardContainer     = $('#cardContainer');
+const onlineStudentsGrid= $('#onlineStudentsGrid');
+const onlineCountBadge  = $('#onlineCountBadge');
 const gotoPage3Btn      = $('#gotoPage3Btn');
 const gotoPage4Btn      = $('#gotoPage4Btn');
 const gotoPage5Btn      = $('#gotoPage5Btn');
@@ -849,8 +861,9 @@ function goToPage(n) {
     }
     updateNavButtons();
     updateFlowButtons();
-    // 進入頁3時滾到頂部，方便看到計時控制
     if (n === 3) window.scrollTo({top:0,behavior:'smooth'});
+    // 進入第二頁時重繪登入格子（可能還沒有 studentsUnsub 觸發）
+    if (n === 2 && STATE.roomId) renderOnlineStudents([]);
 }
 function updateNavButtons() {
     gotoPage3Btn.disabled = STATE.currentPage !== 2 || !STATE.isPublished;
@@ -903,14 +916,16 @@ function generateRoundId(n) { return `R${String(n).padStart(3,'0')}_${Date.now()
 const ROSTER_URL = "https://script.google.com/macros/s/AKfycbyTN6NbWdLc-OfKoa_3iyX5uHCwpDuEeIYSRSVgFcE4aM3RHHfgJthaAMXoiul2YTkH6A/exec";
 async function loadRoster() {
     try {
-        const res = await fetch(ROSTER_URL);
-        if (!res.ok) throw new Error('載入失敗');
+        const res = await fetch(ROSTER_URL, { redirect: 'follow' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
-        buildRoster(json.data || []);
+        if (!json.data || json.data.length === 0) throw new Error('名單為空');
+        buildRoster(json.data);
+        console.log(`✅ 名單載入成功：${STATE.allStudents.length} 位學生`);
         return true;
     } catch (e) {
-        console.warn('名單載入失敗', e);
-        if (await window.asyncConfirm('⚠️ 無法載入學生名單。\n是否改用「自訂人數模式」？')) {
+        console.warn('名單載入失敗', e.message);
+        if (await window.asyncConfirm(`⚠️ 無法載入學生名單（${e.message}）。\n是否改用「自訂人數模式」？`)) {
             customClassCheckbox.checked = true;
             customStudentCount.disabled = false;
             STATE.customClassEnabled = true;
@@ -1026,6 +1041,7 @@ async function createRoom() {
         publishBtn.innerHTML = `<span class="material-symbols-outlined">send</span> ${t('publish').replace('{n}', 1)}`;
         publishStatus.textContent = '';
         listenStudents();
+        renderOnlineStudents([]);  // 先畫空格子，listenStudents 會即時更新
         openQR();
         goToPage(2);
         await alert(t('successRoomCreated').replace('{code}', STATE.roomId));
@@ -1177,7 +1193,8 @@ async function stopAnswering() {
     await updateDoc(doc(db, 'rooms', STATE.roomId), { isAnswering: false });
     STATE.isAnswering = false; STATE.isStopped = true; STATE.flowState = 'stopped';
     await collectAnswers();
-    renderCards(); updateFlowButtons();
+    renderCards();       // 刷新第三頁答題卡
+    updateFlowButtons();
     gotoPage4Btn.disabled = false;
 }
 
@@ -1240,6 +1257,40 @@ async function collectAnswers() {
 // ═══════════════════════════════════════════════
 // 學生卡片渲染
 // ═══════════════════════════════════════════════
+// ── 第二頁：登入狀況（誰在教室裡）──
+function renderOnlineStudents(onlineIds) {
+    if (!onlineStudentsGrid) return;
+    let students = [];
+    if (STATE.customClassEnabled) {
+        const count = STATE.customStudentCount || 20;
+        students = Array.from({length: count}, (_, i) => ({
+            __id: `temp_${i+1}`, name: `${i+1}號`, number: String(i+1)
+        }));
+    } else {
+        for (const cls of STATE.selectedClasses) {
+            students.push(...(STATE.rosterData[cls] || []).map(s => ({ ...s })));
+        }
+        students.sort((a, b) => parseInt(a.number) - parseInt(b.number));
+    }
+    const onlineSet = new Set(onlineIds || []);
+    onlineCountBadge.textContent = onlineSet.size;
+    onlineCountEl.textContent = onlineSet.size;
+    if (students.length === 0) {
+        onlineStudentsGrid.innerHTML = '<div style="color:var(--text-muted);text-align:center;width:100%;padding:20px;">尚無學生</div>';
+        return;
+    }
+    onlineStudentsGrid.innerHTML = students.map(s => {
+        const id = s.__id || getStudentId(s);
+        const isOnline = onlineSet.has(id);
+        return `<div class="card${isOnline ? ' submitted' : ''}" title="${s.name}" style="${isOnline ? '' : 'opacity:0.45;'}">
+            <div style="font-size:13px;font-weight:700;">${s.number}</div>
+            <span class="sub-label" style="font-size:11px;${isOnline ? 'color:var(--success);' : ''}">
+                ${isOnline ? '✅ 在線' : '— 未加入'}
+            </span>
+        </div>`;
+    }).join('');
+}
+
 function renderCards() {
     let students = [];
     if (STATE.customClassEnabled) {
@@ -1286,14 +1337,8 @@ function renderCards() {
         if (STATE.flowState === 'answering') cls += ' clickable';
         html += `<div class="${cls}" data-id="${id}" data-name="${s.name}" data-num="${s.number}"><div>${s.number}</div><span class="sub-label">${label}</span></div>`;
     }
-    cardContainer.innerHTML = html || '<div style="color:var(--text-muted);text-align:center;width:100%;padding:20px;">尚未有學生</div>';
-    if (STATE.flowState === 'answering') {
-        cardContainer.querySelectorAll('.card.clickable').forEach(el => {
-            el.addEventListener('click', () => { toggleSpecified(el.dataset.id); });
-        });
-    }
-    // 同步到頁3的 resultCards
-    resultCards.innerHTML = cardContainer.innerHTML;
+    // 只更新第三頁的答題卡（第二頁改為 renderOnlineStudents）
+    resultCards.innerHTML = html || '<div style="color:var(--text-muted);text-align:center;width:100%;padding:20px;">尚未有學生作答</div>';
     resultCards.querySelectorAll('.card.clickable').forEach(el => {
         el.addEventListener('click', () => { toggleSpecified(el.dataset.id); });
     });
@@ -1310,27 +1355,40 @@ function toggleSpecified(id) {
 // 頁4：批改
 // ═══════════════════════════════════════════════
 async function revealAnswer(answer) {
+    const score = STATE.questionScore || 1;
+    // 若老師改選了不同的答案，先把上一輪的加分退回
+    if (STATE.isRevealed && STATE.correctAnswer && STATE.correctAnswer !== answer) {
+        for (const id of Object.keys(STATE.roundAwarded)) {
+            if (STATE.roundAwarded[id]) {
+                STATE.cumulativeScores[id] = Math.max(0, (STATE.cumulativeScores[id] || 0) - STATE.roundAwarded[id]);
+            }
+        }
+        STATE.roundAwarded = {};
+    }
     STATE.correctAnswer = answer;
     STATE.isRevealed = true;
     await updateDoc(doc(db, 'rooms', STATE.roomId), { revealedAnswer: answer });
-    const score = STATE.questionScore || 1;
+    // 重新計算本題得分
     for (const id in STATE.currentAnswers) {
-        if (STATE.currentAnswers[id].choice === answer) {
+        const isCorrect = STATE.currentAnswers[id].choice === answer;
+        if (isCorrect && !STATE.roundAwarded[id]) {
             STATE.cumulativeScores[id] = (STATE.cumulativeScores[id] || 0) + score;
             STATE.roundAwarded[id] = score;
+        } else if (!isCorrect) {
+            STATE.roundAwarded[id] = 0;
         }
     }
-    // 更新 history 的 earnedScore
     const h = STATE.history.find(x => x.roundId === STATE.currentRoundId);
     if (h) { h.correctAnswer = answer; h.answers.forEach(a => { a.earnedScore = a.choice === answer ? score : 0; }); }
-    // 持久化
     updateDoc(doc(db, 'rooms', STATE.roomId), { cumulativeScores: STATE.cumulativeScores }).catch(() => {});
     document.querySelectorAll('.choice-reveal-btn').forEach(btn => {
         btn.classList.toggle('selected', btn.dataset.answer === answer);
     });
-    renderCards(); renderChoiceResultCards();
+    // 立即刷新第四頁的學生答題卡（含正確/錯誤圖示）
+    renderChoiceResultCards();
+    renderCards();
     gotoPage5Btn.disabled = false;
-    setTimeout(() => { updateRankList(); goToPage(5); }, 800);
+    updateRankList();
 }
 function hideAnswer() {
     STATE.correctAnswer = null; STATE.isRevealed = false;
@@ -1339,18 +1397,30 @@ function hideAnswer() {
     renderCards();
 }
 function renderChoiceResultCards() {
-    const students = [];
-    for (const cls of STATE.selectedClasses) {
-        students.push(...(STATE.rosterData[cls] || []).map(s => ({ ...s })));
+    let students = [];
+    if (STATE.customClassEnabled) {
+        const count = STATE.customStudentCount || 20;
+        students = Array.from({length: count}, (_, i) => ({
+            __id: `temp_${i+1}`, name: `${i+1}號`, number: String(i+1)
+        }));
+    } else {
+        for (const cls of STATE.selectedClasses) {
+            students.push(...(STATE.rosterData[cls] || []).map(s => ({ ...s })));
+        }
+        students.sort((a, b) => parseInt(a.number) - parseInt(b.number));
     }
     if (students.length === 0) { choiceResultCards.innerHTML = ''; return; }
-    choiceResultCards.innerHTML = students.sort((a, b) => parseInt(a.number) - parseInt(b.number)).map(s => {
-        const id = getStudentId(s), ans = STATE.currentAnswers[id];
-        if (!ans) return `<div class="card"><div>${s.number}</div><span class="sub-label">⏸️</span></div>`;
+    choiceResultCards.innerHTML = students.map(s => {
+        const id = s.__id || getStudentId(s);
+        const ans = STATE.currentAnswers[id];
+        if (!ans || !ans.choice) return `<div class="card"><div>${s.number}</div><span class="sub-label" style="color:var(--text-muted);">—</span></div>`;
         const ok = STATE.isRevealed && STATE.correctAnswer && ans.choice === STATE.correctAnswer;
-        const cls = 'card submitted' + (STATE.isRevealed ? (ok ? ' reveal-correct' : ' reveal-wrong') : '');
-        const label = STATE.isRevealed ? (ok ? `${ans.choice} ✅` : `${ans.choice} ❌`) : (ans.choice || '?');
-        return `<div class="${cls}"><div>${s.number}</div><span class="sub-label">${label}</span></div>`;
+        const wrong = STATE.isRevealed && STATE.correctAnswer && ans.choice !== STATE.correctAnswer;
+        const cardCls = 'card submitted' + (ok ? ' reveal-correct' : wrong ? ' reveal-wrong' : '');
+        const label = STATE.isRevealed
+            ? (ok ? `${ans.choice} ✅` : `${ans.choice} ❌`)
+            : (ans.choice || '?');
+        return `<div class="${cardCls}"><div>${s.number}</div><span class="sub-label">${label}</span></div>`;
     }).join('');
 }
 function renderTextGrading() {

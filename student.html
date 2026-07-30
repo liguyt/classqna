@@ -224,6 +224,25 @@ body {
     width: 100%; max-width: 240px; padding: 12px; border: none; border-radius: 16px;
     background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white;
     font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+/* 倒數期間灰化，清楚表示尚無法按下 */
+.btn-modal-submit:disabled {
+    background: rgba(100,100,120,0.2);
+    color: rgba(0,0,0,0.3);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+/* 倒數歸零後的「可按」脈動效果，吸引學生注意 */
+.btn-modal-submit.ready {
+    background: linear-gradient(135deg, #10b981, #059669);
+    animation: buzzReady 0.6s ease infinite alternate;
+    box-shadow: 0 0 0 0 rgba(16,185,129,0.5);
+}
+@keyframes buzzReady {
+    from { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); transform: scale(1); }
+    to   { box-shadow: 0 0 0 12px rgba(16,185,129,0); transform: scale(1.03); }
 }
 .btn-modal-close {
     padding: 8px 20px; border: none; border-radius: 12px;
@@ -967,6 +986,7 @@ function openBuzzModal(totalSeconds) {
     buzzModal.classList.remove('hidden');
     STATE.buzzLocked = false;
     buzzBtn.disabled = true;
+    buzzBtn.classList.remove('ready');  // 清除上一輪殘留的 ready 狀態
     buzzBtn.textContent = t('buzzBtn');
     buzzCountdownDisplay.textContent = totalSeconds;
     buzzCountdownDisplay.className = 'buzz-display';
@@ -986,6 +1006,7 @@ function openBuzzModal(totalSeconds) {
         if (STATE.buzzLocked) return;
         STATE.buzzLocked = true;
         buzzBtn.disabled = true;
+        buzzBtn.classList.remove('ready');  // 停止脈動
         buzzBtn.textContent = '✅ ' + t('buzzDone');
         try {
             await setDoc(doc(db,'rooms',STATE.roomId,'buzzes',STATE.studentId), {
@@ -998,6 +1019,7 @@ function closeBuzzModal() {
     clearBuzzTimer();
     buzzModal.classList.add('hidden');
     buzzBtn.disabled = true;
+    buzzBtn.classList.remove('ready');
     STATE.buzzLocked = false;
 }
 buzzCloseBtn.addEventListener('click', () => { closeBuzzModal(); STATE.buzzActive = false; });
