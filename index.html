@@ -433,12 +433,15 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
                 </select>
             </div>
             <div id="imageUploadArea" style="display:none;">
-                <div class="image-upload-zone" id="imageUploadZone">
+                <div class="image-upload-zone" id="imageUploadZone" style="position:relative;">
                     <span class="material-symbols-outlined" style="font-size:32px;color:var(--text-muted);">add_photo_alternate</span>
                     <div style="font-size:14px;color:var(--text-muted);margin-top:4px;">點擊上傳題目圖片（可選）</div>
                     <input type="file" id="questionImageInput" accept="image/*" style="display:none;" />
                     <div id="questionImageFileName" style="font-size:12px;color:var(--primary);margin-top:4px;"></div>
                     <img id="questionImagePreview" />
+                    <button type="button" id="removeQuestionImageBtn" style="display:none;position:absolute;top:6px;right:6px;
+                        width:26px;height:26px;border-radius:50%;border:none;background:rgba(0,0,0,0.55);
+                        color:#fff;font-size:15px;line-height:1;cursor:pointer;z-index:2;">✕</button>
                 </div>
             </div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
@@ -516,20 +519,6 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
         </div>
         <div class="card-container" id="resultCards"></div>
     </div>
-    <!-- 頁3 也需要開始/停止按鈕：發布圖片題或文字題後系統跳到頁3，開始鈕不能只在頁2 -->
-    <div class="card-panel" id="page3TimerPanel" style="display:none;">
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;">
-            <div class="timer-large" id="timerLargeDisplay3" style="font-size:48px;">--</div>
-            <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
-                <button class="btn btn-primary btn-lg" id="startStopBtn3">
-                    <span class="material-symbols-outlined">play_arrow</span> 開始作答
-                </button>
-                <button class="btn btn-ghost btn-sm" id="extendTimeBtn3" style="display:none;">
-                    <span class="material-symbols-outlined">add</span> +10s
-                </button>
-            </div>
-        </div>
-    </div>
     <!-- 第三頁也放開始/停止作答控制，方便不用回第二頁 -->
     <div class="card-panel" id="page3TimerPanel" style="display:none;">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -542,13 +531,18 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
             </button>
         </div>
     </div>
-    <div class="btn-row" style="justify-content:flex-end;">
-        <button class="btn btn-ghost btn-sm" id="viewTextAnswersBtn" style="display:none;">
-            <span class="material-symbols-outlined" style="font-size:16px;">list</span> 查看文字/圖片答案
+    <div class="btn-row" style="justify-content:space-between;">
+        <button class="btn btn-ghost btn-sm" id="backToPage2FromP3Btn">
+            <span class="material-symbols-outlined" style="font-size:16px;">navigate_before</span> 上一步
         </button>
-        <button class="btn btn-primary" id="gotoPage4Btn" disabled>
-            <span class="material-symbols-outlined">navigate_next</span> 批改/得分 →
-        </button>
+        <div class="btn-row" style="justify-content:flex-end;">
+            <button class="btn btn-ghost btn-sm" id="viewTextAnswersBtn" style="display:none;">
+                <span class="material-symbols-outlined" style="font-size:16px;">list</span> 查看文字/圖片答案
+            </button>
+            <button class="btn btn-primary" id="gotoPage4Btn" disabled>
+                <span class="material-symbols-outlined">navigate_next</span> 批改/得分 →
+            </button>
+        </div>
     </div>
 </div>
 
@@ -578,12 +572,17 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
         </div>
     </div>
     <div class="btn-row" style="justify-content:space-between;">
-        <button class="btn btn-ghost btn-sm" id="clearNextBtn">
-            <span class="material-symbols-outlined" style="font-size:15px;">delete</span> 清除 · 下一題
+        <button class="btn btn-ghost btn-sm" id="backToPage3Btn">
+            <span class="material-symbols-outlined" style="font-size:16px;">navigate_before</span> 上一步
         </button>
-        <button class="btn btn-primary" id="gotoPage5Btn" disabled>
-            <span class="material-symbols-outlined">leaderboard</span> 查看分數 →
-        </button>
+        <div class="btn-row" style="justify-content:flex-end;">
+            <button class="btn btn-ghost btn-sm" id="clearNextBtn">
+                <span class="material-symbols-outlined" style="font-size:15px;">delete</span> 清除 · 下一題
+            </button>
+            <button class="btn btn-primary" id="gotoPage5Btn" disabled>
+                <span class="material-symbols-outlined">leaderboard</span> 查看分數 →
+            </button>
+        </div>
     </div>
 </div>
 
@@ -874,9 +873,9 @@ function updateFlowButtons() {
     const f = STATE.flowState;
     publishBtn.disabled = !(f === 'idle' || f === 'stopped');
     const p3Panel  = document.getElementById('page3TimerPanel');
-    const timer3   = document.getElementById('timerLargeDisplay3');
-    const start3   = document.getElementById('startStopBtn3');
-    const extend3  = document.getElementById('extendTimeBtn3');
+    const timer3   = document.getElementById('timerLargeDisplay2');
+    const start3   = document.getElementById('startStopBtn2');
+    const extend3  = document.getElementById('extendTimeBtn2');
 
     const showPanel = (f === 'published' || f === 'answering' || f === 'stopped');
     if (p3Panel) p3Panel.style.display = showPanel ? 'block' : 'none';
@@ -1056,40 +1055,83 @@ function listenStudents() {
     if (studentsUnsub) { studentsUnsub(); }
     const q = query(collection(db, 'rooms', STATE.roomId, 'students'));
     studentsUnsub = onSnapshot(q, snap => {
-        let count = 0;
-        snap.forEach(d => { if (d.data().online !== false) count++; });
-        onlineCountEl.textContent = count;
-        renderCards();
+        const onlineIds = [];
+        const nameMap = {}; // 自訂模式：id -> 學生實際輸入的暱稱
+        snap.forEach(d => {
+            if (d.data().online !== false) onlineIds.push(d.id);
+            if (d.data().name) nameMap[d.id] = d.data().name;
+        });
+        onlineCountEl.textContent = onlineIds.length;
+        STATE.onlineNameMap = nameMap;
+        renderOnlineStudents(onlineIds);
+        if (STATE.currentPage === 3) renderCards();
     }, e => {
         console.warn('監聽學生失敗', e);
-        // 5秒後重試（避免連線中斷後學生計數卡住）
         setTimeout(() => { if (STATE.roomId) listenStudents(); }, 5000);
     });
 }
 
 // ═══════════════════════════════════════════════
-// 圖片題 base64 處理
+// 圖片題 base64 處理（含自適應壓縮）
 // ═══════════════════════════════════════════════
 let questionImageBase64 = '';
-imageUploadZone.addEventListener('click', () => questionImageInput.click());
+const removeQuestionImageBtn = document.getElementById('removeQuestionImageBtn');
+
+// 自適應壓縮：目標讓 base64 結果控制在安全大小內（Firestore 單一文件上限 1MB，
+// 一份答案/題目文件裡還有其他欄位，所以留安全邊界，目標抓 650KB 以內）
+// 做法：從較大尺寸/品質開始嘗試，太大就逐步降尺寸或降品質，直到符合大小或已達最低品質
+function compressImageAdaptive(img, targetBytes = 650 * 1024) {
+    const attempts = [
+        { max: 1400, q: 0.82 },
+        { max: 1400, q: 0.7  },
+        { max: 1100, q: 0.7  },
+        { max: 1100, q: 0.55 },
+        { max: 800,  q: 0.6  },
+        { max: 800,  q: 0.45 },
+        { max: 600,  q: 0.5  },
+    ];
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    let result = null;
+    for (const { max, q } of attempts) {
+        let w = img.width, h = img.height;
+        if (w > h && w > max) { h = h * max / w; w = max; }
+        else if (h >= w && h > max) { w = w * max / h; h = max; }
+        canvas.width = w; canvas.height = h;
+        ctx.clearRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', q);
+        result = dataUrl;
+        if (dataUrl.length <= targetBytes * 1.37) break; // base64 比原始位元組多約37%
+    }
+    return result;
+}
+
+imageUploadZone.addEventListener('click', (e) => {
+    if (e.target === removeQuestionImageBtn) return; // 移除鈕自己處理，不要觸發選檔
+    questionImageInput.click();
+});
+removeQuestionImageBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    questionImageInput.value = '';
+    questionImageBase64 = '';
+    questionImagePreview.src = '';
+    questionImagePreview.style.display = 'none';
+    questionImageFileName.textContent = '';
+    removeQuestionImageBtn.style.display = 'none';
+});
 questionImageInput.addEventListener('change', e => {
     const file = e.target.files[0];
-    if (!file) { questionImageBase64 = ''; questionImagePreview.style.display = 'none'; questionImageFileName.textContent = ''; return; }
-    questionImageFileName.textContent = file.name;
+    if (!file) { questionImageBase64 = ''; questionImagePreview.style.display = 'none'; questionImageFileName.textContent = ''; removeQuestionImageBtn.style.display = 'none'; return; }
+    questionImageFileName.textContent = `${file.name}（壓縮中...）`;
     const reader = new FileReader();
     reader.onload = ev => {
         const img = new Image();
         img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const MAX = 800;
-            let w = img.width, h = img.height;
-            if (w > h && w > MAX) { h = h * MAX / w; w = MAX; }
-            else if (h > w && h > MAX) { w = w * MAX / h; h = MAX; }
-            canvas.width = w; canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-            questionImageBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            questionImageBase64 = compressImageAdaptive(img);
             questionImagePreview.src = questionImageBase64;
             questionImagePreview.style.display = 'block';
+
         };
         img.src = ev.target.result;
     };
@@ -1203,7 +1245,7 @@ async function stopAnswering() {
 // ═══════════════════════════════════════════════
 function syncTimerDisplays(val, urgent = false) {
     const cls = urgent ? 'timer-large urgent' : 'timer-large';
-    [timerLargeDisplay, document.getElementById('timerLargeDisplay3')].forEach(el => {
+    [timerLargeDisplay, document.getElementById('timerLargeDisplay2')].forEach(el => {
         if (el) { el.textContent = val; el.className = cls; }
     });
 }
@@ -1216,7 +1258,7 @@ function startTimer(secs) {
         syncTimerDisplays(STATE.currentTimerVal, STATE.currentTimerVal <= 5);
         if (STATE.currentTimerVal <= 0) {
             clearTimer();
-            [timerLargeDisplay, document.getElementById('timerLargeDisplay3')].forEach(el => { if (el) { el.textContent = '⏰'; el.className = 'timer-large'; } });
+            [timerLargeDisplay, document.getElementById('timerLargeDisplay2')].forEach(el => { if (el) { el.textContent = '⏰'; el.className = 'timer-large'; } });
             await stopAnswering();
         }
     }, 1000);
@@ -1261,11 +1303,13 @@ async function collectAnswers() {
 function renderOnlineStudents(onlineIds) {
     if (!onlineStudentsGrid) return;
     let students = [];
+    const nameMap = STATE.onlineNameMap || {};
     if (STATE.customClassEnabled) {
         const count = STATE.customStudentCount || 20;
-        students = Array.from({length: count}, (_, i) => ({
-            __id: `temp_${i+1}`, name: `${i+1}號`, number: String(i+1)
-        }));
+        students = Array.from({length: count}, (_, i) => {
+            const id = `temp_${i+1}`;
+            return { __id: id, name: nameMap[id] || `${i+1}號`, number: String(i+1) };
+        });
     } else {
         for (const cls of STATE.selectedClasses) {
             students.push(...(STATE.rosterData[cls] || []).map(s => ({ ...s })));
@@ -1297,7 +1341,7 @@ function renderCards() {
         // 自訂模式：顯示全部座位（1到customStudentCount），不管有沒有作答
         const count = STATE.customStudentCount || 20;
         students = Array.from({length: count}, (_, i) => ({
-            __id: `temp_${i+1}`, name: STATE.currentAnswers[`temp_${i+1}`]?.name || `${i+1}號`,
+            __id: `temp_${i+1}`, name: STATE.currentAnswers[`temp_${i+1}`]?.name || (STATE.onlineNameMap||{})[`temp_${i+1}`] || `${i+1}號`,
             number: String(i+1)
         }));
     } else {
@@ -1686,12 +1730,31 @@ window.overwriteStudentImage = async function(studentId, dataUrl) {
 // ═══════════════════════════════════════════════
 // 匯出 Excel（含圖片 JSZip）
 // ═══════════════════════════════════════════════
+async function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const sc = document.createElement('script');
+        sc.src = src; sc.onload = resolve; sc.onerror = () => reject(new Error(`載入失敗：${src}`));
+        document.head.appendChild(sc);
+    });
+}
 async function exportExcel() {
     if (STATE.history.length === 0) { await alert('尚無任何題目記錄'); return; }
+    // 先掃描是否含有圖片題，決定要不要載入 JSZip
+    const hasImageQuestions = STATE.history.some(h => h.type === 'image' && h.answers.some(a => a.imageUrl));
+    if (typeof XLSX === 'undefined') {
+        try { await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'); }
+        catch (e) { await alert('⚠️ 無法載入 Excel 匯出元件，請檢查網路連線後再試一次'); return; }
+    }
+    let zip = null, imgFolder = null;
+    if (hasImageQuestions) {
+        if (typeof JSZip === 'undefined') {
+            try { await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'); }
+            catch (e) { await alert('⚠️ 無法載入圖片打包元件，圖片將不會包含在匯出檔案中'); }
+        }
+        if (typeof JSZip !== 'undefined') { zip = new JSZip(); imgFolder = zip.folder('images'); }
+    }
     const rows = [['題目', '題型', '分數', '學生ID', '姓名', '選擇', '文字', '是否正確', '得分', '圖片檔名']];
     let hasImages = false;
-    let zip = null, imgFolder = null;
-    if (typeof JSZip !== 'undefined') { zip = new JSZip(); imgFolder = zip.folder('images'); }
     for (let qi = 0; qi < STATE.history.length; qi++) {
         const h = STATE.history[qi];
         for (const a of h.answers) {
@@ -1709,10 +1772,6 @@ async function exportExcel() {
             }
             rows.push([h.note||'', h.type==='choice'?'選擇題':h.type==='image'?'圖片題':'文字題', h.score, a.studentId||'', a.name||'', a.choice||'', a.text||'', correct, earned, imgFile]);
         }
-    }
-    if (typeof XLSX === 'undefined') {
-        const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-        document.head.appendChild(sc); await new Promise(r => sc.onload = r);
     }
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), '課堂記錄');
@@ -2097,19 +2156,11 @@ btnCreateRoom.addEventListener('click', createRoom);
 customClassCheckbox.addEventListener('change', function() { customStudentCount.disabled = !this.checked; STATE.customClassEnabled = this.checked; });
 publishBtn.addEventListener('click', publishQuestion);
 startStopBtn.addEventListener('click', toggleStartStop);
-    document.getElementById('startStopBtn3').addEventListener('click', toggleStartStop);
-    document.getElementById('extendTimeBtn3').addEventListener('click', () => {
-        if (STATE.flowState === 'answering') {
-            STATE.currentTimerVal += 10;
-            syncTimerDisplays(STATE.currentTimerVal);
-        }
-    });
 if (startStopBtn2) startStopBtn2.addEventListener('click', toggleStartStop);
 if (extendTimeBtn2) extendTimeBtn2.addEventListener('click', () => {
     if (STATE.flowState === 'answering') {
         STATE.currentTimerVal += 10;
-        if (timerLargeDisplay) timerLargeDisplay.textContent = STATE.currentTimerVal;
-        if (timerLargeDisplay2) timerLargeDisplay2.textContent = STATE.currentTimerVal;
+        syncTimerDisplays(STATE.currentTimerVal);
     }
 });
 extendTimeBtn.addEventListener('click', () => {
@@ -2136,7 +2187,7 @@ gotoPage4Btn.addEventListener('click', async () => {
 });
 gotoPage5Btn.addEventListener('click', () => { updateRankList(); goToPage(5); });
 clearNextBtn.addEventListener('click', clearAndNextQuestion);
-backToPage2Btn.addEventListener('click', () => goToPage(2));
+backToPage2Btn.addEventListener('click', clearAndNextQuestion);
 clearAllBtn.addEventListener('click', async () => {
     if (!await window.asyncConfirm('確定清除所有紀錄（含累計得分）？')) return;
     STATE.history = []; STATE.cumulativeScores = {}; STATE.roundAwarded = {};
@@ -2184,7 +2235,9 @@ function closeQRModal() {
         if (window._qrStudentsUnsub) { window._qrStudentsUnsub(); window._qrStudentsUnsub = null; }
     }
     qrModalClose.addEventListener('click', closeQRModal);
-    qrModal.addEventListener('click', e => { if (e.target === qrModal) closeQRModal(); }); 工具彈窗關閉
+    qrModal.addEventListener('click', e => { if (e.target === qrModal) closeQRModal(); });
+
+// 工具彈窗關閉
 toolModal.addEventListener('click', e => {
     if (e.target !== toolModal) return;
     toolModal.classList.remove('show');

@@ -429,6 +429,16 @@ body {
             <select id="classSelect" disabled><option value="">-- 班級 --</option></select>
             <select id="seatSelect" disabled><option value="">-- 座號 --</option></select>
         </div>
+        <!-- 自訂人數模式：選填暱稱（限5個中文字或10個英文字母內），不填就用「N號」代表 -->
+        <div id="nicknameWrap" class="hidden" style="width:100%;max-width:320px;">
+            <input type="text" id="nicknameInput" placeholder="暱稱（選填，例如：小明）"
+                   maxlength="10"
+                   style="width:100%;padding:10px 14px;border-radius:14px;border:1px solid rgba(0,0,0,0.08);
+                          background:rgba(255,255,255,0.8);font-size:15px;text-align:center;" />
+            <div id="nicknameHint" style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:4px;">
+                中文限5字、英文限10字內，不填則以座號顯示
+            </div>
+        </div>
         <div class="login-status" id="loginStatus">輸入教室代碼後加入</div>
     </div>
 
@@ -489,7 +499,7 @@ const STATE = {
     myAnswer: null, rosterData: {}, allStudents: [],
     voteActive: false, voteLocked: false,
     buzzActive: false, buzzLocked: false,
-    lastBroadcastAt: null, lastVoteResultsAt: null,
+    lastBroadcastAt: null, lastVoteResultsAt: null, lastBroadcastImageAt: null,
 };
 
 // ── DOM 參照 ──
@@ -529,6 +539,8 @@ const joinRoomBtn    = $('joinRoomBtn');
 const classSelect    = $('classSelect');
 const seatSelect     = $('seatSelect');
 const loginStatus    = $('loginStatus');
+const nicknameWrap   = $('nicknameWrap');
+const nicknameInput  = $('nicknameInput');
 const drawingCanvas  = $('drawingCanvas');
 const canvasPlaceholder = $('canvasPlaceholder');
 const studentImageInput = $('studentImageInput');
@@ -730,6 +742,29 @@ async function markOffline() {
 // ══════════════════════════════════════════════
 // 投票相關
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// 廣播圖片全螢幕顯示
+// ══════════════════════════════════════════════
+function showBroadcastImage(url) {
+    let overlay = document.getElementById('broadcastImageOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'broadcastImageOverlay';
+        overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;"
+            + "display:flex;flex-direction:column;align-items:center;justify-content:center;"
+            + "backdrop-filter:blur(6px);padding:16px;";
+        overlay.innerHTML = `
+            <div style="font-size:14px;color:#fff;font-weight:700;margin-bottom:10px;">📢 老師分享的圖片</div>
+            <img id="broadcastImageContent" style="max-width:92vw;max-height:76vh;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.5);" />
+            <button id="broadcastImageClose" style="margin-top:14px;padding:8px 24px;border:none;border-radius:12px;
+                background:rgba(255,255,255,0.9);color:#1e293b;font-weight:700;font-size:14px;cursor:pointer;">關閉</button>
+        `;
+        document.body.appendChild(overlay);
+        overlay.querySelector('#broadcastImageClose').addEventListener('click', () => overlay.remove());
+    }
+    overlay.querySelector('#broadcastImageContent').src = url;
+}
+
 function openVoteModal() {
     STATE.voteLocked = false;
     clearTimeout(window._voteResultTimer);
@@ -831,6 +866,14 @@ function listenTeacherCommands() {
                     marqueeSpan.textContent = '';
                 }, 8000);
             }
+        }
+
+        // ── 廣播圖片（老師批閱後推送給全班看的圖片）──
+        const imgUrl = data.broadcastImageUrl || '';
+        const broadcastImgAtMs = data.broadcastImageAt?.toMillis ? data.broadcastImageAt.toMillis() : null;
+        if (imgUrl && broadcastImgAtMs && broadcastImgAtMs !== STATE.lastBroadcastImageAt) {
+            STATE.lastBroadcastImageAt = broadcastImgAtMs;
+            showBroadcastImage(imgUrl);
         }
 
         // ── 畫面鎖定 ──
@@ -1075,7 +1118,7 @@ changeBtn.addEventListener('click', async () => {
     STATE.isLoggedIn = false; STATE.studentId = null; STATE.studentName = null;
     STATE.voteActive = false; STATE.voteLocked = false;
     STATE.buzzActive = false; STATE.buzzLocked = false;
-    STATE.lastBroadcastAt = null; STATE.lastVoteResultsAt = null;
+    STATE.lastBroadcastAt = null; STATE.lastVoteResultsAt = null; STATE.lastBroadcastImageAt = null;
     identityText.textContent = '--';
     changeBtn.disabled = true;
     loginScreen.classList.remove('hidden');
@@ -1124,9 +1167,11 @@ async function handleJoinRoom() {
             seatSelect.innerHTML = '<option value="">-- 座號 --</option>' +
                 Array.from({length: seats}, (_,i) => `<option value="${i+1}">${i+1} 號</option>`).join('');
             classSelect.disabled = false; seatSelect.disabled = false;
+            nicknameWrap.classList.remove('hidden');
         } else if (rosterOk && STATE.allStudents.length > 0) {
             // 有班級名單
             populateClassSelect(roomData.selectedClasses || []);
+            nicknameWrap.classList.add('hidden');
         } else {
             loginStatus.innerHTML = `<span style="color:var(--danger)">無法載入名單，請稍後再試</span>`;
             joinRoomBtn.disabled = false; return;
@@ -1177,6 +1222,37 @@ function populateClassSelect(selectedClasses) {
     };
 }
 
+// 暱稱長度限制：中文字視為權重2（等同5個中文字），英數字視為權重1（等同10個字母），超過就截斷
+function sanitizeNickname(raw) {
+    const s = (raw || '').trim();
+    if (!s) return '';
+    let weight = 0, result = '';
+    for (const ch of s) {
+        const isChinese = /[\u4e00-\u9fff]/.test(ch);
+        const w = isChinese ? 2 : 1;
+        if (weight + w > 10) break;
+        weight += w; result += ch;
+    }
+    return result;
+}
+// 即時截斷輸入框內容，避免使用者一次貼上超長文字
+if (typeof nicknameInput !== 'undefined' && nicknameInput) {
+    nicknameInput.addEventListener('input', () => {
+        const sanitized = sanitizeNickname(nicknameInput.value);
+        if (sanitized !== nicknameInput.value.trim()) {
+            // 只在真的超長被截斷時才覆寫，避免打字中間被強制移動游標
+            const raw = nicknameInput.value;
+            let weight = 0, cut = raw.length;
+            for (let i = 0; i < raw.length; i++) {
+                const w = /[\u4e00-\u9fff]/.test(raw[i]) ? 2 : 1;
+                weight += w;
+                if (weight > 10) { cut = i; break; }
+            }
+            if (cut < raw.length) nicknameInput.value = raw.slice(0, cut);
+        }
+    });
+}
+
 seatSelect.addEventListener('change', handleSeatSelect);
 
 async function handleSeatSelect() {
@@ -1186,7 +1262,8 @@ async function handleSeatSelect() {
     // 自訂人數教室
     if (classSelect.value === 'custom') {
         STATE.studentId = `temp_${seat}`;
-        STATE.studentName = `${seat}號同學`;
+        const nick = sanitizeNickname(nicknameInput.value);
+        STATE.studentName = nick || `${seat}號`;
         await finishLogin();
         return;
     }
