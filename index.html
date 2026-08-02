@@ -432,16 +432,50 @@ label { font-size: 14px; color: var(--text-secondary); display: flex; align-item
                     <option value="image">圖片題</option>
                 </select>
             </div>
-            <div id="imageUploadArea" style="display:none;">
-                <div class="image-upload-zone" id="imageUploadZone" style="position:relative;">
-                    <span class="material-symbols-outlined" style="font-size:32px;color:var(--text-muted);">add_photo_alternate</span>
-                    <div style="font-size:14px;color:var(--text-muted);margin-top:4px;">點擊上傳題目圖片（可選）</div>
-                    <input type="file" id="questionImageInput" accept="image/*" style="display:none;" />
+            <div id="imageUploadArea">
+                <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+                    <span class="material-symbols-outlined" style="font-size:16px;">attach_file</span>
+                    附加參考圖片（選填，選擇題/文字題/圖片題皆可使用）
+                </div>
+                <div class="btn-row" style="margin-bottom:8px;">
+                    <button type="button" class="btn btn-ghost btn-sm" id="attachFileBtn">
+                        <span class="material-symbols-outlined" style="font-size:16px;">folder_open</span> 上傳檔案
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-sm" id="attachCameraBackBtn">
+                        <span class="material-symbols-outlined" style="font-size:16px;">photo_camera</span> 拍照（後鏡頭）
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-sm" id="attachCameraFrontBtn">
+                        <span class="material-symbols-outlined" style="font-size:16px;">camera_front</span> 拍照（前鏡頭）
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-sm" id="attachScreenshotBtn">
+                        <span class="material-symbols-outlined" style="font-size:16px;">screenshot_monitor</span> 螢幕截圖
+                    </button>
+                    <span id="screenshotUnsupportedNote" style="display:none;font-size:12px;color:var(--text-muted);">
+                        （Safari 瀏覽器不支援螢幕截圖，請用其他瀏覽器或改用上傳/拍照）
+                    </span>
+                </div>
+                <input type="file" id="questionImageInput" accept="image/*" style="display:none;" />
+                <input type="file" id="questionImageInputBack" accept="image/*" capture="environment" style="display:none;" />
+                <input type="file" id="questionImageInputFront" accept="image/*" capture="user" style="display:none;" />
+                <div class="image-upload-zone" id="imageUploadZone" style="position:relative;display:none;">
                     <div id="questionImageFileName" style="font-size:12px;color:var(--primary);margin-top:4px;"></div>
                     <img id="questionImagePreview" />
                     <button type="button" id="removeQuestionImageBtn" style="display:none;position:absolute;top:6px;right:6px;
                         width:26px;height:26px;border-radius:50%;border:none;background:rgba(0,0,0,0.55);
                         color:#fff;font-size:15px;line-height:1;cursor:pointer;z-index:2;">✕</button>
+                </div>
+            </div>
+            <!-- 螢幕截圖框選彈窗 -->
+            <div id="screenshotCropModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;flex-direction:column;align-items:center;justify-content:center;">
+                <div style="color:#fff;margin-bottom:10px;font-size:14px;">拖曳滑鼠框選要擷取的區域，然後按「確認框選」</div>
+                <canvas id="screenshotCanvas" style="max-width:92vw;max-height:75vh;cursor:crosshair;border-radius:8px;"></canvas>
+                <div class="btn-row" style="margin-top:14px;">
+                    <button type="button" class="btn btn-success" id="confirmCropBtn">
+                        <span class="material-symbols-outlined">check</span> 確認框選
+                    </button>
+                    <button type="button" class="btn btn-ghost" id="cancelCropBtn" style="color:#fff;background:rgba(255,255,255,0.15);">
+                        <span class="material-symbols-outlined">close</span> 取消
+                    </button>
                 </div>
             </div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
@@ -1107,10 +1141,25 @@ function compressImageAdaptive(img, targetBytes = 650 * 1024) {
     return result;
 }
 
-imageUploadZone.addEventListener('click', (e) => {
-    if (e.target === removeQuestionImageBtn) return; // 移除鈕自己處理，不要觸發選檔
-    questionImageInput.click();
-});
+function handleImageFile(file) {
+    if (!file) return;
+    questionImageFileName.textContent = `${file.name || '圖片'}（壓縮中...）`;
+    imageUploadZone.style.display = 'block';
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+            questionImageBase64 = compressImageAdaptive(img);
+            questionImagePreview.src = questionImageBase64;
+            questionImagePreview.style.display = 'block';
+            questionImageFileName.textContent = file.name || '已附加圖片';
+            removeQuestionImageBtn.style.display = 'block';
+        };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
 removeQuestionImageBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     questionImageInput.value = '';
@@ -1119,25 +1168,93 @@ removeQuestionImageBtn.addEventListener('click', (e) => {
     questionImagePreview.style.display = 'none';
     questionImageFileName.textContent = '';
     removeQuestionImageBtn.style.display = 'none';
+    imageUploadZone.style.display = 'none';
 });
-questionImageInput.addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) { questionImageBase64 = ''; questionImagePreview.style.display = 'none'; questionImageFileName.textContent = ''; removeQuestionImageBtn.style.display = 'none'; return; }
-    questionImageFileName.textContent = `${file.name}（壓縮中...）`;
-    const reader = new FileReader();
-    reader.onload = ev => {
-        const img = new Image();
-        img.onload = () => {
-            questionImageBase64 = compressImageAdaptive(img);
-            questionImagePreview.src = questionImageBase64;
-            questionImagePreview.style.display = 'block';
 
-        };
-        img.src = ev.target.result;
+// 三個來源共用同一個處理函式
+document.getElementById('attachFileBtn').addEventListener('click', () => questionImageInput.click());
+document.getElementById('attachCameraBackBtn').addEventListener('click', () => document.getElementById('questionImageInputBack').click());
+document.getElementById('attachCameraFrontBtn').addEventListener('click', () => document.getElementById('questionImageInputFront').click());
+questionImageInput.addEventListener('change', e => { handleImageFile(e.target.files[0]); e.target.value = ''; });
+document.getElementById('questionImageInputBack').addEventListener('change', e => { handleImageFile(e.target.files[0]); e.target.value = ''; });
+document.getElementById('questionImageInputFront').addEventListener('change', e => { handleImageFile(e.target.files[0]); e.target.value = ''; });
+
+// ── 螢幕截圖（getDisplayMedia + 拖曳框選裁切，類似 Win+Shift+S）──
+// Safari（含 iPad/Mac Safari）不支援 getDisplayMedia，偵測後停用按鈕並顯示說明
+const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
+const screenshotBtn = document.getElementById('attachScreenshotBtn');
+if (isSafari || !navigator.mediaDevices?.getDisplayMedia) {
+    screenshotBtn.disabled = true;
+    document.getElementById('screenshotUnsupportedNote').style.display = 'inline';
+} else {
+    screenshotBtn.addEventListener('click', startScreenshotCapture);
+}
+
+async function startScreenshotCapture() {
+    let stream;
+    try {
+        stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    } catch (e) {
+        return; // 使用者取消分享，靜默結束
+    }
+    const video = document.createElement('video');
+    video.srcObject = stream;
+    await video.play();
+    // 抓一張畫面後就立刻關閉分享，避免持續佔用系統資源
+    await new Promise(r => setTimeout(r, 200));
+    const fullCanvas = document.createElement('canvas');
+    fullCanvas.width = video.videoWidth; fullCanvas.height = video.videoHeight;
+    fullCanvas.getContext('2d').drawImage(video, 0, 0);
+    stream.getTracks().forEach(t => t.stop());
+
+    // 顯示框選介面
+    const cropModal = document.getElementById('screenshotCropModal');
+    const cropCanvas = document.getElementById('screenshotCanvas');
+    cropModal.style.display = 'flex';
+    cropCanvas.width = fullCanvas.width; cropCanvas.height = fullCanvas.height;
+    const cctx = cropCanvas.getContext('2d');
+    cctx.drawImage(fullCanvas, 0, 0);
+
+    let startX = 0, startY = 0, curX = 0, curY = 0, dragging = false;
+    const scale = () => cropCanvas.width / cropCanvas.getBoundingClientRect().width;
+    const getPos = e => {
+        const r = cropCanvas.getBoundingClientRect(); const s = scale();
+        return { x: (e.clientX - r.left) * s, y: (e.clientY - r.top) * s };
     };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-});
+    const redraw = () => {
+        cctx.drawImage(fullCanvas, 0, 0);
+        if (dragging || (curX !== startX && curY !== startY)) {
+            cctx.strokeStyle = '#4f46e5'; cctx.lineWidth = 3 * scale();
+            cctx.strokeRect(startX, startY, curX - startX, curY - startY);
+            cctx.fillStyle = 'rgba(79,70,229,0.15)';
+            cctx.fillRect(startX, startY, curX - startX, curY - startY);
+        }
+    };
+    cropCanvas.onmousedown = e => { const p = getPos(e); startX = curX = p.x; startY = curY = p.y; dragging = true; };
+    cropCanvas.onmousemove = e => { if (!dragging) return; const p = getPos(e); curX = p.x; curY = p.y; redraw(); };
+    window.addEventListener('mouseup', () => { dragging = false; });
+
+    const cleanup = () => { cropModal.style.display = 'none'; cropCanvas.onmousedown = cropCanvas.onmousemove = null; };
+    document.getElementById('cancelCropBtn').onclick = cleanup;
+    document.getElementById('confirmCropBtn').onclick = () => {
+        const x = Math.min(startX, curX), y = Math.min(startY, curY);
+        const w = Math.abs(curX - startX), h = Math.abs(curY - startY);
+        const finalCanvas = document.createElement('canvas');
+        if (w < 10 || h < 10) {
+            // 沒有框選（或框太小）就用整張畫面
+            finalCanvas.width = fullCanvas.width; finalCanvas.height = fullCanvas.height;
+            finalCanvas.getContext('2d').drawImage(fullCanvas, 0, 0);
+        } else {
+            finalCanvas.width = w; finalCanvas.height = h;
+            finalCanvas.getContext('2d').drawImage(fullCanvas, x, y, w, h, 0, 0, w, h);
+        }
+        finalCanvas.toBlob(blob => {
+            handleImageFile(new File([blob], 'screenshot.jpg', { type: 'image/jpeg' }));
+            cleanup();
+        }, 'image/jpeg', 0.85);
+    };
+}
+
 
 // 題型 Tab 切換
 document.querySelectorAll('.q-type-tab').forEach(btn => {
@@ -1146,7 +1263,7 @@ document.querySelectorAll('.q-type-tab').forEach(btn => {
         btn.classList.add('active');
         const qtype = btn.dataset.qtype;
         questionTypeSelect.value = qtype;
-        imageUploadArea.style.display = qtype === 'image' ? 'block' : 'none';
+        // imageUploadArea 現在三種題型都顯示（選擇題/文字題也能附加參考圖），不再依題型隱藏
         customSeconds.value = qtype === 'choice' ? 20 : 60;
     });
 });
@@ -1185,7 +1302,7 @@ async function publishQuestion() {
         questionNote: qNote, questionType: qType, questionScore: STATE.questionScore,
         isAnswering: false, timerSeconds: secs, revealedAnswer: null,
         clearAll: true, specifiedStudents: [],
-        questionImageUrl: (qType === 'image' && questionImageBase64) ? questionImageBase64 : null,
+        questionImageUrl: questionImageBase64 || null,
     };
     await updateDoc(roomRef, payload);
     await new Promise(r => setTimeout(r, 300));
